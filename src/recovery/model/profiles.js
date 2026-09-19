@@ -787,7 +787,9 @@ export const PROFILES = {
   },
   cardiacRecovery: {
     name: "Cardiac recovery",
-    after: "a heart attack, a stent, or bypass surgery",
+    // Short enough to read inside "counted for ..." and "recovering after ...";
+    // the caution below carries the exact list of what that covers.
+    after: "a cardiac event",
     ml: "cardiac_recovery",
     adherence: "medication_adherence",
     minMoved: 2,
