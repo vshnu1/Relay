@@ -13,6 +13,7 @@ const server = spawn(process.execPath, ["server/index.js"], {
     PORT: "3197",
     DATA_DIR: dir,
     APP_ACCESS_TOKEN: token,
+    PATIENT_ACCESS_CODE: "patient-test-only",
     RENDER_API_KEY: "",
     RENDER_WORKFLOW_SLUG: "",
     ELEVENLABS_API_KEY: "",
@@ -43,6 +44,37 @@ try {
   assert.equal(
     (await request("/status", undefined, { Authorization: "" })).status,
     401,
+  );
+  assert.equal(
+    (
+      await request("/voice/clinician-summary", {
+        text: "Synthetic briefing text for clinician review.",
+        demoSynthetic: false,
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (
+      await request("/voice/clinician-summary", {
+        text: "Synthetic briefing text for clinician review.",
+        demoSynthetic: true,
+      })
+    ).status,
+    503,
+  );
+  assert.equal(
+    (
+      await request(
+        "/voice/clinician-summary",
+        {
+          text: "Synthetic briefing text for clinician review.",
+          demoSynthetic: true,
+        },
+        { Authorization: "Bearer patient-test-only" },
+      )
+    ).status,
+    403,
   );
   assert.equal((await request("/patients")).data.length, 3);
   const initial = (await request("/patients/demo-01")).data;

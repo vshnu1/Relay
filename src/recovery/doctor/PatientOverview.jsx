@@ -6,6 +6,7 @@ import ModelCard from "./ModelCard.jsx";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";
 import CareTeamPanel from "./CareTeamPanel.jsx";
+import ClinicianVoiceSummary from "./ClinicianVoiceSummary.jsx";
 
 export const STATUS = {
   review: "Review recommended",
@@ -115,6 +116,8 @@ export default function PatientOverview({ id }) {
           <span>Devices sharing</span>
         </div>
       </div>
+
+      <ClinicianVoiceSummary patient={p} />
 
       <div className="rx-overview">
         <section className="rx-card rx-shows" aria-label="What the data shows">

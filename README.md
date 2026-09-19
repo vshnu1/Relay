@@ -76,7 +76,7 @@ For deployment, `render.yaml` provisions only the web service. Create the Workfl
 
 ## ElevenLabs
 
-Set `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on the API server. Keep the key out of frontend code. Enable authenticated conversations on the agent. The API returns a short-lived signed URL for a synthetic patient only, after consent. See `docs/voice-agent.md` for the agent instructions and client tool schema. Use the structured text fallback if voice is unavailable. No incoming webhooks are accepted; voice drafts must be confirmed in the form. A production webhook integration would require signature/replay verification.
+Set `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on the API server. Keep the key out of frontend code. The patient check-in uses an authenticated conversational agent after consent. The clinician overview can generate a one-way spoken status summary from synthetic readings and the latest Vesper result; it reuses the agent's voice or an optional `ELEVENLABS_VOICE_ID`. Clinician summaries are blocked in production unless `ELEVENLABS_DEMO_SUMMARY_ENABLED=true`. Only enable that while the app contains synthetic demo data. Do not send real patient information to ElevenLabs without the required vendor agreements and privacy review. See `docs/voice-agent.md` for the patient agent instructions and client tool schema. No incoming webhooks are accepted; patient voice drafts must be confirmed in the form. A production webhook integration would require signature/replay verification.
 
 Reference: https://elevenlabs.io/docs/eleven-agents/customization/authentication.
 

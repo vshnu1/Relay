@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { createStore } from "../src/recovery/model/store.js";
 import { createSimulatedSource } from "../src/recovery/model/simulatedSource.js";
 import { derive } from "../src/recovery/model/derive.js";
+import { buildCheckinPlan } from "../src/recovery/patient/checkinPlan.js";
+import { openingMessage } from "../src/recovery/patient/voice.js";
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 async function cohort() {
@@ -112,6 +114,62 @@ test("check-in questions follow the signals that moved for the discharge program
     aisha.questions,
     aisha.profile.questions,
     "without a persistent change, the program's normal context order is kept",
+  );
+  store.destroy();
+});
+
+test("focused voice check-in orders model-linked symptoms before a plan question", async () => {
+  const { store, views } = await cohort();
+  const maya = views().maya;
+  const analysis = {
+    application_state: "context_needed",
+    contributors: [
+      {
+        metric: "respiratory",
+        label: "Respiratory rate",
+        direction: "above_baseline",
+      },
+      {
+        metric: "rhr",
+        label: "Resting heart rate",
+        direction: "above_baseline",
+      },
+      { metric: "sleep", label: "Sleep duration", direction: "below_baseline" },
+    ],
+  };
+  const plan = buildCheckinPlan(maya, analysis);
+  assert.deepEqual(plan.questions, ["breathing", "fatigue", "medicine"]);
+  assert.equal(plan.priority, true);
+  assert.match(plan.contextPrompt, /activity, meals, or drinks/i);
+
+  const opening = openingMessage(
+    maya,
+    plan.questions,
+    true,
+    plan.mode,
+    plan.findingSummary,
+  );
+  assert.match(opening, /different from your usual/);
+  assert.match(opening, /First: Is your breathing harder/);
+  assert.match(opening, /you can answer no, a little, a lot/i);
+  assert.doesNotMatch(opening, /are you comfortable continuing/i);
+
+  const felix = views().felix;
+  const cardiacPlan = buildCheckinPlan(felix, {
+    application_state: "context_needed",
+    contributors: [
+      { metric: "steps", label: "Daily steps", direction: "below_baseline" },
+      {
+        metric: "rhr",
+        label: "Resting heart rate",
+        direction: "above_baseline",
+      },
+    ],
+  });
+  assert.deepEqual(
+    cardiacPlan.questions,
+    ["fatigue", "chest", "medicine"],
+    "question order follows the model's contributor priority, not just profile order",
   );
   store.destroy();
 });
