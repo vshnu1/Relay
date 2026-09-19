@@ -114,6 +114,41 @@ papers.*
 
 ## Numbers safe to quote
 
+### Three lines to say out loud, and where
+
+**On the security page.** "This is the HIPAA Security Rule's technical
+safeguards, cite by cite. Four built, one partial, five not met — and the five
+are on the screen. Unique user identification, emergency access, encryption at
+rest, stored-data authentication, person authentication. We would rather show
+you the gaps than have you find them."
+
+*Nothing else on this list is more likely to land. It is the artefact a
+security reviewer's whole argument says healthcare AI ships without.*
+
+**On the import beat.** "That is a 284 MB Apple Health export. It inflates and
+parses in the browser. Nothing is uploaded, and no third-party model sees it —
+the one path that leaves this origin is the voice check-in, it is restricted
+to synthetic patients, and it carries no name and no free text."
+
+*Shadow AI — staff reaching for tools without knowing where the data goes — is
+the named top risk in this field. Demonstrate it rather than assert it.*
+
+**On the model, or when asked about regulation.** "Our reading is that Relay is
+probably a regulated device. Clinical decision support is exempt under
+520(o)(1)(E) only if all four criteria hold, and we fail the first: it excludes
+analysing a pattern from a signal acquisition system, and that is exactly what
+we do. It is written up in the repository."
+
+*Scientists and licensing people trust teams that name their own failure
+modes. Conceding this costs nothing and buys the rest of the pitch.*
+
+### If asked about oncology
+
+Grace Adebayo and Victor Lindqvist are discharged from Moffitt, Malignant
+Hematology, on the post-chemotherapy program: temperature, resting heart rate,
+heart rate variability and breathing, with mouth-sore and fever questions —
+the neutropenic-fever watch. Open Grace, not a respiratory patient.
+
 | Claim | Source |
 |---|---|
 | 71 people, resting HR baselines span 31 bpm, individuals vary ~2.4 | `fixtures/calibration.json` |
