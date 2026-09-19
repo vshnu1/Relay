@@ -29,6 +29,7 @@ import {
   renameSync,
   writeFileSync,
 } from "node:fs";
+import { basename } from "node:path";
 
 const ALGORITHM = "aes-256-gcm";
 const MODE = 0o600;
@@ -100,6 +101,39 @@ function requireKeyFor(file) {
   throw new Error(
     `${file} is encrypted and RELAY_DATA_KEY is not set. Set the same key it was written with, or move the file aside to start fresh.`,
   );
+}
+
+// Files that could not be opened with the key this process holds. Empty is the
+// normal case and the security page says so; a non-empty list is displayed,
+// because starting with an empty account store and saying nothing would be the
+// worst of both.
+export const unreadable = [];
+
+// Boot reads go through this. A file encrypted under a key we no longer hold is
+// a problem to report, not a reason to refuse to start: throwing here killed the
+// process at module scope, and the deployment crash-looped behind a 502 every
+// time its generated key was rotated. The file is moved aside rather than
+// deleted or silently overwritten, so it is still there if the key comes back.
+export function readJsonOrSetAside(file, fallback) {
+  try {
+    return readJson(file, fallback);
+  } catch (error) {
+    const aside = `${file}.unreadable-${Date.now()}`;
+    try {
+      renameSync(file, aside);
+    } catch {
+      // If it cannot even be moved, the report below is still worth making.
+    }
+    unreadable.push({
+      file: basename(file),
+      movedTo: basename(aside),
+      reason: error.message,
+    });
+    console.error(
+      `[relay] ${basename(file)} could not be read with the current RELAY_DATA_KEY. Moved to ${basename(aside)} and starting empty.`,
+    );
+    return fallback;
+  }
 }
 
 export function readJson(file, fallback) {

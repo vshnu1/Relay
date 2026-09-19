@@ -150,3 +150,42 @@ test("a break after the unchained history is still caught", async () => {
   assert.equal(chain.ok, false);
   assert.equal(chain.brokenAt, 3);
 });
+
+// The deployment crash-looped behind a 502 because its generated key was
+// rotated, the account store could not be decrypted, and the read threw at
+// module scope. A file we cannot open is a thing to report, not a reason to
+// refuse to start.
+test("a file encrypted under a key we no longer hold does not stop the process", async () => {
+  const folder = dir();
+  const file = join(folder, "users.json");
+
+  const withKeyA = await load("1".repeat(64));
+  withKeyA.writeJson(file, [{ email: "elena@bayfront.test" }]);
+
+  const withKeyB = await load("2".repeat(64));
+  assert.throws(() => withKeyB.readJson(file, []), /unable to authenticate|bad decrypt/i);
+
+  const value = withKeyB.readJsonOrSetAside(file, []);
+  assert.deepEqual(value, [], "starts from the fallback");
+  assert.equal(withKeyB.unreadable.length, 1);
+  assert.equal(withKeyB.unreadable[0].file, "users.json");
+
+  // The original is kept, not deleted, in case the key comes back.
+  const { readdirSync } = await import("node:fs");
+  const kept = readdirSync(folder).filter((f) => f.includes("unreadable"));
+  assert.equal(kept.length, 1);
+});
+
+test("a readable file is returned normally and reported as no problem", async () => {
+  const v = await load("3".repeat(64));
+  const file = join(dir(), "users.json");
+  v.writeJson(file, [{ email: "a@b.co" }]);
+  assert.deepEqual(v.readJsonOrSetAside(file, []), [{ email: "a@b.co" }]);
+  assert.equal(v.unreadable.length, 0);
+});
+
+test("a file that is simply absent is not treated as unreadable", async () => {
+  const v = await load("4".repeat(64));
+  assert.deepEqual(v.readJsonOrSetAside(join(dir(), "nothing.json"), []), []);
+  assert.equal(v.unreadable.length, 0);
+});

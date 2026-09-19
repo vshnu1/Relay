@@ -414,6 +414,19 @@ export default function Assurance() {
         </ul>
       </section>
 
+      {live && live.unreadableFiles?.length > 0 && (
+        <section className="rx-card rx-breakglass" aria-label="Unreadable data">
+          <h2>Something on disk cannot be read with the current key</h2>
+          <p className="rx-safeguard-note">
+            {live.unreadableFiles.map((f) => f.file).join(", ")} was written
+            under a different encryption key, so this process started without
+            it. The file has been kept, not deleted. Anything it held —
+            accounts, sessions — will need to be created again, or the original
+            key restored.
+          </p>
+        </section>
+      )}
+
       {live && live.emergencyAccess.open.length > 0 && (
         <section
           className="rx-card rx-breakglass"

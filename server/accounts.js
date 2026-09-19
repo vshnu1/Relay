@@ -29,7 +29,7 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 import { resolve } from "node:path";
-import { readJson, writeJson } from "./vault.js";
+import { readJsonOrSetAside, writeJson } from "./vault.js";
 
 // Cost parameters. N=16384 is the Node default and takes roughly 100ms here,
 // which is the point: it is slow on purpose.
@@ -56,8 +56,8 @@ export function createAccountStore(dataDir) {
   const usersFile = resolve(dataDir, "users.json");
   const sessionsFile = resolve(dataDir, "sessions.json");
 
-  let users = readJson(usersFile, []);
-  let sessions = readJson(sessionsFile, []);
+  let users = readJsonOrSetAside(usersFile, []);
+  let sessions = readJsonOrSetAside(sessionsFile, []);
 
   const saveUsers = () => writeJson(usersFile, users);
   const saveSessions = () => {

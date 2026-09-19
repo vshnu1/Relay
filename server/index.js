@@ -7,7 +7,9 @@ import {
   encryptionMode,
   lastHash,
   readJson,
+  readJsonOrSetAside,
   readSealedLines,
+  unreadable,
   verifyChain,
   writeJson,
 } from "./vault.js";
@@ -64,7 +66,7 @@ function seeded() {
 // State goes through the vault, which encrypts it when RELAY_DATA_KEY is set
 // and writes it exactly as before when it is not. Either way the write is still
 // atomic: temp file, then rename.
-let patients = readJson(stateFile, null) || seeded();
+let patients = readJsonOrSetAside(stateFile, null) || seeded();
 function save() {
   writeJson(stateFile, patients);
 }
@@ -709,6 +711,10 @@ app.get("/api/safeguards", (req, res) => {
       demoPrincipals: accounts.demoCount(),
       openSessions: accounts.sessionCount(),
     },
+    // Empty in the normal case. A file here means this process is running on a
+    // key that cannot open what was written before it, which is worth saying out
+    // loud rather than discovering through an empty roster.
+    unreadableFiles: unreadable,
     emergencyAccess: {
       available: true,
       open: openGrants(),
