@@ -44,11 +44,7 @@ export default function ModelSummary({ patient: p, error }) {
         <div>
           <span className="rx-ph-kicker">Relay's model</span>
           <strong>
-            {busy && !a
-              ? "Comparing with your usual…"
-              : state
-                ? state.label
-                : "Not scored yet"}
+            {state ? state.label : "Not scored yet"}
             {score !== null && (
               <span className="rx-model-scorenum"> · {score} of 100</span>
             )}
