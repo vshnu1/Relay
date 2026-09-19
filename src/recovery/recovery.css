@@ -4950,6 +4950,11 @@ p.rx-row-summary {
     flex: 0 0 auto;
     padding: 0 12px 0 4px;
   }
+  /* The label sat inline with the tabs at this width and collided with the
+     first one. The tabs say where you are; the label does not earn the row. */
+  .rx-pweb .rx-side-heading {
+    display: none;
+  }
   .rx-pweb .rx-side-foot {
     display: none;
   }

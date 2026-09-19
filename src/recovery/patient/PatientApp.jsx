@@ -7,7 +7,6 @@ import {
   Home as HomeIcon,
   LineChart,
   Mic,
-  Smartphone,
   Users,
 } from "lucide-react";
 import { ago, list } from "../format.js";
@@ -25,7 +24,9 @@ import HomeHospital from "./HomeHospital.jsx";
 import GuidanceCard from "./GuidanceCard.jsx";
 import { homeGuidance } from "./guidance.js";
 
-// Five places to go. Everything else is reached from inside one of them.
+// Four places to go, so the bar fits one row on a phone. Everything else is
+// reached from inside one of them: "Your data" is still a route, linked from
+// the sharing card, from today's guidance and from the readings prompt.
 const NAV = [
   { id: "home", label: "Home", href: "#/patient", icon: HomeIcon },
   { id: "checkin", label: "Check-in", href: "#/patient/checkin", icon: Mic },
@@ -36,12 +37,6 @@ const NAV = [
     icon: LineChart,
   },
   { id: "care", label: "Care team", href: "#/patient/care", icon: Users },
-  {
-    id: "connect",
-    label: "Your data",
-    href: "#/patient/connect",
-    icon: Smartphone,
-  },
 ];
 
 function Home({ patient: p }) {
