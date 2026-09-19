@@ -530,7 +530,8 @@ export const PROFILES = {
   },
   sepsisWatch: {
     name: "Sepsis watch after surgery",
-    ml: null,
+    ml: "sepsis_watch",
+    adherence: "antibiotic_adherence",
     after: "surgery, with a sepsis watch",
     minMoved: 3,
     counted: [
@@ -544,7 +545,8 @@ export const PROFILES = {
   },
   respiratoryInfection: {
     name: "Respiratory infection",
-    ml: null,
+    ml: "respiratory_infection",
+    adherence: "antibiotic_adherence",
     after: "a respiratory infection",
     minMoved: 3,
     counted: [
@@ -559,7 +561,8 @@ export const PROFILES = {
   },
   asthma: {
     name: "Asthma flare-up",
-    ml: null,
+    ml: "asthma_recovery",
+    adherence: "inhaler_adherence",
     after: "an asthma flare-up",
     minMoved: 2,
     counted: [
@@ -573,7 +576,8 @@ export const PROFILES = {
   },
   pulmonaryEmbolism: {
     name: "Pulmonary embolism recovery",
-    ml: null,
+    ml: "pulmonary_embolism_recovery",
+    adherence: "anticoagulant_adherence",
     after: "a pulmonary embolism",
     minMoved: 2,
     counted: [
@@ -587,7 +591,8 @@ export const PROFILES = {
   },
   sleepApnoea: {
     name: "Sleep apnoea, after titration",
-    ml: null,
+    ml: "sleep_apnoea_titration",
+    adherence: "device_adherence",
     after: "a sleep apnoea titration",
     minMoved: 2,
     counted: [
@@ -601,7 +606,8 @@ export const PROFILES = {
   },
   postpartum: {
     name: "Postpartum recovery",
-    ml: null,
+    ml: "postpartum_recovery",
+    adherence: "medication_adherence",
     after: "giving birth",
     minMoved: 2,
     counted: [
