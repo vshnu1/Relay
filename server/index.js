@@ -11,6 +11,7 @@ import {
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyze, simulate, normalize, fhirBundle } from "../shared/engine.js";
+import { scoreWithVesper } from "./vesper.js";
 try {
   process.loadEnvFile();
 } catch {}
@@ -145,6 +146,27 @@ async function pipeline(events, patientContext, patient) {
       evidence: result.results[0],
       execution: { mode: "Render Workflows", id: result.id },
     };
+  }
+  if (process.env.VESPER_ML_ENABLED === "true") {
+    try {
+      const evidence = await scoreWithVesper({
+        events,
+        context: patientContext,
+        program:
+          patient.program ||
+          process.env.VESPER_PROGRAM ||
+          "post_abdominal_surgery",
+        patientId: patient.id,
+      });
+      return {
+        evidence,
+        execution: { mode: "Local Vesper ML", id: randomUUID() },
+      };
+    } catch (error) {
+      console.warn(
+        `Vesper ML unavailable; using deterministic engine: ${error.message}`,
+      );
+    }
   }
   return {
     evidence: analyze(events, patientContext),
