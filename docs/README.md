@@ -9,6 +9,7 @@
 | [HANDOFF-ACCOUNTS.md](HANDOFF-ACCOUNTS.md)                                                                                                     | accounts and sessions: what is built, what is left, and the decisions not to re-litigate  |
 | [HANDOFF-MESSAGING.md](HANDOFF-MESSAGING.md)                                                                                                   | named demo accounts, patient/clinician messages, Render persistence, and deployment setup |
 | [PITCH.md](PITCH.md)                                                                                                                           | the spoken pitch, and an answer for every question a judge will ask                       |
+| [VIDEO-SCRIPT.md](VIDEO-SCRIPT.md)                                                                                                             | the submission video beat by beat: what to click, what to say, and what not to claim      |
 | [DEMO-RUNBOOK.md](DEMO-RUNBOOK.md)                                                                                                             | the timed click path, and where every number said out loud comes from                     |
 | [COMPLIANCE.md](COMPLIANCE.md)                                                                                                                 | what would be required to run this for real, safeguard by safeguard                       |
 | [FDA.md](FDA.md)                                                                                                                               | whether this is a regulated device, and the criterion we concede                          |
@@ -24,5 +25,5 @@
 | [TEAM-NOTE.md](TEAM-NOTE.md)                                                                                                                   | the competing plans and how they reconciled                                               |
 | [LIFESNAPS-RUNBOOK.md](LIFESNAPS-RUNBOOK.md) · [IMPLEMENTATION-PROMPT.md](IMPLEMENTATION-PROMPT.md) · [project-handoff.md](project-handoff.md) | earlier working notes                                                                     |
 
-Before the demo, [DEMO-RUNBOOK.md](DEMO-RUNBOOK.md). Before answering a judge,
+Before recording, [VIDEO-SCRIPT.md](VIDEO-SCRIPT.md). Before the demo, [DEMO-RUNBOOK.md](DEMO-RUNBOOK.md). Before answering a judge,
 [PITCH.md](PITCH.md).
