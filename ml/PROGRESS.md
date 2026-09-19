@@ -11,8 +11,8 @@ Branch: `Pranav`. Owner: Pranav (ML and synthetic). Scope: `ml/**`, `docs/ML.md`
 - [x] train anomaly model — SimpleImputer(add_indicator) + RobustScaler + IsolationForest, chronological split, validation-calibrated threshold, persistence, synthetic-only prior artifact
 - [x] add synthetic scenarios — postoperative drift, missing sensor, gait decline; fixtures under `ml/fixtures/synthetic/`
 - [x] test ml pipeline — end-to-end CLI tests and scenario outcome tests
-- [ ] private local validation — read-only run on the export, aggregate report in `ml/reports/`
-- [ ] document ml handoff — `docs/ML.md`
+- [x] private local validation — read-only run on the export, aggregate report in `ml/reports/`
+- [x] document ml handoff — `docs/ML.md`
 
 ## Decisions and assumptions
 
@@ -52,3 +52,24 @@ Fixtures: `python -m vesper_ml fixtures` writes one request per scenario plus `e
 ## Tests (test ml pipeline)
 
 `PYTHONPATH=ml python3 -m unittest discover -s ml/tests -t ml` — 53 tests: contracts, engine parity, export reader (synthetic XML), windows/baselines/features, model calibration, end-to-end scoring for every scenario, CLI round trip, fixture reproduction, and the export validator on a synthetic XML with an aggregate-only report check.
+
+## Private export validation (read-only, aggregate only)
+
+Run: `HEALTH_EXPORT_XML=... python -m vesper_ml validate-export`. Report: `ml/reports/private_export_validation.json`. The export was accessed only through the environment variable; nothing person-level was written inside the repository.
+
+| Item | Value |
+| --- | --- |
+| Records scanned | 852,070 |
+| Streaming parse | 4.9 s |
+| Six-hour aggregate events emitted | 22,033 across 13 metrics |
+| Source categories chosen per metric | 6 wearable, 6 phone, 1 manual; alternate sources dropped for 6 metrics |
+| Whole validation (two programs, 61 daily back-test points each) | 70 s |
+| Per-request score time | 0.28 s (surgical program), 0.76 s (gait program, four years of windows) |
+
+Surgical program at the latest timestamp: `monitoring`, anomaly score 0.10, data quality sufficient, all five core metrics ready. The model trained on 333 usable history windows (train 200 / val 67 / test 66; 13 input features, 19 after missingness indicators); 5,099 phone-only windows were excluded because no core signal existed yet (this exclusion is the device-era guard added after the first run, when the chronological split had trained the forest on the phone-only years and dropped every vital column).
+
+Back-test over the last 61 days, one analysis per day: 48 `monitoring`, 13 `insufficient_data`, 0 `context_needed`. The 13 insufficient points are days where fewer than two core metrics were fresh with a sufficient baseline (wearable gaps). Steps was the only single signal that ever flagged (3 of 61 points) and never formed a coordinated pattern. Anomaly score quantiles across the 61 points: median 0.09, 95th 0.36, 99th 0.60.
+
+Gait program (four years of phone gait): `monitoring` at the latest point and at all 61 back-test points, data quality sufficient throughout, no contributors. Validation exceed rate 0.024, test 0.026.
+
+Reading: on a healthy subject the engine stays quiet and says `insufficient_data` when it cannot see, which is the behaviour the product promises. This is software validation on one person's data, not clinical validation, and the subject is not post-surgical, so it says nothing about sensitivity.
