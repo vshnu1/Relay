@@ -96,7 +96,7 @@ export default function Checkin({ patient: p }) {
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
           />
-          <span>Share these answers with my care team at [HOSPITAL NAME].</span>
+          <span>Share these answers with my care team at {p.hospital}.</span>
         </label>
         <button
           type="button"

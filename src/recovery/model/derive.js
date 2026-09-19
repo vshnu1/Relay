@@ -328,6 +328,8 @@ export function derive(p, now) {
     age: p.age,
     profile,
     profileId: p.profile,
+    hospital: p.hospital,
+    clinician: p.clinician,
     dayHome,
     windowDays: 30,
     stayDays: Math.round((p.dischargedAt - p.admittedAt) / DAY),
