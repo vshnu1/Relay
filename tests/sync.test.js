@@ -67,7 +67,14 @@ test("a check-in on the patient side reaches the clinician's store, and a messag
     s.getState().patients.maya.checkins.filter((c) => c.answeredAt).length;
   const n = answered(clinic);
 
-  patient.actions.submitCheckin("maya", { breathing: "A lot", fever: "No" });
+  const checkinDelivery = patient.actions.submitCheckin("maya", {
+    breathing: "A lot",
+    fever: "No",
+  });
+  const noteDelivery = patient.actions.sendNote(
+    "maya",
+    "Walked to the kitchen and felt short of breath.",
+  );
   patient.actions.recordReport("maya", {
     to: "ward@example.org",
     subject: "Recovery report",
@@ -77,10 +84,17 @@ test("a check-in on the patient side reaches the clinician's store, and a messag
   });
   patient.actions.addJournal("maya", "a symptom", "Dizzy after lunch.");
   await settle(patientSync, clinicSync);
+  assert.deepEqual(await checkinDelivery, { delivered: true });
+  assert.deepEqual(await noteDelivery, { delivered: true });
 
   assert.equal(answered(clinic), n + 1, "the clinician sees the new check-in");
   const after = derive(clinic.getState().patients.maya, Date.now());
   assert.equal(after.answered.answers.breathing, "A lot");
+  assert.equal(
+    after.answered.note,
+    "Walked to the kitchen and felt short of breath.",
+    "the clinician receives the patient's free-text activity context",
+  );
   assert.equal(after.reports.at(-1).body, "Breathing harder for two days.");
   assert.equal(after.journal.at(-1).text, "Dizzy after lunch.");
   assert.notEqual(before.answered?.answeredAt, after.answered.answeredAt);

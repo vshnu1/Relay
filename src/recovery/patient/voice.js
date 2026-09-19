@@ -94,11 +94,39 @@ export function recoveryStatus(
 function pickOption(value, options) {
   if (typeof value !== "string") return null;
   const v = value.trim().toLowerCase();
-  return (
+  const direct =
     options.find((o) => o.toLowerCase() === v) ||
     options.find((o) => v.includes(o.toLowerCase())) ||
-    null
-  );
+    null;
+  if (direct) return direct;
+  if (
+    options.includes("A lot") &&
+    /\b(much|a lot|very|severe|significantly|far more)\b/.test(v)
+  )
+    return "A lot";
+  if (
+    options.includes("A little") &&
+    /\b(a little|slightly|a bit|somewhat|mildly)\b/.test(v)
+  )
+    return "A little";
+  if (
+    options.includes("Not sure") &&
+    /\b(not sure|unsure|don't know|do not know|uncertain|maybe)\b/.test(v)
+  )
+    return "Not sure";
+  if (
+    options.includes("Yes") &&
+    /\b(yes|yeah|yep|i did|i have|i am|i was)\b/.test(v)
+  )
+    return "Yes";
+  if (
+    options.includes("No") &&
+    /\b(no|nope|not really|unchanged|the same|haven't|have not|didn't|did not)\b/.test(
+      v,
+    )
+  )
+    return "No";
+  return null;
 }
 
 export function openingMessage(
@@ -114,7 +142,7 @@ export function openingMessage(
     : mode === "insufficient"
       ? "There are not enough recent readings to compare yet, so I will ask about how you are doing."
       : `I am checking in about your recovery after ${patient.profile.after}.`;
-  return `Hi ${patient.first}, this is Relay. ${introduction} I have ${questions.length} brief questions, then one optional question for any other context. You can stop at any time. First: ${first.text} You can answer ${first.options.join(", ")}.`;
+  return `Hi ${patient.first}, this is Relay. ${introduction} I have ${questions.length} brief questions, then one optional question about anything else that may help your care team understand what you have been doing and how you feel. You can answer in your own words or stop at any time. First: ${first.text}`;
 }
 
 export async function startPatientVoiceSession({
@@ -166,7 +194,7 @@ export async function startPatientVoiceSession({
         )
         .join("; "),
       question_list: status.questions
-        .map((q) => `${q.id}: ${q.text} [${q.options.join(" / ")}]`)
+        .map((q) => `${q.id}: ${q.text}`)
         .join(" | "),
       checkin_mode: status.checkin_mode,
       priority_checkin: priority ? "yes" : "no",

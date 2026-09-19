@@ -3,11 +3,11 @@ import { checkinDue, notifications } from "../model/schedule.js";
 import { ago, list } from "../format.js";
 
 // The alert at the top of the home: one kicker, one line, one short sentence,
-// and two buttons, the full picture and the check-in with Relay's agent.
+// and one button to check in with Relay's agent.
 //   1. First alert: readings moved, no check-in for this change yet. Relay
 //      asks a few questions to find the likely cause.
-//   2. Worsening: the readings stayed away after that check-in. Relay runs an
-//      alert check-in; afterwards the result can go to the nurse.
+//   2. Worsening: the readings stayed away after that check-in. Relay offers
+//      another focused conversation so the patient can update their care team.
 //   3. Under review: answered and reported; talk to Relay if anything changed.
 // A routine check-in is a calm card; otherwise a quiet line. No icon.
 export default function HomeAlert({ patient: p }) {
@@ -22,9 +22,6 @@ export default function HomeAlert({ patient: p }) {
   );
   const reviewing =
     !unusual && !checkin && p.answered && (modelUnusual || p.pattern);
-  const lastReport = [...(p.reports || [])].sort(
-    (a, b) => b.sentAt - a.sentAt,
-  )[0];
   const priorPriority = p.checkins.some(
     (c) => c.answeredAt && c.kind === "priority",
   );
@@ -50,9 +47,6 @@ export default function HomeAlert({ patient: p }) {
 
   const actions = (label) => (
     <div className="rx-ph-banner-actions">
-      <a className="rx-ph-btn ghost small" href="#/patient/insight">
-        Full picture
-      </a>
       <a className="rx-ph-btn primary small" href="#/patient/checkin">
         {label}
         <ChevronRight size={14} aria-hidden="true" />
@@ -84,7 +78,7 @@ export default function HomeAlert({ patient: p }) {
               {what}{" "}
               {worsening
                 ? report
-                  ? "Your answers do not explain it. Talk to Relay, then send the result to your nurse if you wish."
+                  ? "Your check-in is with your care team. Talk to Relay again if anything has changed."
                   : "Relay will run a short alert check-in; afterwards you can send it to your nurse."
                 : "Often a simple cause: exercise, a meal, a poor night. Relay will ask you a few questions to find it."}
             </p>
@@ -113,14 +107,10 @@ export default function HomeAlert({ patient: p }) {
             <span className="rx-ph-kicker">
               Under review · checked in{" "}
               {ago(Date.now() - p.answered.answeredAt)}
-              {lastReport
-                ? ` · sent ${ago(Date.now() - lastReport.sentAt)}`
-                : ""}
             </span>
             <strong>Something unusual is still in your readings</strong>
             <p>
-              {what} Your care team has your answers
-              {lastReport ? " and your report" : ""}. Talk to Relay if anything
+              {what} Your care team has your check-in. Talk to Relay if anything
               has changed.
             </p>
           </div>

@@ -522,7 +522,6 @@ app.post("/api/voice/session", async (req, res) => {
 // One-way speech for a clinician briefing. The browser builds a bounded summary
 // from synthetic demo readings; no patient name, identifier, or free-text note
 // is sent to ElevenLabs. The agent's configured voice is reused by default.
-let cachedSummaryVoiceId = "";
 app.post("/api/voice/clinician-summary", async (req, res) => {
   if (req.role !== "clinician")
     return res.status(403).json({ error: "Clinician access is required." });
@@ -551,8 +550,9 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
       .json({ error: "ElevenLabs speech is not configured." });
 
   try {
-    let voiceId = process.env.ELEVENLABS_VOICE_ID || cachedSummaryVoiceId;
-    if (!voiceId) {
+    let voiceId = process.env.ELEVENLABS_VOICE_ID || "";
+    let voiceConfig = null;
+    if (!voiceId || process.env.ELEVENLABS_AGENT_ID) {
       const agentResponse = await fetch(
         `https://api.elevenlabs.io/v1/convai/agents/${encodeURIComponent(process.env.ELEVENLABS_AGENT_ID)}`,
         {
@@ -563,9 +563,9 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
       if (!agentResponse.ok)
         throw new Error("Could not read the configured voice.");
       const agent = await agentResponse.json();
-      voiceId = agent?.conversation_config?.tts?.voice_id;
+      voiceConfig = agent?.conversation_config?.tts || null;
+      voiceId ||= voiceConfig?.voice_id;
       if (!voiceId) throw new Error("The configured agent has no voice ID.");
-      cachedSummaryVoiceId = voiceId;
     }
 
     const speech = await fetch(
@@ -578,14 +578,10 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
         },
         body: JSON.stringify({
           text,
-          model_id: "eleven_multilingual_v2",
-          voice_settings: {
-            stability: 0.4,
-            similarity_boost: 0.78,
-            style: 0.2,
-            use_speaker_boost: true,
-            speed: 0.96,
-          },
+          model_id: voiceConfig?.model_id || "eleven_multilingual_v2",
+          ...(voiceConfig?.voice_settings
+            ? { voice_settings: voiceConfig.voice_settings }
+            : {}),
         }),
         signal: AbortSignal.timeout(30000),
       },

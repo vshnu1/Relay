@@ -65,7 +65,7 @@ function selectRelevantSymptoms(ranked, links, signals, limit) {
 
 function promptFor(patient, focusSignals, mode) {
   if (mode === "routine")
-    return "Is there anything else from today that would help your care team understand your recovery? You can say no.";
+    return "What have you been doing today, and has anything changed with your activity, meals, or drinks? You can also tell me if there is nothing to add.";
   if (mode === "insufficient")
     return "Is there anything else about how you have been feeling since discharge that you want your care team to know? You can say no.";
 

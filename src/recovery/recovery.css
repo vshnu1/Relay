@@ -5506,9 +5506,11 @@ p.rx-row-summary {
 }
 .rx-pweb .rx-p-bubble {
   max-width: 85%;
-  padding: 8px 12px;
+  padding: 14px 16px;
   border-radius: 8px;
   font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 .rx-pweb .rx-p-answers {
   display: flex;
@@ -5533,6 +5535,65 @@ p.rx-row-summary {
   }
   .rx-pweb .rx-p-top {
     align-items: flex-start;
+  }
+}
+
+/* Keep dense model and check-in content inside its card at narrow widths. */
+.rx-model {
+  min-width: 0;
+  max-width: 100%;
+  padding: clamp(16px, 2.2vw, 24px);
+}
+.rx-model-head,
+.rx-model-fallback,
+.rx-model-list,
+.rx-model-list li {
+  min-width: 0;
+  max-width: 100%;
+}
+.rx-model-head > div {
+  min-width: 0;
+}
+.rx-model-list li > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rx-model-list .rx-model-dir,
+.rx-model-list li > span:last-child {
+  min-width: 0;
+  max-width: 62%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.rx-pweb .rx-p-transcript {
+  min-width: 0;
+  width: 100%;
+  padding: 16px;
+}
+.rx-pweb .rx-p-bubble {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rx-p-delivery {
+  border-left: 3px solid var(--pine);
+}
+@media (max-width: 640px) {
+  .rx-model-head {
+    flex-wrap: wrap;
+  }
+  .rx-model-head .rx-model-run {
+    max-width: 100%;
+  }
+  .rx-model-list li {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .rx-model-list .rx-model-dir,
+  .rx-model-list li > span:last-child {
+    max-width: 100%;
+    text-align: left;
   }
 }
 .rx-pweb .rx-p-noteform input {

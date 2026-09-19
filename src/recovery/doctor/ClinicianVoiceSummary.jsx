@@ -27,7 +27,6 @@ export default function ClinicianVoiceSummary({ patient }) {
   useEffect(
     () => () => {
       audioRef.current?.pause();
-      if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
       if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
     },
     [],
@@ -35,7 +34,6 @@ export default function ClinicianVoiceSummary({ patient }) {
 
   const stop = () => {
     audioRef.current?.pause();
-    if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
     setPlaying(false);
   };
 
@@ -50,30 +48,25 @@ export default function ClinicianVoiceSummary({ patient }) {
       }
       return;
     }
-    if (summary && typeof speechSynthesis !== "undefined") {
-      const utterance = new SpeechSynthesisUtterance(summary);
-      utterance.onend = () => setPlaying(false);
-      utterance.onerror = () => setPlaying(false);
-      speechSynthesis.speak(utterance);
-      setPlaying(true);
-    }
+    if (summary)
+      setMessage(
+        "ElevenLabs voice is unavailable right now. The summary text is still available.",
+      );
   };
 
   const prepareAndPlay = async () => {
-    if (audioRef.current || summary) return playExisting();
+    if (audioRef.current) return playExisting();
     setBusy(true);
-    setMessage("Scoring current readings and preparing the briefing…");
-    let briefing = "";
+    setMessage("Preparing the summary…");
+    let briefing = summary;
     try {
-      // The voice summary uses a fresh model result when available. If scoring
-      // is disabled, it clearly falls back to the visible recovery-watch data.
-      const fresh = await run(patient.answered?.answers || null);
-      briefing = buildClinicianSummary(
-        patient,
-        fresh || patient.analysis,
-        !!fresh,
-      );
-      setSummary(briefing);
+      if (!briefing) {
+        // The voice summary uses a fresh model result when available. If scoring
+        // is unavailable, the visible recovery-watch data still supports a brief update.
+        const fresh = await run(patient.answered?.answers || null);
+        briefing = buildClinicianSummary(patient, fresh || patient.analysis);
+        setSummary(briefing);
+      }
       const response = await fetch("/api/voice/clinician-summary", {
         method: "POST",
         headers: authHeaders(),
@@ -93,13 +86,7 @@ export default function ClinicianVoiceSummary({ patient }) {
       };
       audioRef.current = audio;
       setAudioUrl(objectUrl);
-      setMessage(
-        fresh
-          ? "Fresh Relay score included."
-          : patient.analysis
-            ? "Using the most recent Relay score."
-            : "Using wearable readings and recovery-watch status.",
-      );
+      setMessage("Summary ready.");
       try {
         await audio.play();
         setPlaying(true);
@@ -107,21 +94,12 @@ export default function ClinicianVoiceSummary({ patient }) {
         setMessage("The summary is ready. Press Listen to play it.");
       }
     } catch (error) {
-      // Keep the feature usable when ElevenLabs is not configured, while making
-      // the fallback clear to the clinician.
       const text =
         briefing || buildClinicianSummary(patient, patient.analysis, false);
       setSummary(text);
-      if (typeof speechSynthesis !== "undefined") {
-        setMessage("Summary is playing with this device’s voice.");
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.onend = () => setPlaying(false);
-        utterance.onerror = () => setPlaying(false);
-        speechSynthesis.speak(utterance);
-        setPlaying(true);
-      } else {
-        setMessage("Voice playback is unavailable. Please try again.");
-      }
+      setMessage(
+        "ElevenLabs voice is unavailable right now. The summary text is still available.",
+      );
     } finally {
       setBusy(false);
     }
@@ -145,7 +123,7 @@ export default function ClinicianVoiceSummary({ patient }) {
         type="button"
         className="rx-btn primary rx-clinician-voice-button"
         disabled={busy || scoring}
-        onClick={audioUrl || summary ? playExisting : prepareAndPlay}
+        onClick={audioUrl ? playExisting : prepareAndPlay}
       >
         {busy || scoring ? (
           <>
@@ -156,9 +134,13 @@ export default function ClinicianVoiceSummary({ patient }) {
           <>
             <Pause size={16} aria-hidden="true" /> Stop summary
           </>
-        ) : audioUrl || summary ? (
+        ) : audioUrl ? (
           <>
             <Play size={16} aria-hidden="true" /> Listen again
+          </>
+        ) : summary ? (
+          <>
+            <Volume2 size={16} aria-hidden="true" /> Retry voice
           </>
         ) : (
           <>

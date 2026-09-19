@@ -8,15 +8,13 @@ import {
   PhoneCall,
   PhoneOff,
 } from "lucide-react";
-import { actions } from "../useRecovery.js";
+import { actions, useSyncStatus } from "../useRecovery.js";
 import { QUESTIONS, SIGNALS } from "../model/profiles.js";
 import {
   checkinDue,
   checkinTriggerKey,
   checkinWhy,
-  insight,
 } from "../model/schedule.js";
-import { SendReport } from "./Care.jsx";
 import { useAnalysis } from "./useAnalysis.js";
 import { startPatientVoiceSession, voiceAvailable } from "./voice.js";
 import { buildCheckinPlan } from "./checkinPlan.js";
@@ -92,7 +90,7 @@ export default function Checkin({ patient: p }) {
   const due = checkinDue(p);
   const why = checkinWhy(p);
   const { run: score } = useAnalysis(p);
-  const [phase, setPhase] = useState("idle"); // idle | live | done
+  const [phase, setPhase] = useState("idle"); // idle | live | review | sending | done
   const [engine, setEngine] = useState(null); // elevenlabs | browser
   const [log, setLog] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -110,11 +108,7 @@ export default function Checkin({ patient: p }) {
   const [scoreAttempted, setScoreAttempted] = useState(false);
   const [listening, setListening] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
-  const [sending, setSending] = useState(false);
-  // Once the answers are in, the readings and the answers are judged together.
-  // If they point the same way the report is offered here, one tap away; the
-  // patient still confirms. The care team already sees the answers themselves.
-  const verdict = phase === "done" ? insight(p) : null;
+  const syncStatus = useSyncStatus();
   const sessionRef = useRef(null);
   const recRef = useRef(null);
   const endRef = useRef(null);
@@ -331,8 +325,8 @@ export default function Checkin({ patient: p }) {
     if (phase !== "done") setPhase("idle");
   };
 
-  // Tapping an answer works in both engines: it is the fallback when the room is
-  // loud or the microphone is refused, and the demo never stalls on it.
+  // Answer taps stay hidden during an active conversation so the patient can
+  // respond naturally. They remain available if voice is interrupted.
   const tap = (option) => {
     const missing = questions.filter((q) => !answersRef.current[q]);
     if (!missing.length) return;
@@ -380,26 +374,39 @@ export default function Checkin({ patient: p }) {
         direction: item.direction === "above_baseline" ? "Higher" : "Lower",
         duration: "Recent",
       }));
-  const submitVoiceDraft = () => {
+  const submitVoiceDraft = async () => {
     if (!reviewDraft || !shareConsent) return;
     const complete = questions.every((q) => reviewDraft.answers[q]);
     if (!complete) return;
-    actions.submitCheckin(p.id, reviewDraft.answers, {
-      kind: checkinPlan.priority ? "priority" : "routine",
-      triggerKey: checkinPlan.priority
-        ? checkinTriggerKey({
-            ...p,
-            analysis: checkinPlan.analysis,
-          })
-        : null,
-    });
+    setPhase("sending");
+    const deliveries = [
+      actions.submitCheckin(p.id, reviewDraft.answers, {
+        kind: checkinPlan.priority ? "priority" : "routine",
+        triggerKey: checkinPlan.priority
+          ? checkinTriggerKey({
+              ...p,
+              analysis: checkinPlan.analysis,
+            })
+          : null,
+      }),
+    ];
     if (reviewDraft.note.trim())
-      actions.sendNote(p.id, reviewDraft.note.trim());
+      deliveries.push(actions.sendNote(p.id, reviewDraft.note.trim()));
     score(reviewDraft.answers);
-    setAnswers(reviewDraft.answers);
-    answersRef.current = reviewDraft.answers;
-    setReviewDraft(null);
-    setPhase("done");
+    const results = await Promise.all(deliveries);
+    if (results.every((result) => result?.delivered)) {
+      setAnswers(reviewDraft.answers);
+      answersRef.current = reviewDraft.answers;
+      setReviewDraft(null);
+      setPhase("done");
+    } else {
+      setPhase("review");
+      setVoice((v) => ({
+        ...v,
+        error:
+          "This check-in could not be delivered. Check your connection and try again.",
+      }));
+    }
   };
 
   return (
@@ -420,7 +427,7 @@ export default function Checkin({ patient: p }) {
           <p className="rx-p-lead">
             {checkinPlan.priority
               ? "A few readings have changed from your usual. We’ll talk through how you’re feeling and what was happening around then."
-              : "A brief check-in about how recovery is going today. Answer by voice or choose a response on screen."}
+              : "A brief check-in about how recovery is going, how you feel, and what you have been doing today."}
           </p>
         </div>
       </header>
@@ -537,7 +544,7 @@ export default function Checkin({ patient: p }) {
             )}
           </section>
 
-          {log.length > 0 && (
+          {log.length > 0 && (phase === "live" || phase === "interrupted") && (
             <div
               className="rx-p-chat rx-p-transcript"
               role="log"
@@ -552,7 +559,7 @@ export default function Checkin({ patient: p }) {
             </div>
           )}
 
-          {current && (
+          {current && phase === "interrupted" && (
             <div className="rx-p-quick" role="group" aria-label="Tap an answer">
               {listening && (
                 <span className="rx-p-pill live">
@@ -684,6 +691,25 @@ export default function Checkin({ patient: p }) {
             </section>
           )}
 
+          {phase === "sending" && (
+            <section
+              className="rx-p-card rx-p-delivery"
+              role="status"
+              aria-live="polite"
+            >
+              <strong>
+                {syncStatus === "offline"
+                  ? "Waiting for connection"
+                  : "Sending your check-in"}
+              </strong>
+              <p>
+                {syncStatus === "offline"
+                  ? "Your answers are saved here and will be sent when the care service reconnects."
+                  : "Your answers and any note are being delivered to your care team."}
+              </p>
+            </section>
+          )}
+
           {Object.keys(answers).length > 0 && (
             <div className="rx-p-answers" aria-label="Recorded answers">
               {questions
@@ -697,50 +723,20 @@ export default function Checkin({ patient: p }) {
           )}
 
           {phase === "done" && (
-            <section
-              className={`rx-p-card ${verdict?.send ? "alert" : ""}`}
-              aria-label="Sent"
-            >
+            <section className="rx-p-card" aria-label="Sent">
               <p className="rx-p-sent">
                 <span>
                   <CheckCircle2 size={18} aria-hidden="true" /> Sent to your
-                  care team, together with your readings
+                  care team. Your check-in is now available in your patient
+                  record.
                 </span>
               </p>
-              {verdict?.send && (
-                <>
-                  <strong>{verdict.title}</strong>
-                  <p>{verdict.body}</p>
-                </>
-              )}
               <div className="rx-p-stack">
-                {verdict?.send ? (
-                  <button
-                    type="button"
-                    className="rx-p-btn primary"
-                    onClick={() => setSending(true)}
-                  >
-                    Send the report to my care team
-                  </button>
-                ) : null}
-                <a
-                  className={verdict?.send ? "rx-p-btn" : "rx-p-btn primary"}
-                  href="#/patient/insight"
-                >
-                  What this means for me
-                </a>
                 <a className="rx-p-textbtn" href="#/patient">
                   Back to home
                 </a>
               </div>
             </section>
-          )}
-          {sending && (
-            <SendReport
-              patient={p}
-              reason={verdict?.body || "You chose to send a report."}
-              onDone={() => setSending(false)}
-            />
           )}
         </main>
         <aside className="rx-p-checkin-aside" aria-label="Check-in context">

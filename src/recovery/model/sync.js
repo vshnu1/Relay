@@ -67,10 +67,11 @@ export function createSync({
         const res = await fetchFn(path, {
           method: "POST",
           headers: authHeaders(),
-          body: JSON.stringify({ events: batch }),
+          body: JSON.stringify({ events: batch.map((item) => item.event) }),
         });
         if (!res.ok) throw new Error(`push ${res.status}`);
         queue = queue.slice(batch.length);
+        batch.forEach((item) => item.resolve({ delivered: true }));
         setStatus("live");
       }
     } catch {
@@ -113,8 +114,12 @@ export function createSync({
       return status;
     },
     push(event) {
-      queue.push(event);
+      if (!fetchFn) return Promise.resolve({ delivered: false });
+      const delivery = new Promise((resolve) => {
+        queue.push({ event, resolve });
+      });
       flush();
+      return delivery;
     },
     start(handlers) {
       onEvents = handlers.events;

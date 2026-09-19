@@ -151,7 +151,8 @@ test("focused voice check-in orders model-linked symptoms before a plan question
   );
   assert.match(opening, /different from your usual/);
   assert.match(opening, /First: Is your breathing harder/);
-  assert.match(opening, /you can answer no, a little, a lot/i);
+  assert.match(opening, /answer in your own words/i);
+  assert.doesNotMatch(opening, /no, a little, a lot/i);
   assert.doesNotMatch(opening, /are you comfortable continuing/i);
 
   const felix = views().felix;

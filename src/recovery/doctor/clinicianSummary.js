@@ -1,22 +1,29 @@
-import { QUESTIONS } from "../model/profiles.js";
+const WATCHED_SIGNAL_LIMIT = 4;
 
-const MODEL_STATUS = {
-  monitoring: "no unusual pattern identified",
-  context_needed: "unusual pattern; patient context is needed",
-  review_recommended: "unusual pattern; clinician review is recommended",
-  insufficient_data: "insufficient data for a model assessment",
+const STATUS_COPY = {
+  review: "Review recommended.",
+  context: "Patient follow-up is needed.",
+  nodata: "There are not enough recent readings for a reliable update.",
+  monitoring: "No concerning changes are flagged today.",
 };
 
-const readable = (value) =>
-  String(value || "")
-    .replaceAll("_", " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const joinNaturally = (items) =>
-  items.length < 2
-    ? items[0] || ""
-    : `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
+const SYMPTOMS = {
+  breathing: "breathing with usual activity",
+  cough: "cough or mucus",
+  fever: "fever or chills",
+  swelling: "ankle or leg swelling",
+  pain: "incision pain",
+  wound: "wound appearance",
+  nausea: "nausea or vomiting",
+  mucus: "mucus",
+  inhaler: "rescue inhaler use",
+  oxygen: "prescribed oxygen use",
+  fatigue: "fatigue",
+  dizziness: "dizziness",
+  hydration: "hydration",
+  racing: "racing or irregular heartbeat",
+  chest: "chest pain or pressure",
+};
 
 function spokenUnit(unit) {
   return (
@@ -29,140 +36,94 @@ function spokenUnit(unit) {
       kg: "kilograms",
       "m/s": "meters per second",
       hours: "hours",
+      points: "points",
       "/10": "out of ten",
     }[unit] || unit
   );
 }
 
-function describeSignal(signal) {
-  if (signal.today === null) return `${signal.plain} has no reading today`;
+function signalUpdate(signal) {
+  const label = signal.plain || signal.name || "Reading";
+  if (signal.today === null) return `${label} has no reading today`;
 
   const value = `${signal.fmt(signal.today)} ${spokenUnit(signal.unit)}`;
-  const change = String(signal.change || "").match(/^([+-])?([\d.]+)\s*(.*)$/);
-  if (!change) return `${signal.plain} is ${value}`;
+  const delta = String(signal.change || "").match(/^([+-])?([\d.]+)\s*(.*)$/);
+  if (!delta) return `${label} is ${value}`;
 
-  const [, sign, amount, unit] = change;
-  const spokenChangeUnit =
-    unit === "%"
-      ? "percent"
-      : unit === "points"
-        ? "percentage points"
-        : spokenUnit(unit);
+  const [, sign, amount, unit] = delta;
   const direction = sign === "-" ? "below" : "above";
+  const changeUnit = unit === "%" ? "percent" : spokenUnit(unit);
   const duration = signal.towardDays
-    ? ` and has stayed that way for ${signal.towardDays} ${signal.towardDays === 1 ? "day" : "days"}`
+    ? ` for ${signal.towardDays} ${signal.towardDays === 1 ? "day" : "days"}`
     : "";
-  return `${signal.plain} is ${value}, about ${amount} ${spokenChangeUnit} ${direction} usual${duration}`;
+  return `${label} is ${value}, ${amount} ${changeUnit} ${direction} usual${duration}`;
 }
 
-// Build a conversational briefing from the same readings shown to clinicians.
-// It deliberately excludes patient names, identifiers, and free-text notes.
-export function buildClinicianSummary(
-  patient,
-  analysis = patient.analysis,
-  fresh = false,
-) {
-  const moved = (patient.moved || []).slice(0, 4);
-  const after = patient.profile?.after || "discharge";
-  const countedCount = patient.counted?.length || moved.length;
-  const parts = [
-    `Recovery update: day ${patient.dayHome} of ${patient.windowDays} at home after ${after}.`,
-  ];
+function patientConcerns(patient) {
+  return Object.entries(patient.answered?.answers || {})
+    .filter(([, answer]) => answer && answer !== "No")
+    .map(([key, answer]) => {
+      const topic = SYMPTOMS[key];
+      if (!topic || key === "medicine" || key === "activity") return null;
+      if (answer === "Not sure") return `unsure about ${topic}`;
+      if (answer === "Yes") return `reports ${topic}`;
+      const intensity = answer === "A lot" ? "much worse" : "a little worse";
+      return `${topic} is ${intensity}`;
+    })
+    .filter(Boolean)
+    .slice(0, 2);
+}
 
-  const status =
-    patient.status === "review"
-      ? "Priority: clinician review is recommended."
-      : patient.status === "context"
-        ? "A patient check-in is requested to add context."
-        : patient.status === "nodata"
-          ? "There are not enough recent readings for a reliable comparison."
-          : "No clinician review is requested right now.";
-  parts.push(status);
+function joinConcerns(items) {
+  if (items.length < 2) return items[0] || "";
+  return `${items[0]} and ${items[1]}`;
+}
+
+// A short, name-free update focused on current concerns and patient-reported
+// symptoms. The audio transcript does not narrate implementation details.
+export function buildClinicianSummary(patient, analysis = patient.analysis) {
+  const moved = (patient.moved || []).slice(0, WATCHED_SIGNAL_LIMIT);
+  const concerns = patientConcerns(patient);
+  const modelState = analysis?.application_state;
+  const modelFlagsReview = modelState === "review_recommended";
+  const modelRequestsContext = modelState === "context_needed";
+  const review = patient.status === "review" || modelFlagsReview;
+  const needsContext = patient.status === "context" || modelRequestsContext;
+
+  if (patient.status === "nodata" && !concerns.length && !modelFlagsReview)
+    return STATUS_COPY.nodata;
+
+  const parts = [];
+  if (review) parts.push("Review recommended.");
+  else if (needsContext || concerns.length)
+    parts.push("Patient follow-up is needed.");
+  else parts.push(STATUS_COPY.monitoring);
 
   if (moved.length) {
-    const count = `${moved.length} of ${countedCount} watched ${countedCount === 1 ? "signal" : "signals"}`;
-    const persistence = patient.pattern
-      ? `, and the pattern has lasted ${patient.hours} hours`
-      : "";
+    const count = patient.counted?.length || moved.length;
+    const duration =
+      patient.pattern && patient.hours ? ` for ${patient.hours} hours` : "";
     parts.push(
-      `The recovery watch found that ${count} ${moved.length === 1 ? "has" : "have"} moved away from this patient's usual${persistence}. ${joinNaturally(moved.map(describeSignal))}.`,
+      `${moved.length} of ${count} watched readings remain outside the patient's usual range${duration}: ${moved.map(signalUpdate).join("; ")}.`,
     );
-  } else if (patient.status !== "nodata") {
-    parts.push(
-      "No watched reading is currently past its persistent threshold compared with this patient's usual.",
-    );
-  }
-
-  if (analysis) {
-    const modelState =
-      MODEL_STATUS[analysis.application_state] ||
-      readable(analysis.application_state) ||
-      "state unavailable";
-    parts.push(
-      `${fresh ? "The latest Relay model assessment" : "The most recent Relay model assessment"} is ${modelState}.`,
-    );
-    if (typeof analysis.anomaly_score === "number")
-      parts.push(
-        `Its anomaly score is ${analysis.anomaly_score.toFixed(2)} on a scale from zero to one.`,
-      );
+  } else if (modelFlagsReview || modelRequestsContext) {
     const contributors = (analysis.contributors || [])
-      .slice(0, 3)
-      .map((item) => {
-        const direction =
-          item.direction === "above_baseline" ? "higher" : "lower";
-        return `${item.label || item.metric} ${direction} than this patient's usual`;
-      });
-    if (contributors.length)
-      parts.push(
-        `The strongest model signals were ${joinNaturally(contributors)}.`,
-      );
-  } else {
+      .slice(0, 2)
+      .map((item) => item.label || item.metric)
+      .filter(Boolean);
     parts.push(
-      "A trained-model score is not included in this briefing, so these findings come from the wearable readings and recovery-watch thresholds.",
+      contributors.length
+        ? `Relay flagged a change in ${joinConcerns(contributors)}.`
+        : "Relay flagged a change that needs clinician review.",
+    );
+  } else if (!concerns.length && patient.profile?.after) {
+    parts.push(
+      `Recovery after ${patient.profile.after} is on day ${patient.dayHome} of ${patient.windowDays}.`,
     );
   }
 
-  if (patient.answered?.answers) {
-    const responses = Object.entries(patient.answered.answers)
-      .filter(([, answer]) => answer)
-      .slice(0, 4)
-      .map(([question, answer]) => {
-        const topic =
-          {
-            breathing: "breathing with usual activity",
-            cough: "cough or mucus",
-            fever: "fever or chills",
-            swelling: "ankle or leg swelling",
-            pain: "incision pain",
-            wound: "wound appearance",
-            nausea: "nausea or vomiting",
-            mucus: "mucus",
-            inhaler: "rescue inhaler use",
-            oxygen: "prescribed oxygen use",
-            fatigue: "fatigue",
-            dizziness: "dizziness",
-            hydration: "hydration",
-            medicine: "medication",
-            activity: "activity",
-          }[question] ||
-          QUESTIONS[question]?.short?.toLowerCase() ||
-          readable(question);
-        return answer === "No"
-          ? `no change in ${topic}`
-          : answer === "Yes"
-            ? `${topic} was reported`
-            : answer === "Not sure"
-              ? `uncertainty about ${topic}`
-              : `${answer.toLowerCase()} worsening in ${topic}`;
-      });
-    if (responses.length)
-      parts.push(
-        `In the latest check-in, the patient reported ${joinNaturally(responses)}.`,
-      );
-  }
+  if (concerns.length)
+    parts.push(`The patient reports ${joinConcerns(concerns)}.`);
 
-  parts.push(
-    "This summary describes recorded information for clinician review. It is not a diagnosis or treatment recommendation.",
-  );
   return parts.join(" ");
 }
