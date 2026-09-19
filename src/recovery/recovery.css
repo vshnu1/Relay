@@ -6455,3 +6455,66 @@ p.rx-row-summary {
   color: #5d5540;
   font-size: 13.5px;
 }
+
+/* Intended use. Collapsed to one line by default: a clinician should not have
+   to dismiss a disclaimer to reach the ward, but the line itself has to be
+   there, and the detail has to be one click away rather than in a document. */
+.rx-intended {
+  border-bottom: 1px solid var(--line);
+  background: #fbfcfa;
+}
+.rx-intended-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 24px;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  cursor: pointer;
+}
+.rx-intended-head strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.rx-intended-head > span {
+  flex: 1;
+}
+.rx-intended-head svg:last-child {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+.rx-intended-body {
+  padding: 4px 24px 18px 49px;
+}
+.rx-intended-body dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px 32px;
+  margin: 0;
+  max-width: 1100px;
+}
+.rx-intended-body dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 3px;
+}
+.rx-intended-body dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rx-intended-head svg:last-child {
+    transition: none;
+  }
+}

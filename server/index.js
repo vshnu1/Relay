@@ -244,6 +244,8 @@ app.get("/api/patients", (req, res) => {
     return res
       .status(403)
       .json({ error: "The patient view cannot list other patients." });
+  // A read of the whole ward is an access to every record in it.
+  audit("roster.view", null, `${patients.length} records`);
   res.json(
     patients.map(({ events, ...p }) => ({
       ...p,
@@ -738,12 +740,17 @@ app.get("/api/recovery/events", (req, res) => {
     typeof req.query.patientId === "string" ? req.query.patientId : null;
   if (req.role === "patient" && !patientId)
     return res.status(400).json({ error: "patientId is required." });
-  res.json({
-    events: recoveryEvents.filter(
-      (e) => e.seq > after && (!patientId || e.patientId === patientId),
-    ),
-    seq: lastSeq(),
-  });
+  const events = recoveryEvents.filter(
+    (e) => e.seq > after && (!patientId || e.patientId === patientId),
+  );
+  // Audit controls, 45 CFR 164.312(b). This route returns a patient's
+  // check-ins, notes and model results, so reaching it is an access to the
+  // record and belongs in the log. Only the first page of a scope is recorded:
+  // the client polls every three seconds and a line per poll would bury the
+  // accesses that matter under a hundred an hour.
+  if (after === 0 && events.length)
+    audit("recovery.read", patientId, `${events.length} events`);
+  res.json({ events, seq: lastSeq() });
 });
 app.post("/api/recovery/events", (req, res) => {
   const list = Array.isArray(req.body?.events) ? req.body.events : [];

@@ -1,5 +1,6 @@
 import { Activity, House, ListChecks, SlidersHorizontal } from "lucide-react";
 import DoctorHome from "./DoctorHome.jsx";
+import IntendedUse from "./IntendedUse.jsx";
 import Watchlist from "./Watchlist.jsx";
 import PatientOverview from "./PatientOverview.jsx";
 import Profiles from "./Profiles.jsx";
@@ -56,6 +57,7 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
         </a>
       </nav>
       <main className="rx-main">
+        <IntendedUse />
         {page === "patient" ? (
           <PatientOverview key={route[2]} id={route[2]} />
         ) : page === "profiles" ? (
