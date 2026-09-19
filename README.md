@@ -110,7 +110,7 @@ Every claim in the pitch has a test or a measurement behind it.
 | What | How it is checked |
 |---|---|
 | The rules and views | `npm test` , JS unit suite, plus `node tests/api.integration.js` against a live server |
-| The Python model | `PYTHONPATH=ml pytest ml/tests` , 60 tests across contracts, features, scoring, scenarios |
+| The Python model | `PYTHONPATH=ml python -m unittest discover -s ml/tests` , 60 tests across contracts, features, scoring, scenarios |
 | The clinical boundary | `analysis/language_guard.py` and its Node port `server/languageGuard.js`, checked for pattern-for-pattern parity; every model sentence passes it before leaving the server |
 | The false-alarm rate | 3.35% of subject-days at the shipped 1.75 sd, over the 66 of 71 LifeSnaps subjects with usable baselines (4,420 of 4,453 subject-days). Reproduce with `python3 analysis/calibrate.py fixtures/lifesnaps_daily.csv --sweep`; the grid is `fixtures/calibration.json` |
 | How fast it speaks when it should | a coordinated deviation of known size injected onto 41 real subjects' own series. Over the same window the rule fires for 70.7% of them untouched, median five days; at 2.0 personal sd it fires for 97.6%, median **one** day. The gain is in the lag, not the rate (`analysis/sensitivity.py`, `fixtures/sensitivity.json`) |
