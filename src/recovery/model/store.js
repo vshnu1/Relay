@@ -135,6 +135,31 @@ export function createStore(source) {
           m.t === e.t ? { ...m, readAt: e.at ?? Date.now() } : m,
         ),
       })),
+    // Entered by the care team during the demo, so nothing on the patient's
+    // screen is pre-written: discharge notes and medicines, messages either way,
+    // and appointments.
+    discharge: (e) =>
+      patch(e.patientId, (p) => ({
+        ...p,
+        notes: e.notes ?? p.notes,
+        medications: e.medications ?? p.medications,
+      })),
+    message: (e) =>
+      patch(e.patientId, (p) => ({
+        ...p,
+        messages: [
+          ...(p.messages || []),
+          { t: e.t, from: e.from, by: e.by, text: e.text, readAt: null },
+        ].sort((a, b) => a.t - b.t),
+      })),
+    appointment: (e) =>
+      patch(e.patientId, (p) => ({
+        ...p,
+        appointments: [
+          ...(p.appointments || []),
+          { t: e.t, with: e.with, where: e.where },
+        ].sort((a, b) => a.t - b.t),
+      })),
   };
   const replayable = apply;
   const logged = (type, event) => {
@@ -246,6 +271,30 @@ export function createStore(source) {
     },
     markRead(id, t) {
       logged("read", { patientId: id, t, at: Date.now() });
+    },
+    setDischarge(id, { notes, medications }) {
+      logged("discharge", {
+        patientId: id,
+        notes,
+        medications,
+        at: Date.now(),
+      });
+      send({ type: "discharge", patientId: id, notes, medications });
+    },
+    // `by` is "clinician" or "patient"; `from` is the display name.
+    sendMessage(id, { by, from, text }, t = Date.now()) {
+      logged("message", { patientId: id, by, from, text, t });
+      send({ type: "message", patientId: id, by, from, text, t });
+    },
+    bookAppointment(id, { t, with: who, where }) {
+      logged("appointment", {
+        patientId: id,
+        t,
+        with: who,
+        where,
+        at: Date.now(),
+      });
+      send({ type: "appointment", patientId: id, t, with: who, where });
     },
     submitCheckin(id, answers) {
       logged("checkin", { patientId: id, answers, at: Date.now() });

@@ -4,6 +4,7 @@ import { QUESTIONS } from "../model/profiles.js";
 import { ago, clock, dateLong, list } from "../format.js";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";
+import CareTeamPanel from "./CareTeamPanel.jsx";
 
 export const STATUS = {
   review: "Review recommended",
@@ -23,14 +24,14 @@ export default function PatientOverview({ id }) {
     );
   const twoAgo = p.dayHome - 2;
   const asked = p.answered
-    ? (p.questions || p.profile.questions).filter(
-        (q) => p.answered.answers[q],
-      )
+    ? (p.questions || p.profile.questions).filter((q) => p.answered.answers[q])
     : [];
   // Read the watched/recorded split straight off the profile, never hardcoded.
   const countedNames = p.counted.map((s) => s.short);
   const recordedNames = p.signals.filter((s) => !s.counted).map((s) => s.short);
-  const activeDevices = Object.values(p.devices).filter((d) => d.sharing).length;
+  const activeDevices = Object.values(p.devices).filter(
+    (d) => d.sharing,
+  ).length;
   const totalDevices = Object.values(p.devices).length;
   const strongest = p.moved[0];
   return (
@@ -236,6 +237,7 @@ export default function PatientOverview({ id }) {
               </p>
             )}
           </section>
+          <CareTeamPanel patient={p} />
           <div className="rx-actions">
             <button
               type="button"

@@ -145,7 +145,7 @@ export function notifications(p, now = Date.now()) {
         cta: "Details",
       });
   for (const m of p.messages || [])
-    if (!m.readAt && now - m.t < 7 * DAY)
+    if (m.by !== "patient" && !m.readAt && now - m.t < 7 * DAY)
       out.push({
         id: `msg-${m.t}`,
         kind: "info",

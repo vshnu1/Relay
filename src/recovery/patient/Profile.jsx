@@ -42,18 +42,33 @@ export default function Profile({ patient: p, onSignOut }) {
       </div>
       <section className="rx-p-card" aria-label="Notes from your doctor">
         <h2>Notes from your doctor</h2>
-        <p className="rx-serif rx-p-notes">{p.notes}</p>
+        {p.notes ? (
+          <p className="rx-serif rx-p-notes">{p.notes}</p>
+        ) : (
+          <p className="rx-p-fine">
+            Your care team has not written discharge notes yet. They appear here
+            when they do.
+          </p>
+        )}
       </section>
       <section className="rx-p-card" aria-label="Your medicines">
         <h2>Your medicines</h2>
-        <ul className="rx-p-bullets">
-          {p.medications.map((m) => (
-            <li key={m}>{m}</li>
-          ))}
-        </ul>
-        <p className="rx-p-fine">
-          As written at discharge. Ask your care team before changing anything.
-        </p>
+        {p.medications.length ? (
+          <>
+            <ul className="rx-p-bullets">
+              {p.medications.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+            <p className="rx-p-fine">
+              As written by your care team. Ask them before changing anything.
+            </p>
+          </>
+        ) : (
+          <p className="rx-p-fine">
+            No medicines listed yet. Your care team adds them to your profile.
+          </p>
+        )}
       </section>
       <section className="rx-p-card" aria-label="What is watched">
         <h2>What your care team watches</h2>

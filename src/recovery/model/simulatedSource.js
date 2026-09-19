@@ -34,27 +34,6 @@ const COHORT = [
     id: "maya",
     code: "BAY-2741",
     careEmail: "respiratory.team@bayfront.example",
-    notes:
-      "Community-acquired pneumonia, right lower lobe. Improving on oral antibiotics at discharge. Finish the full course. Expect the cough to take two to three weeks to settle. Call the unit for worsening breathlessness, fever above 38.5, or new chest pain.",
-    medications: [
-      "Amoxicillin 1 g, three times a day, until day 7",
-      "Paracetamol 1 g as needed, up to four times a day",
-      "Usual inhaler, as before",
-    ],
-    appointments: [
-      {
-        inDays: 5,
-        with: "Dr. Elena Ruiz",
-        where: "Respiratory clinic, Bayfront Health",
-      },
-    ],
-    messages: [
-      {
-        hoursAgo: 20,
-        from: "Nurse Amara (Respiratory)",
-        text: "Thanks for answering yesterday. Keep taking the antibiotics with food. Dr. Ruiz will look at your readings this morning.",
-      },
-    ],
     name: "Maya Okafor",
     age: 67,
     profile: "pneumonia",
@@ -90,28 +69,6 @@ const COHORT = [
     id: "daniel",
     code: "TGH-5580",
     careEmail: "heart.failure.nurses@tampageneral.example",
-    notes:
-      "Admitted with fluid overload from heart failure. Diuretic dose increased. Weigh yourself every morning; a gain of 1.5 kg in two days or 2 kg in a week should be reported. Keep salt low and fluids to about 1.5 litres a day.",
-    medications: [
-      "Furosemide 40 mg each morning",
-      "Bisoprolol 5 mg each morning",
-      "Ramipril 5 mg each evening",
-      "Spironolactone 25 mg each morning",
-    ],
-    appointments: [
-      {
-        inDays: 2,
-        with: "Heart failure nurse clinic",
-        where: "Cardiology outpatients, Tampa General",
-      },
-    ],
-    messages: [
-      {
-        hoursAgo: 6,
-        from: "Nurse Priya (Cardiology)",
-        text: "Your resting heart rate has been up for two days. Please check your weight tonight and answer the questions when you can.",
-      },
-    ],
     name: "Daniel Reyes",
     age: 58,
     profile: "heartFailure",
@@ -144,21 +101,6 @@ const COHORT = [
     id: "priya",
     code: "MMC-1193",
     careEmail: "surgical.followup@mercymedical.example",
-    notes:
-      "Laparoscopic bowel resection, uncomplicated. Wound dressings can come off on day 5. Walk a little more each day. Report fever, increasing pain, redness or leaking at the wound, or vomiting.",
-    medications: [
-      "Paracetamol 1 g, four times a day",
-      "Ibuprofen 400 mg with food, up to three times a day",
-      "Enoxaparin injection once daily until day 10",
-    ],
-    appointments: [
-      {
-        inDays: 8,
-        with: "Dr. Sofia Marin",
-        where: "Surgical clinic, Mercy Medical",
-      },
-    ],
-    messages: [],
     name: "Priya Nair",
     age: 44,
     profile: "abdominalSurgery",
@@ -178,28 +120,6 @@ const COHORT = [
     id: "tom",
     code: "LKR-8027",
     careEmail: "pulmonary.team@lakeside.example",
-    notes:
-      "COPD flare-up treated with steroids and antibiotics. Use the rescue inhaler as needed and note how often. Continue home oxygen 2 L/min for 16 hours a day. Call if breathless at rest or oxygen readings stay low.",
-    medications: [
-      "Prednisolone 30 mg each morning for 5 days",
-      "Doxycycline 100 mg daily for 5 days",
-      "Tiotropium inhaler once daily",
-      "Salbutamol inhaler as needed",
-    ],
-    appointments: [
-      {
-        inDays: 4,
-        with: "Pulmonary rehab assessment",
-        where: "Lakeside Regional, Level 2",
-      },
-    ],
-    messages: [
-      {
-        hoursAgo: 30,
-        from: "Nurse Tom (Pulmonary)",
-        text: "Well done keeping the oxygen on overnight. Answer the questions today if you can.",
-      },
-    ],
     name: "Tom Lindqvist",
     age: 71,
     profile: "copd",
@@ -219,20 +139,6 @@ const COHORT = [
     id: "aisha",
     code: "SVH-3364",
     careEmail: "arrhythmia.nurses@stvincents.example",
-    notes:
-      "Atrial fibrillation, rate now controlled. Take the blood thinner every day without fail. Avoid heavy exertion for two weeks. Report palpitations lasting more than an hour, chest pain, or fainting.",
-    medications: [
-      "Apixaban 5 mg twice a day",
-      "Bisoprolol 2.5 mg each morning",
-    ],
-    appointments: [
-      {
-        inDays: 12,
-        with: "Dr. Nadia Foster",
-        where: "Arrhythmia clinic, St. Vincent's",
-      },
-    ],
-    messages: [],
     name: "Aisha Rahman",
     age: 52,
     profile: "afib",
@@ -248,20 +154,6 @@ const COHORT = [
     id: "samuel",
     code: "MMC-6608",
     careEmail: "surgical.followup@mercymedical.example",
-    notes:
-      "Open appendicectomy after a perforated appendix. Antibiotics for 7 days. Keep the wound clean and dry. Report fever, pain that is getting worse, or a wound that opens.",
-    medications: [
-      "Co-amoxiclav 625 mg, three times a day, until day 7",
-      "Paracetamol 1 g, four times a day",
-    ],
-    appointments: [
-      {
-        inDays: 3,
-        with: "Wound check with the surgical nurse",
-        where: "Mercy Medical, Day Unit",
-      },
-    ],
-    messages: [],
     name: "Samuel Osei",
     age: 63,
     profile: "abdominalSurgery",
@@ -277,21 +169,6 @@ const COHORT = [
     id: "george",
     code: "TGH-9915",
     careEmail: "heart.failure.nurses@tampageneral.example",
-    notes:
-      "Heart failure, stable at discharge. Daily morning weight. Report swelling, breathlessness lying flat, or a weight gain of 2 kg in a week.",
-    medications: [
-      "Furosemide 40 mg each morning",
-      "Carvedilol 6.25 mg twice a day",
-      "Sacubitril/valsartan 49/51 mg twice a day",
-    ],
-    appointments: [],
-    messages: [
-      {
-        hoursAgo: 50,
-        from: "Nurse Priya (Cardiology)",
-        text: "Everything looks steady this week. Keep weighing each morning.",
-      },
-    ],
     name: "George Whitfield",
     age: 80,
     profile: "heartFailure",
@@ -306,20 +183,6 @@ const COHORT = [
     id: "lena",
     code: "BAY-4470",
     careEmail: "respiratory.team@bayfront.example",
-    notes:
-      "Pneumonia, left lower lobe. Finish the antibiotics. Rest, fluids, and gentle walking. Call for fever, worsening breathlessness, or if you cannot keep fluids down.",
-    medications: [
-      "Doxycycline 100 mg twice a day for 7 days",
-      "Paracetamol 1 g as needed",
-    ],
-    appointments: [
-      {
-        inDays: 6,
-        with: "Dr. Elena Ruiz",
-        where: "Respiratory clinic, Bayfront Health",
-      },
-    ],
-    messages: [],
     name: "Lena Fischer",
     age: 35,
     profile: "pneumonia",
@@ -582,20 +445,11 @@ function build(def, now, index) {
     readings,
     code: def.code,
     careEmail: def.careEmail,
-    notes: def.notes,
-    medications: def.medications || [],
-    appointments: (def.appointments || []).map((a) => ({
-      // 10:00 local time, `inDays` days from now
-      t: new Date(now + a.inDays * DAY).setHours(10, 0, 0, 0),
-      with: a.with,
-      where: a.where,
-    })),
-    messages: (def.messages || []).map((m) => ({
-      t: now - m.hoursAgo * HOUR,
-      from: m.from,
-      text: m.text,
-      readAt: null,
-    })),
+    // Entered by the care team in the clinician view, never pre-written.
+    notes: "",
+    medications: [],
+    appointments: [],
+    messages: [],
     journal: [],
     reports: [],
     devices: {

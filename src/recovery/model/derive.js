@@ -157,7 +157,9 @@ export function derive(p, now) {
     ? `Relay noticed a change in ${moved
         .slice(0, 3)
         .map((signal) => signal.plain.toLowerCase())
-        .join(", ")}. Your answers add context for your care team; they do not explain or diagnose the change.`
+        .join(
+          ", ",
+        )}. Your answers add context for your care team; they do not explain or diagnose the change.`
     : "Your care team asks about your recovery and any changes in your readings.";
 
   const pattern = moved.length >= profile.minMoved;

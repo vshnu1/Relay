@@ -96,17 +96,47 @@ test("due, insight and notifications follow the readings and the answers", async
   const i = insight(maya);
   assert.equal(i.level, "send");
   assert.match(i.body, /harder breathing/);
-  const ids = notifications(maya).map((n) => n.id);
-  assert.ok(ids.includes("report"));
-  assert.ok(
-    ids.some((x) => x.startsWith("msg-")),
-    "unread nurse message is surfaced",
+  assert.equal(
+    maya.messages.length,
+    0,
+    "nothing is pre-written for the patient",
   );
+  store.actions.sendMessage("maya", {
+    by: "clinician",
+    from: "Nurse Amara",
+    text: "Keep taking the antibiotics.",
+  });
+  store.actions.sendMessage("maya", {
+    by: "patient",
+    from: "Maya Okafor",
+    text: "Will do.",
+  });
+  store.actions.bookAppointment("maya", {
+    t: Date.now() + 86400000,
+    with: "Dr. Ruiz",
+    where: "Clinic",
+  });
+  store.actions.setDischarge("maya", {
+    notes: "Finish the course.",
+    medications: ["Amoxicillin"],
+  });
+  await flush();
+  const after = view("maya");
+  const ids = notifications(after).map((n) => n.id);
+  assert.ok(ids.includes("report"));
+  assert.equal(
+    ids.filter((x) => x.startsWith("msg-")).length,
+    1,
+    "only the clinician's message notifies",
+  );
+  assert.ok(ids.some((x) => x.startsWith("appt-")));
+  assert.equal(after.notes, "Finish the course.");
+  assert.deepEqual(after.medications, ["Amoxicillin"]);
   const priya = view("priya");
   assert.deepEqual(checkinDue(priya), { due: true, reason: "asked" });
   const aisha = view("aisha");
   assert.equal(insight(aisha).level, "fine");
-  const report = buildReport(maya);
+  const report = buildReport(after);
   assert.match(report.subject, /Maya Okafor, day 9/);
   assert.ok(
     report.body.includes(`${QUESTIONS.breathing.short}: A lot`),
