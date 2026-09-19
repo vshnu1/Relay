@@ -9,6 +9,40 @@ say them on stage until the thing is true.
 
 ---
 
+## The thirty-second version
+
+For the elevator round, the judge who walks up mid-demo, and the answer to
+"so what do you do?" 91 words, about 34 seconds at a normal pace. Say it at
+that pace — do not speed up to fit more in.
+
+> Hospitals send patients home still recovering, and their watch, glucose
+> sensor and oximeter report into separate apps nobody reads. Relay puts them
+> on one timeline against that patient's own baseline and flags signals that
+> move together.
+>
+> Across 71 people, resting heart rate baselines span 31 beats — a reading of
+> 74 is a marked excursion for one person and a Tuesday for another.
+>
+> When the data is ambiguous it asks the patient, then hands the clinician one
+> evidence packet. It never says what is wrong — that is the clinician's call.
+
+**If they only hear one sentence:**
+
+> Relay watches recovery between visits, and tells a clinician what changed
+> for this specific patient — never what it means.
+
+Three notes on delivery:
+
+- **"It asks the patient" — not "voice."** This wording stays true whether or
+  not ElevenLabs is live. See [the `[VERIFY]` claims](#the-two-verify-claims).
+- **The 31 beats is the hook, not the false-alarm rate.** Thirty seconds only
+  buys one number. Lead with the one that makes personal baselines obviously
+  necessary; hold 3.35% for when they ask a follow-up, where it lands harder.
+- **End on the boundary.** In a health pitch it reads as judgement, not as a
+  limitation, and it is the line that most reliably earns the next two minutes.
+
+---
+
 ## The two-minute pitch
 
 **The problem — 25 seconds**
