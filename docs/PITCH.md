@@ -45,54 +45,83 @@ Three notes on delivery:
 
 ## The two-minute pitch
 
-**The problem — 25 seconds**
+Timings are measured, not estimated: 2.68 words per second, the pace of the
+thirty-second version. Every beat is within a second of its label. Total
+**2:07**; dropping the sentence marked `[CUT FIRST]` gives **2:04**.
+
+If your slot hard-stops at 2:00, cut the whole anomaly-model paragraph — it
+is the newest material and the only one that survives as a Q&A answer rather
+than needing to be said. Everything else is load-bearing.
+
+**The problem — 20 seconds**
 
 > Hospitals are sending patients home earlier than they used to. Those patients
-> are still recovering, and they are generating more health data than anyone
-> is reading — a watch, a glucose sensor, a pulse oximeter, a medication log,
-> all in separate apps. A nurse covering forty patients cannot open forty
-> dashboards. So the data exists, and nobody looks at it.
+> are still recovering, and generating more health data than anyone is reading
+> — a watch, a glucose sensor, a pulse oximeter, all in separate apps. A nurse
+> covering forty patients cannot open forty dashboards. So the data exists, and
+> nobody looks at it.
 
-**The insight — 25 seconds**
+**The insight — 29 seconds**
 
-> The useful signal is almost never one number crossing a line. It is several
-> systems moving together, relative to what is normal *for that person*.
+> The useful signal is rarely one number crossing a line. It is several systems
+> moving together, relative to what is normal *for that person*.
 >
-> We measured how much that matters. Across 71 people wearing the same device,
-> resting heart rate baselines span 31 beats per minute — from 47 to 78 — while
-> any one person varies by about 2 and a half beats day to day. A reading of 74
-> is a marked excursion for one person and a Tuesday for another. No fixed
-> threshold can serve both. That is not a design opinion, it is a measurement.
+> We measured how much that matters. Across 71 people, resting heart rate
+> baselines span 31 beats, while any one person varies by about two and a half
+> day to day. A reading of 74 is a marked excursion for one person and a
+> Tuesday for another. That is a measurement, not a design opinion.
 
-**The product — 40 seconds**
+**The product — 35 seconds**
 
 > Relay puts every signal on one timeline against that patient's own baseline,
 > and looks for changes that move together and persist.
 >
 > When the data is ambiguous, it does something most monitoring tools cannot:
-> it asks. A short consented voice check-in collects what no sensor can measure
-> — did you exercise, has your pain changed, did you miss a dose. Those answers
-> come back as structured fields, the analysis runs again, and the clinician
-> gets one evidence packet: what changed, by how much, over how long, what the
-> patient said, and every timestamp behind it.
+> it asks. A short consented check-in collects what no sensor can measure — did
+> you exercise, has your pain changed, did you miss a dose. Those answers come
+> back as structured fields, the analysis runs again, and the clinician gets one
+> evidence packet: what changed, by how much, over how long, what the patient
+> said, and every timestamp behind it.
 >
 > *[demo: Alex Morgan, Context needed → check-in → Ready for review]*
 
-**The honesty — 20 seconds**
+**The honesty — 29 seconds**
 
-> One number we think you should ask every team here for. We ran our rule
-> across 4,453 days from people who were not deteriorating, so every alert it
-> produced there was a false alarm. At our original setting it fired about once
-> per patient per fortnight. We tightened it until that halved — 3.35%, about
-> one alert per two patients per fortnight — and stopped at the point where
-> tightening further would have deleted the one real event we have.
+> Two numbers we think you should ask every team for.
+>
+> We ran our rule against 71 people who were not deteriorating, so every alert
+> was a false alarm. We tightened until that halved, and stopped where going
+> further would have deleted the one real event we have.
+>
+> We also built the anomaly model our own spec called for, and it disqualified
+> itself — only 14% of our windows carry all five signals. `[CUT FIRST]` The
+> rule we shipped uses whatever is present.
 
-**The boundary — 10 seconds**
+**The boundary — 14 seconds**
 
 > Relay never says what is wrong. It says what changed, by how much, and what
-> the patient reported. The clinician makes every medical judgment. That
-> constraint is enforced in code — generated text is checked against a
-> forbidden-phrasing list before it can render.
+> the patient reported. The clinician makes every medical judgment — and that
+> constraint is enforced in code, not just in intent.
+
+### What changed and why
+
+The beats used to claim 120 seconds and run 141 — over by a fifth, which in a
+hard-stopped slot means being cut off during the boundary line, the one that
+earns the most credit. Measured per beat, the insight ran 12 seconds over and
+the honesty 10. Both are trimmed to their stated length and every label is
+now what it measures. Rehearse against these numbers, not against "two
+minutes".
+
+The 86% finding earned its place in the spoken pitch rather than being held
+for a follow-up. "We built the model our spec called for and it disqualified
+itself on data coverage" is a different claim from "we chose not to" — the
+first is a finding, the second a preference, and the soundness criterion is
+looking for the first. It needs the words "our own spec called for" to land;
+without them, building a model and discarding it reads as indecision rather
+than as testing your own plan.
+
+The voice wording stays "a short consented check-in", never "voice", for the
+same reason as the thirty-second version.
 
 ---
 
