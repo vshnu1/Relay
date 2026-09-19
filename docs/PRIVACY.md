@@ -78,3 +78,40 @@ worth noting because it means they cannot quietly drift:
   and never states a diagnosis, a risk, a severity judgement, or a treatment
   recommendation. That is a confidentiality-adjacent guarantee — it keeps the
   system from asserting things about a patient it has no standing to assert.
+
+## Update after the patient-view merge
+
+Two controls changed and both strengthen the posture.
+
+**Consent is now taken at sign-in, before any data is shown.** The patient
+enters their hospital and discharge code and must tick "I agree to share my
+readings and answers with my care team at this hospital for the 30 days after
+discharge. I can stop at any time." The server independently refuses any
+analysis for a patient whose consent is revoked (`server/index.js`, 401 on
+`Monitoring consent has been revoked`), so the client control is not the only
+one.
+
+**Two sign-in mechanisms now coexist, deliberately.**
+
+| | What it is | Enforced where |
+|---|---|---|
+| Discharge code | Hospital plus a per-patient code, binding one profile | Client, against the roster |
+| Role access codes | One code per role, clinician or patient | Server, constant-time compare |
+
+The discharge code identifies *which* patient, which a shared role code
+cannot. The role code is the one the server actually enforces: without it
+`/api/patients` returns 401, and a patient role gets 403 rather than the
+ward. Neither is per-user authentication and neither is presented as such.
+
+**What is still true.** Every patient is synthetic. No real identifier, date
+of birth, or API key is committed, and the full history was checked, not just
+the working tree. Raw health exports stay gitignored. The one real dataset
+used for validation is de-identified with HMAC pseudonyms and an
+interval-preserving date shift, documented in DATA.md.
+
+**What production still needs**, unchanged from above: per-account identity
+rather than shared codes, audit of every record view and not only every
+action, encryption in transit and at rest, business associate agreements with
+each device vendor, and a defined retention period. Discharge codes would
+have to be issued by the hospital system and bound to an account rather than
+living in a fixture.
