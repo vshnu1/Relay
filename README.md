@@ -118,7 +118,8 @@ Every claim in the pitch has a test or a measurement behind it.
 | Whether the model earns its place | both detectors over the same injected change: the rule is the sensitive one (97.6% at 2.0 sd, one day), the model the quiet one (56.1%, but speaking on 9.8% of untouched subjects against the rule's 53.7%). A second opinion, not a better detector (`analysis/sensitivity_ml.py`) |
 | The model against the rule | 3.77%–5.77% of judged subjects across the five programs this cohort can supply, 5.77% for `post_abdominal_surgery` (`fixtures/ml_calibration.json`); the two use different denominators and are never compared as if they were one |
 | The model's cold start | every one of the 14 programs has a synthetic-only prior in `ml/artifacts`, trained by `ml/vesper_ml/train.py` on populations drawn from that program's own core metrics, so a patient with days of history is scored rather than refused |
-| Real data | 99 days of one team member's wearable physiology, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`) |
+| Detection on gait | one real person's 1,451 days of phone gait, thirty injected episodes: the rule sees a 2 sd coordinated decline the next day; the model catches 77–90% of them and speaks on a tenth as many untouched episodes (`analysis/sensitivity_gait.py`, `fixtures/sensitivity_gait.json`) |
+| Real data | 99 days of one team member's wearable physiology and 1,451 days of their phone's gait, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`) |
 
 Thresholds are demo settings and are labelled so in the interface. None of this is clinical validation, and the documents say that where it matters.
 

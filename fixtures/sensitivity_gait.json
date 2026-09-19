@@ -1,0 +1,107 @@
+{
+  "subject_days": 1464,
+  "episodes": 30,
+  "stride_days": 45,
+  "history_days": 120,
+  "watch_days": 7,
+  "ramp_days": 2.0,
+  "injected": {
+    "walking_speed": -1,
+    "step_length": -1,
+    "walking_asymmetry": 1,
+    "double_support": 1,
+    "walking_steadiness": -1,
+    "steps": -1
+  },
+  "programs": {
+    "stroke_rehabilitation": {
+      "control": {
+        "effect_sd": 0.0,
+        "episodes": 30,
+        "rule_detection_pct": 40.0,
+        "rule_median_lag_days": 2.0,
+        "model_detection_pct": 10.0,
+        "model_median_lag_days": 3
+      },
+      "results": [
+        {
+          "effect_sd": 1.0,
+          "episodes": 30,
+          "rule_detection_pct": 80.0,
+          "rule_median_lag_days": 2.0,
+          "model_detection_pct": 26.7,
+          "model_median_lag_days": 5.0
+        },
+        {
+          "effect_sd": 1.5,
+          "episodes": 30,
+          "rule_detection_pct": 93.3,
+          "rule_median_lag_days": 1.0,
+          "model_detection_pct": 63.3,
+          "model_median_lag_days": 4
+        },
+        {
+          "effect_sd": 2.0,
+          "episodes": 30,
+          "rule_detection_pct": 100.0,
+          "rule_median_lag_days": 1.0,
+          "model_detection_pct": 76.7,
+          "model_median_lag_days": 2
+        },
+        {
+          "effect_sd": 3.0,
+          "episodes": 30,
+          "rule_detection_pct": 100.0,
+          "rule_median_lag_days": 0.0,
+          "model_detection_pct": 100.0,
+          "model_median_lag_days": 2.0
+        }
+      ]
+    },
+    "joint_replacement_recovery": {
+      "control": {
+        "effect_sd": 0.0,
+        "episodes": 30,
+        "rule_detection_pct": 40.0,
+        "rule_median_lag_days": 2.0,
+        "model_detection_pct": 6.7,
+        "model_median_lag_days": 1.5
+      },
+      "results": [
+        {
+          "effect_sd": 1.0,
+          "episodes": 30,
+          "rule_detection_pct": 80.0,
+          "rule_median_lag_days": 2.0,
+          "model_detection_pct": 33.3,
+          "model_median_lag_days": 3.5
+        },
+        {
+          "effect_sd": 1.5,
+          "episodes": 30,
+          "rule_detection_pct": 93.3,
+          "rule_median_lag_days": 1.0,
+          "model_detection_pct": 73.3,
+          "model_median_lag_days": 3.5
+        },
+        {
+          "effect_sd": 2.0,
+          "episodes": 30,
+          "rule_detection_pct": 100.0,
+          "rule_median_lag_days": 1.0,
+          "model_detection_pct": 90.0,
+          "model_median_lag_days": 3
+        },
+        {
+          "effect_sd": 3.0,
+          "episodes": 30,
+          "rule_detection_pct": 100.0,
+          "rule_median_lag_days": 0.0,
+          "model_detection_pct": 100.0,
+          "model_median_lag_days": 2.0
+        }
+      ]
+    }
+  },
+  "contract_rejections": 0
+}

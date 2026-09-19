@@ -100,6 +100,16 @@ Roughly 90 seconds end to end on the 284MB export. Intermediates
 (`data/events.csv`, `data/daily.csv`) are gitignored; `fixtures/daily_deid.csv`
 and `fixtures/evidence.json` are the committed outputs.
 
+`daily_deid.csv` also carries the phone's gait — walking speed, step length,
+walking asymmetry, double-support time and walking steadiness on 1,451 of the
+1,464 days — converted to metres per second, centimetres and percent in
+`pipeline/aggregate.py`. Adding them exposed a parser bug: HealthKit writes
+`unit` after `sourceName`, the regex only looked for it before, and every
+event had carried an empty unit. Nothing downstream had needed one until a
+value stored in miles per hour had to become metres per second. Regenerating
+the fixture with the fix changed no existing value; the check that proved
+that is the one to rerun if the pipeline is touched again.
+
 ## Threshold calibration against a real cohort
 
 `fixtures/lifesnaps_daily.csv` holds 4,453 subject-days from 71 LifeSnaps
@@ -215,6 +225,52 @@ surfaced, the model sits beside it and is worth reading when it agrees.
 
 For a small subtle change the model adds little. Nobody should claim it
 catches what the rule misses on this data, because it does not.
+
+### Detection on gait, against one real person's walking
+
+The two gait programs cannot be measured on LifeSnaps, which records no gait,
+and measuring them on synthetic subjects would be circular: their priors were
+trained on that generator. `analysis/sensitivity_gait.py` uses the one real
+gait series this repo has — one person, 1,451 days — and slides the onset
+along it: every 45 days a coordinated gait decline of known size is added,
+speed, step length, steadiness and steps down and asymmetry and double
+support up, each by a multiple of that person's own spread over the preceding
+120 days, and both detectors get a week to speak. Thirty episodes, each with
+its own untouched control.
+
+| Program | Injected | Rule caught | Rule lag | Model caught | Model lag |
+|---|---|---|---|---|---|
+| Stroke rehabilitation | nothing | 40.0% | 2 days | 10.0% | 3 days |
+| | 1.0 sd | 80.0% | 2 days | 26.7% | 5 days |
+| | 2.0 sd | **100%** | **1 day** | **76.7%** | **2 days** |
+| | 3.0 sd | 100% | same day | 100% | 2 days |
+| Hip or knee replacement | nothing | 40.0% | 2 days | 6.7% | 1.5 days |
+| | 1.0 sd | 80.0% | 2 days | 33.3% | 3.5 days |
+| | 2.0 sd | **100%** | **1 day** | **90.0%** | **3 days** |
+| | 3.0 sd | 100% | same day | 100% | 2 days |
+
+Two things stand out. The rule behaves on gait exactly as it does on the
+cardiorespiratory signals: a two-standard-deviation coordinated change is
+seen the next day, a three-standard-deviation one the same day. And the model
+does far better on real gait than it did on the LifeSnaps injection — 77% to
+90% caught at two standard deviations against 56% there — while speaking on
+a tenth as many untouched episodes as the rule. It still never catches more
+than the rule.
+
+This is one person's gait, not a population's; thirty episodes from one
+series share that person's habits and seasons. It shows that both detectors
+respond to a coordinated gait change through real day-to-day variation, and
+how quickly. It does not show that the injected decline is what a recovery
+going wrong looks like.
+
+One more correction is recorded here because it would otherwise be invisible.
+The first run of this measurement showed the model catching *less* as the
+injected change grew, falling to nothing at three standard deviations. The
+cause was the measurement: a decline of that size took daily steps below
+zero, the event contract rightly rejected it, and the rejection was swallowed
+and counted as "the model did not speak". Injected values are now held inside
+the contract's own range, rejections are counted and printed, and the run
+above reports zero.
 
 ### Which baseline the rate is measured against
 

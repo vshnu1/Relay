@@ -120,6 +120,7 @@ papers.*
 | Rule fires on 3.35% of subject-days on healthy people | `fixtures/calibration.json` |
 | The same rule on a trailing baseline fires on 6.04% | `fixtures/calibration.json` |
 | Sees a 2.0 sd coordinated change the next day; the same subjects' own noise takes five | `fixtures/sensitivity.json` |
+| On one real person's gait, 30 episodes: rule sees a 2 sd decline in a day; model catches 77–90% | `fixtures/sensitivity_gait.json` |
 | ML engine: 3.77%–5.77% of judged subjects across five programs; 5.77% for post-abdominal surgery | `fixtures/ml_calibration.json` |
 | The model is the quiet one: speaks on 9.8% of untouched subjects, the rule on 53.7% | `fixtures/sensitivity_ml.json` |
 | 99 days of real wearable data, one coordinated event found | `docs/DATA.md` |
