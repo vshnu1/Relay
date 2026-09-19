@@ -168,6 +168,7 @@ export async function startPatientVoiceSession({
   consent,
   onStatus,
   onAgentSaid,
+  onPatientSaid,
   onAnswers,
   onError,
   onDisconnect,
@@ -186,12 +187,10 @@ export async function startPatientVoiceSession({
     { default: rawAudioProcessorUrl },
     { default: audioConcatProcessorUrl },
   ] = await Promise.all([
-      import("@elevenlabs/client"),
-      import("@elevenlabs/client/worklets/rawAudioProcessor.js?url&no-inline"),
-      import(
-        "@elevenlabs/client/worklets/audioConcatProcessor.js?url&no-inline"
-      ),
-    ]);
+    import("@elevenlabs/client"),
+    import("@elevenlabs/client/worklets/rawAudioProcessor.js?url&no-inline"),
+    import("@elevenlabs/client/worklets/audioConcatProcessor.js?url&no-inline"),
+  ]);
   const status = recoveryStatus(p, questions, {
     analysis,
     contextPrompt,
@@ -241,7 +240,9 @@ export async function startPatientVoiceSession({
     onDisconnect: (details) => onDisconnect?.(details),
     onStatusChange: ({ status: st }) => onStatus?.(st),
     onMessage: (m) => {
-      if (m?.source === "ai" && m?.message) onAgentSaid?.(m.message);
+      if (!m?.message) return;
+      if (m.source === "ai") onAgentSaid?.(m.message);
+      else if (m.source === "user") onPatientSaid?.(m.message);
     },
     onError: (e) => onError?.(e),
     clientTools: {

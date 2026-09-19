@@ -3,7 +3,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   HeartPulse,
-  Mic,
   MessageCircle,
   PhoneCall,
   PhoneOff,
@@ -92,8 +91,11 @@ export default function Checkin({ patient: p }) {
   const { run: score } = useAnalysis(p);
   const [phase, setPhase] = useState("idle"); // idle | live | review | sending | done
   const [engine, setEngine] = useState(null); // elevenlabs | browser
+  const [inputMode, setInputMode] = useState("text"); // text | voice
+  const [textAnswer, setTextAnswer] = useState("");
   const [log, setLog] = useState([]);
   const [answers, setAnswers] = useState({});
+  const [textAnswers, setTextAnswers] = useState({});
   const [stage, setStage] = useState({ kind: "question", i: 0 });
   const [voice, setVoice] = useState({
     available: false,
@@ -115,6 +117,16 @@ export default function Checkin({ patient: p }) {
   const answersRef = useRef({});
   const completedDraftRef = useRef(null);
   const endingByPatientRef = useRef(false);
+  const voiceTranscriptRef = useRef([]);
+
+  const noteWithVoiceTranscript = (note) => {
+    const transcript = voiceTranscriptRef.current
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (!transcript.length) return (note || "").slice(0, 2000);
+    const spoken = `Patient’s spoken answers: ${transcript.join(" / ")}`;
+    return [note?.trim(), spoken].filter(Boolean).join("\n\n").slice(0, 2000);
+  };
 
   useEffect(() => {
     let live = true;
@@ -134,12 +146,16 @@ export default function Checkin({ patient: p }) {
 
   const say = (who, text) => setLog((l) => [...l, { who, text }]);
 
-  const finish = (all, note) => {
+  const finish = (all, note, freeTextAnswers = {}) => {
     if (sessionRef.current) endingByPatientRef.current = true;
     sessionRef.current?.endSession?.();
     sessionRef.current = null;
     completedDraftRef.current = null;
-    setReviewDraft({ answers: all, note: (note || "").slice(0, 500) });
+    setReviewDraft({
+      answers: all,
+      textAnswers: freeTextAnswers,
+      note: (note || "").slice(0, 2000),
+    });
     setShareConsent(false);
     setPhase("review");
     setVoice((v) => ({ ...v, status: "review" }));
@@ -148,6 +164,7 @@ export default function Checkin({ patient: p }) {
   // ---- ElevenLabs path -------------------------------------------------------
   const startAgent = async (plan) => {
     if (!voiceConsent) return;
+    voiceTranscriptRef.current = [];
     completedDraftRef.current = null;
     endingByPatientRef.current = false;
     setEngine("elevenlabs");
@@ -165,16 +182,14 @@ export default function Checkin({ patient: p }) {
         consent: voiceConsent,
         onStatus: (st) => setVoice((v) => ({ ...v, status: st })),
         onAgentSaid: (text) => say("relay", text),
+        onPatientSaid: (text) => {
+          voiceTranscriptRef.current.push(text);
+          say("you", text);
+        },
         onAnswers: (a, note) => {
           const merged = { ...answersRef.current, ...a };
           answersRef.current = merged;
           setAnswers(merged);
-          say(
-            "you",
-            Object.entries(a)
-              .map(([q, v]) => `${QUESTIONS[q].short}: ${v}`)
-              .join(". ") + (note ? `. ${note}` : ""),
-          );
           if (plan.questions.every((q) => merged[q]))
             completedDraftRef.current = { answers: merged, note };
         },
@@ -189,7 +204,7 @@ export default function Checkin({ patient: p }) {
           }
           const draft = completedDraftRef.current;
           if (draft && plan.questions.every((q) => draft.answers[q])) {
-            finish(draft.answers, draft.note);
+            finish(draft.answers, noteWithVoiceTranscript(draft.note));
             return;
           }
           setPhase("interrupted");
@@ -258,6 +273,7 @@ export default function Checkin({ patient: p }) {
     answersRef.current = next;
     setAnswers(next);
     say("you", spokenText || option);
+    voiceTranscriptRef.current.push(spokenText || option);
     if (i + 1 < plan.questions.length)
       askQuestion(i + 1, i === 0 ? "Thanks. " : "", plan);
     else {
@@ -281,9 +297,15 @@ export default function Checkin({ patient: p }) {
     speak(
       "Your check-in is ready. Please review your answers and choose whether to share them with your care team.",
     );
-    finish(answersRef.current, note);
+    finish(answersRef.current, noteWithVoiceTranscript(note));
   };
   const startBrowser = (plan) => {
+    voiceTranscriptRef.current = [];
+    answersRef.current = {};
+    setAnswers({});
+    setTextAnswers({});
+    setLog([]);
+    setNoteDraft("");
     setEngine("browser");
     setPhase("live");
     setVoice((v) => ({ ...v, status: "browser", error: "" }));
@@ -294,7 +316,13 @@ export default function Checkin({ patient: p }) {
   };
 
   const startCheckin = async () => {
-    if (voice.available && !voiceConsent) return;
+    if (inputMode === "voice" && voice.available && !voiceConsent) return;
+    answersRef.current = {};
+    setAnswers({});
+    setTextAnswers({});
+    setLog([]);
+    setNoteDraft("");
+    setTextAnswer("");
     setPreparing(true);
     // The model is tried first so its contributor signals can prioritize the
     // questions. If the server has no model configured, the profile's wearable
@@ -311,8 +339,84 @@ export default function Checkin({ patient: p }) {
     nextPlan.modelUnavailable = !analysis;
     setCheckinPlan(nextPlan);
     setPreparing(false);
-    if (voice.available) await startAgent(nextPlan);
+    if (inputMode === "text") startText(nextPlan);
+    else if (voice.available) await startAgent(nextPlan);
     else startBrowser(nextPlan);
+  };
+
+  const startText = (plan) => {
+    answersRef.current = {};
+    setAnswers({});
+    setTextAnswers({});
+    setLog([]);
+    setNoteDraft("");
+    setStage({ kind: "question", i: 0 });
+    setTextAnswer("");
+    setEngine("text");
+    setPhase("live");
+    setVoice((v) => ({ ...v, status: "connected", error: "" }));
+    say(
+      "relay",
+      `Hi ${p.first}, this is Relay. ${plan.priority ? "I noticed a change from your usual readings, so I have a few focused questions." : "I have a few brief questions about how recovery is going."} You can answer in your own words. ${QUESTIONS[plan.questions[0]].text}`,
+    );
+  };
+
+  const advanceText = (answer, plan = checkinPlan) => {
+    const i = stage.i;
+    if (stage.kind !== "question" || i >= plan.questions.length) return;
+    const qid = plan.questions[i];
+    const text = answer.trim().slice(0, 500);
+    if (!text) return;
+    const picked = matchOption(text, QUESTIONS[qid].options);
+    const freeAnswers = { ...textAnswers, [qid]: text };
+    setTextAnswers(freeAnswers);
+    const next = {
+      ...answersRef.current,
+      ...(picked ? { [qid]: picked } : {}),
+    };
+    answersRef.current = next;
+    setAnswers(next);
+    setNoteDraft((previous) =>
+      `${previous}${previous ? "\n" : ""}${QUESTIONS[qid].short}: ${text}`.slice(
+        0,
+        2000,
+      ),
+    );
+    say("you", text);
+    setTextAnswer("");
+    if (i + 1 < plan.questions.length) {
+      setStage({ kind: "question", i: i + 1 });
+      say("relay", `Thank you. ${QUESTIONS[plan.questions[i + 1]].text}`);
+    } else {
+      setStage({ kind: "note" });
+      say(
+        "relay",
+        `${plan.contextPrompt} You can add anything else, or finish now.`,
+      );
+    }
+  };
+
+  const finishText = (skipExtra = false) => {
+    const extra = skipExtra ? "" : textAnswer.trim();
+    if (extra) {
+      setNoteDraft((previous) =>
+        `${previous}${previous ? "\n" : ""}Additional context: ${extra}`.slice(
+          0,
+          2000,
+        ),
+      );
+      say("you", extra);
+    }
+    say(
+      "relay",
+      "Thanks. Review your answers and choose whether to share them with your care team.",
+    );
+    finish(
+      answersRef.current,
+      `${noteDraft}${noteDraft && extra ? "\n" : ""}${extra ? `Additional context: ${extra}` : ""}`,
+      textAnswers,
+    );
+    setTextAnswer("");
   };
 
   const stop = () => {
@@ -325,38 +429,19 @@ export default function Checkin({ patient: p }) {
     if (phase !== "done") setPhase("idle");
   };
 
-  // Answer taps stay hidden during an active conversation so the patient can
-  // respond naturally. They remain available if voice is interrupted.
-  const tap = (option) => {
-    const missing = questions.filter((q) => !answersRef.current[q]);
-    if (!missing.length) return;
-    const q = missing[0];
-    const i = questions.indexOf(q);
-    if (engine === "browser") {
-      recRef.current?.stop?.();
-      if (canSpeak()) speechSynthesis.cancel();
-      answerBrowser(i, option);
-    } else {
-      const next = { ...answersRef.current, [q]: option };
-      answersRef.current = next;
-      setAnswers(next);
-      say("you", `${QUESTIONS[q].short}: ${option}`);
-      // Send accessibility/tap answers into the live agent conversation too.
-      // This lets Relay acknowledge the last answer, ask the optional context
-      // question, and call the draft tool before the call ends.
-      sessionRef.current?.sendUserMessage?.(
-        `For “${QUESTIONS[q].text}”, my answer is “${option}”.`,
-      );
-    }
-  };
   const nextMissing = questions.find((q) => !answers[q]) || null;
   const current =
     (phase === "live" || phase === "interrupted") &&
-    nextMissing &&
+    (engine === "text" ? stage.kind === "question" : nextMissing) &&
     stage.kind !== "note"
-      ? QUESTIONS[nextMissing]
+      ? QUESTIONS[
+          engine === "text" ? checkinPlan.questions[stage.i] : nextMissing
+        ]
       : null;
-  const status = STATUS[voice.status] ?? voice.status;
+  const status =
+    engine === "text" && phase === "live"
+      ? "Text conversation"
+      : (STATUS[voice.status] ?? voice.status);
   const focusRows = (p.counted || [])
     .filter((signal) => checkinPlan.focusSignals.includes(signal.id))
     .filter((signal) => signal.moved)
@@ -376,7 +461,11 @@ export default function Checkin({ patient: p }) {
       }));
   const submitVoiceDraft = async () => {
     if (!reviewDraft || !shareConsent) return;
-    const complete = questions.every((q) => reviewDraft.answers[q]);
+    const complete = questions.every(
+      (q) =>
+        reviewDraft.answers[q] ||
+        (engine === "text" && reviewDraft.textAnswers?.[q]),
+    );
     if (!complete) return;
     setPhase("sending");
     const deliveries = [
@@ -447,7 +536,10 @@ export default function Checkin({ patient: p }) {
                 {checkinPlan.priority
                   ? ", about two minutes"
                   : ", about one minute"}
-                . Speak naturally or tap an answer.
+                .{" "}
+                {inputMode === "text"
+                  ? "Type freely in the conversation."
+                  : "Speak naturally. Your words appear here as text."}
               </span>
             </div>
             {phase === "idle" && (
@@ -473,7 +565,40 @@ export default function Checkin({ patient: p }) {
                     </small>
                   </div>
                 </div>
-                {voice.available && (
+                <fieldset className="rx-p-mode-choice">
+                  <legend>Choose how you want to answer</legend>
+                  <label className={inputMode === "text" ? "selected" : ""}>
+                    <input
+                      type="radio"
+                      name="checkin-mode"
+                      value="text"
+                      checked={inputMode === "text"}
+                      onChange={() => setInputMode("text")}
+                    />
+                    <span>
+                      <strong>Text conversation</strong>
+                      <small>
+                        Type answers in your own words. No microphone needed.
+                      </small>
+                    </span>
+                  </label>
+                  <label className={inputMode === "voice" ? "selected" : ""}>
+                    <input
+                      type="radio"
+                      name="checkin-mode"
+                      value="voice"
+                      checked={inputMode === "voice"}
+                      onChange={() => setInputMode("voice")}
+                    />
+                    <span>
+                      <strong>Voice conversation</strong>
+                      <small>
+                        Speak your answers and read the live transcript.
+                      </small>
+                    </span>
+                  </label>
+                </fieldset>
+                {inputMode === "voice" && voice.available && (
                   <label className="rx-p-voice-consent">
                     <input
                       type="checkbox"
@@ -491,15 +616,20 @@ export default function Checkin({ patient: p }) {
                 <button
                   type="button"
                   className="rx-p-btn primary"
-                  disabled={preparing || (voice.available && !voiceConsent)}
+                  disabled={
+                    preparing ||
+                    (inputMode === "voice" && voice.available && !voiceConsent)
+                  }
                   onClick={startCheckin}
                 >
-                  <PhoneCall size={18} aria-hidden="true" />{" "}
+                  {inputMode === "voice" ? (
+                    <PhoneCall size={18} aria-hidden="true" />
+                  ) : (
+                    <MessageCircle size={18} aria-hidden="true" />
+                  )}{" "}
                   {preparing
                     ? "Preparing check-in…"
-                    : checkinPlan.priority
-                      ? "Start priority check-in"
-                      : "Start daily check-in"}
+                    : `Start ${checkinPlan.priority ? "priority" : "daily"} ${inputMode === "text" ? "text" : "voice"} check-in`}
                 </button>
                 <small className="rx-p-fine">
                   {modelUsed
@@ -510,10 +640,10 @@ export default function Checkin({ patient: p }) {
                         ? "There are not enough recent readings to compare yet. We’ll focus on how you feel and your discharge plan."
                         : "Your latest readings will be checked when you start, so the questions can focus on what matters today."}
                 </small>
-                {!voice.available && (
+                {inputMode === "voice" && !voice.available && (
                   <small className="rx-p-fine">
-                    Using this browser's own voice. The ElevenLabs agent takes
-                    over when the server has its key.
+                    ElevenLabs voice is unavailable right now. You can continue
+                    with this browser’s speech support or switch to text.
                   </small>
                 )}
               </div>
@@ -544,12 +674,14 @@ export default function Checkin({ patient: p }) {
             )}
           </section>
 
-          {log.length > 0 && (phase === "live" || phase === "interrupted") && (
+          {log.length > 0 && phase !== "idle" && (
             <div
               className="rx-p-chat rx-p-transcript"
               role="log"
               aria-live="polite"
+              aria-label="Check-in conversation"
             >
+              <span className="rx-p-chat-label">Conversation</span>
               {log.map((m, i) => (
                 <div key={i} className={`rx-p-bubble ${m.who}`}>
                   {m.text}
@@ -559,24 +691,61 @@ export default function Checkin({ patient: p }) {
             </div>
           )}
 
-          {/* Tapping an answer is available whenever a question is on screen,
-              not only when the agent drops out. A deaf, non-verbal, aphasic or
-              simply hoarse post-surgical patient could otherwise not complete
-              the one task this app asks of them each day. tap() already
-              handles the agent engine; the buttons were just not rendered. */}
-          {current && (phase === "live" || phase === "interrupted") && (
-            <div className="rx-p-quick" role="group" aria-label="Tap an answer">
-              {listening && (
-                <span className="rx-p-pill live">
-                  <Mic size={13} aria-hidden="true" /> {current.short}
-                </span>
-              )}
-              {current.options.map((o) => (
-                <button key={o} type="button" onClick={() => tap(o)}>
-                  {o}
+          {engine !== "text" && phase === "interrupted" && current && (
+            <button
+              type="button"
+              className="rx-p-textbtn"
+              onClick={() => {
+                const i = questions.indexOf(nextMissing);
+                setStage(i < 0 ? { kind: "note" } : { kind: "question", i });
+                setEngine("text");
+                setVoice((v) => ({ ...v, error: "" }));
+                setPhase("live");
+              }}
+            >
+              Continue by typing
+            </button>
+          )}
+
+          {engine === "text" && phase === "live" && (
+            <form
+              className="rx-p-text-reply"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (stage.kind === "note") finishText();
+                else advanceText(textAnswer);
+              }}
+            >
+              <label htmlFor="checkin-text-answer">
+                {stage.kind === "note"
+                  ? "Anything else you want your care team to know?"
+                  : "Your answer"}
+              </label>
+              <textarea
+                id="checkin-text-answer"
+                rows={2}
+                maxLength={500}
+                value={textAnswer}
+                onChange={(e) => setTextAnswer(e.target.value)}
+                placeholder="Type in your own words…"
+                autoComplete="off"
+              />
+              <div className="rx-p-text-reply-actions">
+                <small>{textAnswer.length}/500</small>
+                <button type="submit" className="rx-p-btn primary">
+                  {stage.kind === "note" ? "Finish check-in" : "Send answer"}
                 </button>
-              ))}
-            </div>
+                {stage.kind === "note" && (
+                  <button
+                    type="button"
+                    className="rx-p-textbtn"
+                    onClick={() => finishText(true)}
+                  >
+                    Nothing else
+                  </button>
+                )}
+              </div>
+            </form>
           )}
 
           {phase === "live" &&
@@ -591,7 +760,10 @@ export default function Checkin({ patient: p }) {
                   const text = noteDraft.trim();
                   recRef.current?.stop?.();
                   if (canSpeak()) speechSynthesis.cancel();
-                  if (text) say("you", text);
+                  if (text) {
+                    say("you", text);
+                    voiceTranscriptRef.current.push(text);
+                  }
                   finishBrowser(text || null);
                 }}
               >
@@ -622,6 +794,11 @@ export default function Checkin({ patient: p }) {
                   <div key={q}>
                     <dt>{QUESTIONS[q].short}</dt>
                     <dd>
+                      {reviewDraft.textAnswers?.[q] && (
+                        <p className="rx-p-review-original">
+                          “{reviewDraft.textAnswers[q]}”
+                        </p>
+                      )}
                       <select
                         aria-label={`Answer for ${QUESTIONS[q].short}`}
                         value={reviewDraft.answers[q] || ""}
@@ -635,7 +812,11 @@ export default function Checkin({ patient: p }) {
                           }))
                         }
                       >
-                        <option value="">Choose an answer</option>
+                        <option value="">
+                          {reviewDraft.textAnswers?.[q]
+                            ? "Optional: add a structured answer"
+                            : "Choose an answer"}
+                        </option>
                         {QUESTIONS[q].options.map((option) => (
                           <option key={option} value={option}>
                             {option}
@@ -647,10 +828,10 @@ export default function Checkin({ patient: p }) {
                 ))}
               </dl>
               <label className="rx-p-voice-note">
-                Additional context
+                Your words and additional context
                 <textarea
                   rows={3}
-                  maxLength={500}
+                  maxLength={2000}
                   value={reviewDraft.note}
                   onChange={(e) =>
                     setReviewDraft((current) => ({
@@ -659,7 +840,7 @@ export default function Checkin({ patient: p }) {
                     }))
                   }
                 />
-                <small>{reviewDraft.note.length}/500</small>
+                <small>{reviewDraft.note.length}/2000</small>
               </label>
               <label className="rx-p-voice-consent">
                 <input
@@ -674,7 +855,11 @@ export default function Checkin({ patient: p }) {
                 className="rx-p-btn primary"
                 disabled={
                   !shareConsent ||
-                  !questions.every((q) => reviewDraft.answers[q])
+                  !questions.every(
+                    (q) =>
+                      reviewDraft.answers[q] ||
+                      (engine === "text" && reviewDraft.textAnswers?.[q]),
+                  )
                 }
                 onClick={submitVoiceDraft}
               >
@@ -689,6 +874,7 @@ export default function Checkin({ patient: p }) {
                   setVoice((v) => ({ ...v, status: "" }));
                   answersRef.current = {};
                   setAnswers({});
+                  setTextAnswers({});
                 }}
               >
                 Discard this draft
