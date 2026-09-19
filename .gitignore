@@ -4,7 +4,11 @@ dist/
 .env
 .env.*
 !.env.example
-data/
+# Anchored. An unanchored `data/` matches a directory named data at ANY depth,
+# which silently swallowed src/recovery/data/ — four frontend modules were
+# committed-away without a warning and main could not build. This rule is only
+# meant to protect the repo-root working directory holding raw health exports.
+/data/
 .DS_Store
 *.log
 
