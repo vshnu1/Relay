@@ -12,7 +12,7 @@ import { dayColumns, domain, labelEvery, ticks } from "./chartScale.js";
 
 const HOME_DAYS = 14;
 const CHART_H = 172;
-const COMPACT_H = 150;
+const COMPACT_H = 210; // patient readings page; the panel is tall enough to carry it
 const MARGIN = { top: 20, right: 112, bottom: 38, left: 44 };
 const FILL = {
   "-3": "#3d7ab8",
@@ -57,7 +57,13 @@ const segments = (points) =>
     )
     .filter((s) => s.length);
 
-export function SignalChart({ signal: s, homeFrom, width, compact = false }) {
+export function SignalChart({
+  signal: s,
+  homeFrom,
+  width,
+  compact = false,
+  height,
+}) {
   const [hover, setHover] = useState(null);
   const M = compact ? { top: 20, right: 86, bottom: 36, left: 36 } : MARGIN;
   const inner = width - M.left - M.right;
@@ -90,7 +96,11 @@ export function SignalChart({ signal: s, homeFrom, width, compact = false }) {
     threshold: s.threshold,
     unit: s.unit,
   });
-  const H = compact ? COMPACT_H : CHART_H;
+  // An explicit height lets a caller whose panel has room hand the chart that
+  // room, instead of drawing a short chart and leaving the rest of the panel
+  // blank. Falls back to the fixed sizes when nobody asks.
+  const H =
+    height && height > 80 ? Math.round(height) : compact ? COMPACT_H : CHART_H;
   const plotH = H - M.top - M.bottom;
   const y = (v) => M.top + plotH - ((v - lo) / (hi - lo)) * plotH;
   const stay = cols[s.before.length];
@@ -440,7 +450,9 @@ function SignalPanel({
         </div>
         <div className="rx-signal-side">
           <div className="rx-signal-now">
-            <strong>{s.today === null ? "Not available" : s.fmt(s.today)}</strong>
+            <strong>
+              {s.today === null ? "Not available" : s.fmt(s.today)}
+            </strong>
             <span>{s.unit}</span>
             {s.today !== null && s.usual !== null && (
               <span className={`rx-change ${s.moved ? "moved" : ""}`}>

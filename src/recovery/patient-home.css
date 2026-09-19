@@ -663,6 +663,56 @@
   gap: 8px;
 }
 
+/* The readings page is a workspace, not a document. It fills the window: the
+   list of readings scrolls inside its own column so every one is reachable,
+   and the chart panel stretches instead of ending halfway down and leaving a
+   field of white beside a list that carries on. Below 1100px the grid
+   collapses to one column and the page scrolls normally again. */
+@media (min-width: 1101px) {
+  /* The demo bar sits above the app inside .rx, so putting 100vh on the
+     screen alone overflows the page by exactly its height. Locking the root
+     and letting the app fill what is left needs no measurement of it. */
+  .rx:has(.rx-ph-metrics) {
+    height: 100vh;
+    overflow: hidden;
+  }
+  .rx:has(.rx-ph-metrics) .rx-doctor,
+  .rx:has(.rx-ph-metrics) .rx-main {
+    min-height: 0;
+  }
+  .rx:has(.rx-ph-metrics) .rx-side {
+    height: auto;
+  }
+  .rx-p-screen:has(.rx-ph-metrics) {
+    height: 100%;
+    overflow: hidden;
+  }
+  .rx-ph-metrics {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .rx-ph-siglist {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 8px;
+    padding-bottom: 8px;
+  }
+  .rx-ph-detail {
+    min-height: 0;
+    overflow-y: auto;
+  }
+  /* The chart takes whatever the panel has left, so the panel has no blank
+     middle. flex-basis 0 with min-height 0 means this box is sized by the
+     space available and never by the chart drawn into it. */
+  .rx-ph-detail .rx-p-plot {
+    flex: 1 1 0;
+    min-height: 210px;
+    overflow: hidden;
+  }
+}
+
 @media (max-width: 1100px) {
   .rx-ph-lanes,
   .rx-ph-metrics {
