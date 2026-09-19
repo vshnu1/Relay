@@ -106,7 +106,9 @@ function Home({ patient: p }) {
             <div key={n.id} className={`rx-p-notif ${n.kind}`}>
               <strong>{n.title}</strong>
               <p>{n.body}</p>
-              <a href={n.href}>{n.cta} →</a>
+              <a href={n.href}>
+                {n.cta} <ChevronRight size={14} aria-hidden="true" />
+              </a>
             </div>
           ))}
         </div>
