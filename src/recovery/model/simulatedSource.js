@@ -90,6 +90,7 @@ const COHORT = [
       breathing: "1123",
       walkingHr: "112",
       sleep: "11",
+      weight: "11223",
     },
     checkins: [
       {
@@ -184,7 +185,12 @@ const COHORT = [
     clinician: "Dr. Marcus Bell",
     day: 27,
     stay: 7,
-    stories: { restingHr: "a00000000a", hrv: "a0000000", sleep: "a00000a" },
+    stories: {
+      restingHr: "a00000000a",
+      hrv: "a0000000",
+      sleep: "a00000a",
+      weight: "0",
+    },
     checkins: [],
   },
   {
@@ -515,10 +521,17 @@ function build(def, now, index) {
   const dischargedAt = now - (def.day * DAY + 15 * HOUR);
   const admittedAt = dischargedAt - def.stay * DAY;
   const profile = PROFILES[def.profile];
+  // A watch cannot take a weight or a temperature: those exist only because the
+  // patient wrote them down. So a manual signal is simulated for a patient the
+  // scenario says records it, and for nobody else. It is built into the history
+  // but never streamed on the tick below, because a morning weight arrives once
+  // a day, not every few seconds.
   const signals = [
     ...profile.counted.map((c) => c.signal),
     ...profile.recorded,
-  ].filter((signal) => SIGNALS[signal].device !== "manual");
+  ].filter(
+    (signal) => SIGNALS[signal].device !== "manual" || def.stories[signal],
+  );
   const readings = {};
   signals.forEach((signal, k) => {
     const [usual, sd] = TYPICAL[signal];
