@@ -1,5 +1,17 @@
 import express from "express";
 import { randomUUID, timingSafeEqual } from "node:crypto";
+import {
+  KEY_DERIVED,
+  KEY_PRESENT,
+  appendSealed,
+  encryptionMode,
+  lastHash,
+  readJson,
+  readSealedLines,
+  verifyChain,
+  writeJson,
+} from "./vault.js";
+import { createAccountStore } from "./accounts.js";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createSimulatedSource } from "../src/recovery/model/simulatedSource.js";
 import {
@@ -49,36 +61,85 @@ function seeded() {
     };
   });
 }
-let patients = existsSync(stateFile)
-  ? JSON.parse(readFileSync(stateFile, "utf8"))
-  : seeded();
+// State goes through the vault, which encrypts it when RELAY_DATA_KEY is set
+// and writes it exactly as before when it is not. Either way the write is still
+// atomic: temp file, then rename.
+let patients = readJson(stateFile, null) || seeded();
 function save() {
-  const temp = stateFile + ".tmp";
-  writeFileSync(temp, JSON.stringify(patients), { mode: 0o600 });
-  renameSync(temp, stateFile);
+  writeJson(stateFile, patients);
 }
 // Who is acting, carried through the awaits in the scoring path. A module
 // variable would be overwritten by the next request while the Python model is
 // still running, and would then attribute one caller's action to another.
 const requestContext = new AsyncLocalStorage();
 
+const auditFile = resolve(dataDir, "audit.jsonl");
+// The digest of the last line written, carried forward so each new line commits
+// to the whole history before it. Read once at startup; a restart picks the
+// chain up where it was left rather than starting a second one.
+let auditHead = lastHash(auditFile);
+
 function audit(action, patientId = null, detail = "") {
-  appendFileSync(
-    resolve(dataDir, "audit.jsonl"),
-    JSON.stringify({
+  const who = requestContext.getStore() || {};
+  auditHead = appendSealed(
+    auditFile,
+    {
       id: randomUUID(),
       at: new Date().toISOString(),
       // The role that made the request, not an assumption about it. An audit
       // line that positively asserts a provider did what a patient did is
       // worse than one that admits it does not know.
-      actor: requestContext.getStore()?.role ?? "system",
+      actor: who.role ?? "system",
+      // And, when the caller signed in to an account, which person. Without
+      // this a breach investigation starting from the log can establish that a
+      // clinician opened a record and never which clinician.
+      actorId: who.userId ?? null,
+      actorEmail: who.email ?? null,
+      onBehalfOf: who.emergency ? "break-glass" : null,
       action,
       patientId,
       detail,
-    }) + "\n",
-    { mode: 0o600 },
+    },
+    auditHead,
   );
 }
+// Accounts, and whether this deployment still accepts the shared codes.
+// Default off so a local checkout and the API suite behave as before; the
+// blueprint turns it on, so the deployed demo is the one that requires
+// accounts. The security page reports which of the two is running rather than
+// which one we would like to be running.
+const accounts = createAccountStore(dataDir);
+const REQUIRE_ACCOUNTS = process.env.RELAY_REQUIRE_ACCOUNTS === "true";
+
+// Break-glass. A clinician is scoped to their own care team; this is how they
+// reach a patient outside it when there is no time to arrange otherwise.
+// Deliberately cheap to use and expensive to hide: it needs a reason, it lasts
+// fifteen minutes, every use is audited with that reason, and while one is open
+// it is displayed on the security page.
+const EMERGENCY_MS = 15 * 60 * 1000;
+const grants = [];
+const openGrants = () => {
+  const now = Date.now();
+  for (let i = grants.length - 1; i >= 0; i--)
+    if (grants[i].expiresAt <= now) grants.splice(i, 1);
+  return grants.map((g) => ({
+    by: g.email,
+    reason: g.reason,
+    patientId: g.patientId,
+    openedAt: new Date(g.openedAt).toISOString(),
+    expiresAt: new Date(g.expiresAt).toISOString(),
+  }));
+};
+const hasGrant = (userId, patientId) => {
+  const now = Date.now();
+  return grants.some(
+    (g) =>
+      g.userId === userId &&
+      g.expiresAt > now &&
+      (g.patientId === null || g.patientId === patientId),
+  );
+};
+
 const app = express();
 app.disable("x-powered-by");
 app.use(express.json({ limit: "3mb" }));
@@ -170,13 +231,27 @@ app.use("/api", (req, res, next) => {
     // accept one. /status stays gated, which the API suite asserts. The login
     // page does not need it open: a 401 from /status IS the signal that codes
     // are required, so the closed door answers the question.
-    if (req.path !== "/session") {
-      const role = matchRole(
-        req.headers.authorization?.replace(/^Bearer /, ""),
-      );
-      if (!role)
-        return res.status(401).json({ error: "Enter your access code." });
-      req.role = role;
+    if (!PUBLIC_ROUTES.has(req.path)) {
+      const bearer = req.headers.authorization?.replace(/^Bearer /, "");
+      // A session names a person. It is tried first, so a deployment that has
+      // accounts stops depending on the shared code even before it forbids it.
+      const user = accounts.resolveSession(bearer);
+      if (user) {
+        req.role = user.role;
+        req.user = user;
+      } else if (REQUIRE_ACCOUNTS) {
+        return res
+          .status(401)
+          .json({
+            error: "Sign in to your account.",
+            code: "ACCOUNT_REQUIRED",
+          });
+      } else {
+        const role = matchRole(bearer);
+        if (!role)
+          return res.status(401).json({ error: "Enter your access code." });
+        req.role = role;
+      }
     }
   } else {
     req.role = "clinician"; // local demo, no codes configured
@@ -198,8 +273,25 @@ app.use("/api", (req, res, next) => {
     return res
       .status(403)
       .json({ error: "Cross-origin writes are not allowed." });
-  requestContext.run({ role: req.role }, next);
+  requestContext.run(
+    {
+      role: req.role,
+      userId: req.user?.id ?? null,
+      email: req.user?.email ?? null,
+      emergency: req.user ? hasGrant(req.user.id, null) : false,
+    },
+    next,
+  );
 });
+// The only routes that answer without a credential, because each one exists to
+// obtain a credential and cannot require the thing it issues.
+const PUBLIC_ROUTES = new Set([
+  "/session",
+  "/auth/register",
+  "/auth/login",
+  "/auth/demo",
+]);
+
 // Everything the patient view calls, and nothing else. Kept beside the gate
 // that uses it so the two cannot drift apart.
 // Discharge code -> patient, read once from the same roster the app shows. A
@@ -244,7 +336,113 @@ const PATIENT_ROUTES = new Set([
   "/ml/score",
   "/voice/session",
   "/recovery/events",
+  // A patient must be able to see who they are signed in as, and to end that
+  // session. Neither reaches a record.
+  "/auth/me",
+  "/auth/logout",
 ]);
+
+// --- Accounts -------------------------------------------------------------
+//
+// The shared access code is now an invitation rather than a credential: it
+// chooses which role an account is created with, and after that it reaches
+// nothing on its own wherever RELAY_REQUIRE_ACCOUNTS is set.
+
+const roleFromInvite = (code) => matchRole(code);
+
+app.post("/api/auth/register", (req, res) => {
+  const { email, password, invite, careTeam } = req.body || {};
+  const role = roleFromInvite(invite);
+  if (!role)
+    return res
+      .status(403)
+      .json({ error: "That access code was not recognised." });
+  const result = accounts.register({
+    email,
+    password,
+    role,
+    careTeam: typeof careTeam === "string" ? careTeam.trim() || null : null,
+  });
+  if (result.error) return res.status(400).json({ error: result.error });
+  const token = accounts.openSession(result.user.id);
+  requestContext.run(
+    { role, userId: result.user.id, email: result.user.email },
+    () => audit("account.created", null, result.user.email),
+  );
+  res.json({ token, user: result.user });
+});
+
+app.post("/api/auth/login", (req, res) => {
+  const { email, password } = req.body || {};
+  const user = accounts.authenticate(email, password);
+  if (!user)
+    return res
+      .status(401)
+      .json({ error: "That email address and password do not match." });
+  const token = accounts.openSession(user.id);
+  requestContext.run(
+    { role: user.role, userId: user.id, email: user.email },
+    () => audit("account.signed_in", null, user.email),
+  );
+  res.json({ token, user });
+});
+
+// One click into the deployed demo, and still a named principal: each browser
+// gets its own, so two people looking at the same time are two actors in the
+// log rather than one anonymous "clinician".
+app.post("/api/auth/demo", (req, res) => {
+  const role = req.body?.role === "patient" ? "patient" : "clinician";
+  const user = accounts.createDemoPrincipal(role);
+  const token = accounts.openSession(user.id);
+  requestContext.run({ role, userId: user.id, email: user.email }, () =>
+    audit("account.demo_issued", null, user.email),
+  );
+  res.json({ token, user });
+});
+
+app.get("/api/auth/me", (req, res) => {
+  if (!req.user) return res.status(404).json({ error: "No account session." });
+  res.json({ user: req.user });
+});
+
+app.post("/api/auth/logout", (req, res) => {
+  const token = req.headers.authorization?.replace(/^Bearer /, "");
+  const closed = accounts.closeSession(token);
+  if (closed) audit("account.signed_out", null, req.user?.email || "");
+  res.json({ ok: true });
+});
+
+// --- Break-glass ----------------------------------------------------------
+//
+// 164.312(a)(2)(ii) is required and not addressable, and there was no path at
+// all. It only means something because a clinician is otherwise scoped to their
+// own care team: a safeguard that grants what you already had is theatre.
+app.post("/api/emergency-access", (req, res) => {
+  if (req.role !== "clinician")
+    return res.status(403).json({ error: "Clinician access only." });
+  if (!req.user)
+    return res
+      .status(403)
+      .json({ error: "Break-glass access requires a named account." });
+  const reason = String(req.body?.reason || "").trim();
+  if (reason.length < 10)
+    return res
+      .status(400)
+      .json({ error: "Give the reason for emergency access, in a sentence." });
+  const patientId =
+    typeof req.body?.patientId === "string" ? req.body.patientId : null;
+  const now = Date.now();
+  grants.push({
+    userId: req.user.id,
+    email: req.user.email,
+    reason,
+    patientId,
+    openedAt: now,
+    expiresAt: now + EMERGENCY_MS,
+  });
+  audit("emergency.access_opened", patientId, reason);
+  res.json({ ok: true, expiresAt: new Date(now + EMERGENCY_MS).toISOString() });
+});
 
 // Exchange an access code for a role. The client keeps the code and sends it
 // as a Bearer token; there is no session store, which is the honest limit of a
@@ -481,18 +679,39 @@ app.get("/api/patients/:id/fhir", (req, res) => {
   res.json(fhirBundle(req.patient));
 });
 app.get("/api/audit", (req, res) => {
-  const file = resolve(dataDir, "audit.jsonl");
-  res.json(
-    existsSync(file)
-      ? readFileSync(file, "utf8")
-          .trim()
-          .split("\n")
-          .filter(Boolean)
-          .map((x) => JSON.parse(x))
-          .reverse()
-          .slice(0, 200)
-      : [],
-  );
+  res.json(readSealedLines(auditFile).reverse().slice(0, 200));
+});
+
+// What is actually true of this running process, for the security page. The
+// page used to state the intention; a deployment missing its key, or still
+// accepting a shared code, would have gone on claiming otherwise. Everything
+// here is read from the process, not from a constant.
+app.get("/api/safeguards", (req, res) => {
+  const chain = verifyChain(auditFile);
+  res.json({
+    encryptionAtRest: {
+      mode: encryptionMode(),
+      keyPresent: KEY_PRESENT,
+      keyStretchedFromPassphrase: KEY_DERIVED,
+    },
+    auditChain: {
+      lines: chain.lines,
+      intact: chain.ok,
+      brokenAt: chain.brokenAt,
+      reason: chain.reason || null,
+    },
+    identity: {
+      accountsRequired: REQUIRE_ACCOUNTS,
+      sharedCodesAccepted: !REQUIRE_ACCOUNTS && ROLE_CODES().length > 0,
+      accounts: accounts.count(),
+      demoPrincipals: accounts.demoCount(),
+      openSessions: accounts.sessionCount(),
+    },
+    emergencyAccess: {
+      available: true,
+      open: openGrants(),
+    },
+  });
 });
 app.post("/api/import", (req, res) => {
   if (
