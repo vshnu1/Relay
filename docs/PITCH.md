@@ -20,8 +20,9 @@ that pace — do not speed up to fit more in.
 > on one timeline against that patient's own baseline and flags signals that
 > move together.
 >
-> Across 71 people, resting heart rate baselines span 31 beats — a reading of
-> 74 is a marked excursion for one person and a Tuesday for another.
+> Across the 66 people with usable baselines, resting heart rate spans 31
+> beats — a reading of 74 is a marked excursion for one person and a Tuesday
+> for another.
 >
 > When the data is ambiguous it asks the patient, then hands the clinician one
 > evidence packet. It never says what is wrong — that is the clinician's call.
@@ -84,20 +85,20 @@ than needing to be said. Everything else is load-bearing.
 > The useful signal is rarely one number crossing a line. It is several systems
 > moving together, relative to what is normal _for that person_.
 >
-> We measured how much that matters. Across 71 people, resting heart rate
-> baselines span 31 beats, while any one person varies by about two and a half
+> We measured how much that matters. Across the 66 people with usable
+> baselines, resting heart rate spans 31 beats, while one person varies by two and a half
 > day to day. A reading of 74 is a marked excursion for one person and a
 > Tuesday for another. That is a measurement, not a design opinion.
 
 **The product — 39 seconds**
 
-> Relay opens on one screen, sorted into four states: needs your review,
-> waiting on the patient, nothing new, and not enough data. That last one
-> matters — it admits when it cannot see, instead of reporting calm.
+> Relay opens on one screen, sorted into four states: review recommended,
+> context needed, monitoring, and not enough data. That last one matters — it
+> admits when it cannot see, instead of reporting calm.
 >
 > Open a patient and you get the story, not a chart. Settled by day three.
 > Drifting on day seven. All four signals counted for pneumonia past threshold
-> together for thirty-eight hours, with no workout recorded to explain it.
+> together for thirty-five hours, with no workout recorded to explain it.
 > Sleep is down too, and it tells you sleep is not counted here.
 >
 > When context is missing it asks, and the patient's own words come back into
@@ -191,6 +192,12 @@ same reason as the thirty-second version.
 4. **It asks when it cannot tell.** Voice check-in for context sensors cannot
    provide; the packet distinguishes "nothing else moved" from "we could not
    see whether anything else moved".
+
+   The questions are the discharge plan's own. A sleep apnoea patient is asked
+   whether they had nights without the CPAP machine, a chemotherapy patient
+   about fever and mouth sores, a hip or knee replacement about falls and the
+   wound. Fifteen pathways, each with its own list.
+
 5. **Auditable by construction.** Every statement traces to a measurement,
    timestamp and device. Audit log on every view, run, check-in and export.
 
@@ -361,6 +368,10 @@ Lindqvist are discharged from Moffitt, Malignant Hematology. Open Grace.
 ---
 
 ## Claims discipline
+
+The watch profile the code calls `sepsisWatch` is displayed as _Recovery after
+a serious infection_, and no screen says sepsis. The internal key is the only
+place in the built application where the word appears.
 
 **Never say:** diagnosis, infection, sepsis, risk of deterioration, high risk,
 critical, urgent, emergency, "the patient should be treated", "contact the

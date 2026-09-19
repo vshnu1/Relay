@@ -1,52 +1,29 @@
 # Demo runbook
 
-Two things: the click path for whoever records, and a verified recovery
-procedure if the frontend is still broken when it is time to record.
+The click path for whoever records, the three lines worth saying out loud, and
+where every number in them comes from.
 
-## Recovery: if `src/recovery/data/` never arrives
+## Before you record
 
-`main` cannot build. Four modules are imported but were never committed —
-`.gitignore` had an unanchored `data/` rule that silently matched
-`src/recovery/data/` at any depth, so `git add` discarded them without a
-word. The rule is fixed (`/data/`), but the files themselves only exist on
-Ian's machine.
+Nothing here needs a fallback any more. This section used to carry one, for a
+build that could not run: four modules were imported and never committed,
+because an unanchored `data/` rule in `.gitignore` matched `src/recovery/data/`
+at any depth and `git add` dropped them without a word. The folder was renamed
+to `src/recovery/model/` and the rule anchored to `/data/`, which is why it is
+called `model/` and must stay called that.
 
-### Option A — Ian pushes. Preferred.
-
-```bash
-git pull
-git add src/recovery/data/
-git commit -m "Add recovery data modules"
-git push
-```
-
-Thirty seconds, and it fixes the build, `npm test`, and the Render deploy.
-
-### Option B — flip the default back. Verified, 4 lines, reversible.
-
-`src/main.jsx` currently makes Ian's recovery view the default and moves the
-four-screen workspace to `#/classic`. Reverting that one file removes
-`Root.jsx` from the module graph, so the missing imports are never resolved
-and the build passes. **Ian's files stay in the repo untouched.**
+Check these four and record:
 
 ```bash
-cat > src/main.jsx <<'ENTRY'
-import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
-import "./styles/index.css";
-createRoot(document.getElementById("root")).render(<App />);
-ENTRY
-npm run build   # verified: builds in 1.28s
+npm ci
+npm test                    # 46 pass
+npm run build               # about 1.4s
+npm start                   # then open http://127.0.0.1:3001
 ```
 
-`tests/recovery.test.js` still fails, because it imports the missing modules
-directly. Either delete that one file or accept 8 of 9 passing — the build
-and the deploy are what matter.
-
-Tested end to end at commit `093ad6c` (the last before the frontend change):
-clean install, clean build, 8/8 tests, server boots, the workspace renders,
-all three demo scenarios return their expected states. **The fallback is
-demo-ready, not theoretical.**
+The deployed copy is <https://relay-bayhacks.onrender.com>. It is a free Render
+instance and sleeps when idle, so open it a minute before you record and let the
+first request wake it.
 
 ## The click path
 
@@ -71,12 +48,12 @@ difference between the last two.** One is a quiet patient, the other is one
 nobody can see.
 
 Point out the signal counts — "4 of 4 signals", "2 of 4 signals" — and that
-28 patients span 15 recovery pathways across 12 hospitals.
+28 patients span 15 recovery pathways across 13 hospital units.
 
 **2. Maya Okafor, about 40 seconds. This is the demo.** Click Open.
 
 Read "What the data shows" down the left: _settled by day three, drifting on
-day seven, all four signals past threshold together for thirty-eight hours,
+day seven, all four signals past threshold together for thirty-five hours,
 no workout recorded that would explain it._
 
 Then stop on **Also recorded — sleep is 5.9 hours against a usual 7.2, not
@@ -152,7 +129,7 @@ the neutropenic-fever watch. Open Grace, not a respiratory patient.
 
 | Claim                                                                                            | Source                           |
 | ------------------------------------------------------------------------------------------------ | -------------------------------- |
-| 71 people, resting HR baselines span 31 bpm, individuals vary ~2.4                               | `fixtures/calibration.json`      |
+| 66 people with usable baselines, resting HR spans 31 bpm, individuals vary ~2.4                  | `fixtures/calibration.json`      |
 | Rule fires on 3.35% of subject-days on healthy people                                            | `fixtures/calibration.json`      |
 | The same rule on a trailing baseline fires on 6.04%                                              | `fixtures/calibration.json`      |
 | Sees a 2.0 sd coordinated change the next day; the same subjects' own noise takes five           | `fixtures/sensitivity.json`      |

@@ -10,22 +10,44 @@ chooses to send.
    the discharge letter, agree to share. Codes are seeded per demo patient in
    `model/simulatedSource.js`. Session only. Demo codes:
 
-   | Code     | Patient          | Hospital                           |
-   | -------- | ---------------- | ---------------------------------- |
-   | BAY-2741 | Maya Okafor      | Bayfront Health — Respiratory Unit |
-   | TGH-5580 | Daniel Reyes     | Tampa General — Cardiology         |
-   | MMC-1193 | Priya Nair       | Mercy Medical — General Surgery    |
-   | LKR-8027 | Tom Lindqvist    | Lakeside Regional — Pulmonary      |
-   | SVH-3364 | Aisha Rahman     | St. Vincent's — Cardiology         |
-   | MMC-6608 | Samuel Osei      | Mercy Medical — General Surgery    |
-   | TGH-9915 | George Whitfield | Tampa General — Cardiology         |
-   | BAY-4470 | Lena Fischer     | Bayfront Health — Respiratory Unit |
+   | Code     | Patient          | Hospital and unit                  | Recovery pathway                   |
+   | -------- | ---------------- | ---------------------------------- | ---------------------------------- |
+   | BAY-2741 | Maya Okafor      | Bayfront Health — Respiratory Unit | Pneumonia                          |
+   | TGH-5580 | Daniel Reyes     | Tampa General — Cardiology         | Heart failure                      |
+   | MMC-1193 | Priya Nair       | Mercy Medical — General Surgery    | Abdominal surgery                  |
+   | LKR-8027 | Tom Lindqvist    | Lakeside Regional — Pulmonary      | COPD flare-up                      |
+   | SVH-3364 | Aisha Rahman     | St. Vincent's — Cardiology         | Atrial fibrillation                |
+   | MMC-6608 | Samuel Osei      | Mercy Medical — General Surgery    | Abdominal surgery                  |
+   | TGH-9915 | George Whitfield | Tampa General — Cardiology         | Heart failure                      |
+   | BAY-4470 | Lena Fischer     | Bayfront Health — Respiratory Unit | Pneumonia                          |
+   | TGH-4417 | Marcus Webb      | Tampa General — Acute Medicine     | Recovery after a serious infection |
+   | MMC-2856 | Nadia Haq        | Mercy Medical — Acute Medicine     | Recovery after a serious infection |
+   | LKR-3092 | Yusuf Demir      | Lakeside Regional — Pulmonary      | Respiratory infection              |
+   | BAY-6174 | Ingrid Larsen    | Bayfront Health — Respiratory Unit | Respiratory infection              |
+   | LKR-5238 | Oliver Grant     | Lakeside Regional — Pulmonary      | Asthma flare-up                    |
+   | BAY-8461 | Beatrice Cole    | Bayfront Health — Respiratory Unit | Asthma flare-up                    |
+   | TGH-7305 | Hassan Ali       | Tampa General — Cardiology         | Pulmonary embolism recovery        |
+   | MMC-4920 | Clara Moreau     | Mercy Medical — General Medicine   | Pulmonary embolism recovery        |
+   | LKR-1587 | Arthur Bennett   | Lakeside Regional — Sleep Medicine | Sleep apnoea, after titration      |
+   | LKR-9643 | Mei Tanaka       | Lakeside Regional — Sleep Medicine | Sleep apnoea, after titration      |
+   | TGH-2079 | Rosa Iglesias    | Tampa General — Maternity          | Postpartum recovery                |
+   | TGH-6812 | Amara Nwosu      | Tampa General — Maternity          | Postpartum recovery                |
+   | TGH-3348 | Elena Voss       | Tampa General — Orthopaedics       | Hip or knee replacement            |
+   | TGH-9126 | Raymond Chu      | Tampa General — Orthopaedics       | Hip or knee replacement            |
+   | TGH-5164 | Nathan Boateng   | Tampa General — Neurology          | Stroke rehabilitation              |
+   | TGH-8390 | Dorothy Kimani   | Tampa General — Neurology          | Stroke rehabilitation              |
+   | SVH-7742 | Felix Moreno     | St. Vincent's — Cardiology         | Cardiac recovery                   |
+   | SVH-2915 | Ruth Delacroix   | St. Vincent's — Cardiology         | Cardiac recovery                   |
+   | MOF-2201 | Grace Adebayo    | Moffitt — Malignant Hematology     | After chemotherapy                 |
+   | MOF-7735 | Victor Lindqvist | Moffitt — Malignant Hematology     | After chemotherapy                 |
 
-   The twelve patients added on `main` get stable codes from their ids:
-   TAM-7051 Marcus Webb, MER-6489 Nadia Haq, LAK-2832 Yusuf Demir, BAY-7547 Ingrid
-   Larsen, LAK-6727 Oliver Grant, BAY-3991 Beatrice Cole, TAM-5838 Hassan Ali,
-   MER-9855 Clara Moreau, LAK-1482 Arthur Bennett, LAK-9985 Mei Tanaka, TAM-6507
-   Rosa Iglesias, TAM-1604 Amara Nwosu.
+   Every code above was read out of the roster. The previous list was written
+   when eight patients had codes and the rest were derived from their ids by a
+   function that no longer runs: all twelve derived codes it published were
+   refused by the server, and eight patients -- including Grace Adebayo, the one
+   the pitch tells you to open for the oncology question -- had no code printed
+   anywhere. On the deployed demo `PATIENT_ACCESS_CODE` is set, which removes the
+   role switcher, so these codes are the only way into the patient app.
 
 2. **Home**: what the patient needs the moment the app opens. A header with the
    condition and hospital, a greeting, and the day of recovery with a progress bar

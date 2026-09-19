@@ -24,6 +24,20 @@ Working project name: Relay. React/Vite frontend, Express API, shared determinis
 
 ## What works
 
+**Two applications share this repository, and the root URL opens the first.**
+
+**Recovery watch**, at `/`, is the demo. The thirty days after a discharge: 28
+synthetic patients across 15 recovery pathways and 13 hospital units, a
+clinician ward list sorted into four states, a patient app with its own
+check-in and consent, the Python model on the clinician's model view, and a
+security page stating which HIPAA technical safeguards are built and which are
+not. `docs/DEMO-RUNBOOK.md` has the click path and `docs/PATIENT.md` has the
+discharge code for every patient.
+
+**The classic workspace**, at `#/classic`, is the original four-screen
+application and what the rest of this section describes. It is wired to the
+same API, to Render Workflows and to ElevenLabs.
+
 - Three synthetic patients and three replayable scenarios: brief workout fluctuation, persistent coordinated deviation, completed check-in.
 - Patient cohort, synchronized metric timelines, baseline comparisons, evidence brief, source record references on chart points.
 - Analysis uses actual simulated/imported measurements. Three signals must each deviate beyond configured thresholds for ≥24h with ≥24h shared overlap. At least three consecutive samples are required. Baseline needs ≥12 points spanning ≥72h, excluding the recent window.
@@ -93,6 +107,14 @@ Reference: https://elevenlabs.io/docs/eleven-agents/customization/authentication
 
 ## Demo (2–3 minutes)
 
+The recorded demo is **Recovery watch**, at the root URL; `docs/DEMO-RUNBOOK.md`
+is the timed click path and the source of every number said out loud. In short:
+the ward list and its four states, then Maya Okafor for the readings, what she
+reported and the model beside the rule, then the patient's own view of the same
+day, then the security page for what is and is not built.
+
+The classic workspace at `#/classic` has its own path:
+
 1. Introduce the fragmented remote-data problem; open Alex Morgan.
 2. Show the aligned measurement timelines and each individual baseline.
 3. Simulate a coordinated deviation and open “Why flagged.” Explain the 24-hour persistence and source references.
@@ -107,19 +129,19 @@ Submission: Nucleate Florida Healthcare Challenge main track. Optional ElevenLab
 
 Every claim in the pitch has a test or a measurement behind it.
 
-| What | How it is checked |
-|---|---|
-| The rules and views | `npm test` , JS unit suite, plus `node tests/api.integration.js` against a live server |
-| The Python model | `PYTHONPATH=ml python -m unittest discover -s ml/tests` , 60 tests across contracts, features, scoring, scenarios |
-| The clinical boundary | `analysis/language_guard.py` and its Node port `server/languageGuard.js`, checked for pattern-for-pattern parity; every model sentence passes it before leaving the server |
-| The false-alarm rate | 3.35% of subject-days at the shipped 1.75 sd, over the 66 of 71 LifeSnaps subjects with usable baselines (4,420 of 4,453 subject-days). Reproduce with `python3 analysis/calibrate.py fixtures/lifesnaps_daily.csv --sweep`; the grid is `fixtures/calibration.json` |
-| How fast it speaks when it should | a coordinated deviation of known size injected onto 41 real subjects' own series. Over the same window the rule fires for 70.7% of them untouched, median five days; at 2.0 personal sd it fires for 97.6%, median **one** day. The gain is in the lag, not the rate (`analysis/sensitivity.py`, `fixtures/sensitivity.json`) |
-| Which baseline that is measured against | 3.35% uses a whole-series baseline, which includes the day being judged; the trailing baseline `detect.py` actually uses fires on 6.04%. Both are in `fixtures/calibration.json` and `docs/DATA.md` says which to quote for what |
-| Whether the model earns its place | both detectors over the same injected change: the rule is the sensitive one (97.6% at 2.0 sd, one day), the model the quiet one (56.1%, but speaking on 9.8% of untouched subjects against the rule's 53.7%). A second opinion, not a better detector (`analysis/sensitivity_ml.py`) |
-| The model against the rule | 3.77%–5.77% of judged subjects across the five programs this cohort can supply, 5.77% for `post_abdominal_surgery` (`fixtures/ml_calibration.json`); the two use different denominators and are never compared as if they were one |
-| The model's cold start | every one of the 14 programs has a synthetic-only prior in `ml/artifacts`, trained by `ml/relay_ml/train.py` on populations drawn from that program's own core metrics, so a patient with days of history is scored rather than refused |
-| Detection on gait | one real person's 1,451 days of phone gait, thirty injected episodes: the rule sees a 2 sd coordinated decline the next day; the model catches 77–90% of them and speaks on a tenth as many untouched episodes (`analysis/sensitivity_gait.py`, `fixtures/sensitivity_gait.json`) |
-| Real data | 99 days of one team member's wearable physiology and 1,451 days of their phone's gait, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`) |
+| What                                    | How it is checked                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The rules and views                     | `npm test` , JS unit suite, plus `node tests/api.integration.js` against a live server                                                                                                                                                                                                                                        |
+| The Python model                        | `PYTHONPATH=ml python -m unittest discover -s ml/tests` , 60 tests across contracts, features, scoring, scenarios                                                                                                                                                                                                             |
+| The clinical boundary                   | `analysis/language_guard.py` and its Node port `server/languageGuard.js`, checked for pattern-for-pattern parity; every model sentence passes it before leaving the server                                                                                                                                                    |
+| The false-alarm rate                    | 3.35% of subject-days at the shipped 1.75 sd, over the 66 of 71 LifeSnaps subjects with usable baselines (4,420 of 4,453 subject-days). Reproduce with `python3 analysis/calibrate.py fixtures/lifesnaps_daily.csv --sweep`; the grid is `fixtures/calibration.json`                                                          |
+| How fast it speaks when it should       | a coordinated deviation of known size injected onto 41 real subjects' own series. Over the same window the rule fires for 70.7% of them untouched, median five days; at 2.0 personal sd it fires for 97.6%, median **one** day. The gain is in the lag, not the rate (`analysis/sensitivity.py`, `fixtures/sensitivity.json`) |
+| Which baseline that is measured against | 3.35% uses a whole-series baseline, which includes the day being judged; the trailing baseline `detect.py` actually uses fires on 6.04%. Both are in `fixtures/calibration.json` and `docs/DATA.md` says which to quote for what                                                                                              |
+| Whether the model earns its place       | both detectors over the same injected change: the rule is the sensitive one (97.6% at 2.0 sd, one day), the model the quiet one (56.1%, but speaking on 9.8% of untouched subjects against the rule's 53.7%). A second opinion, not a better detector (`analysis/sensitivity_ml.py`)                                          |
+| The model against the rule              | 3.77%–5.77% of judged subjects across the five programs this cohort can supply, 5.77% for `post_abdominal_surgery` (`fixtures/ml_calibration.json`); the two use different denominators and are never compared as if they were one                                                                                            |
+| The model's cold start                  | every one of the 14 programs has a synthetic-only prior in `ml/artifacts`, trained by `ml/relay_ml/train.py` on populations drawn from that program's own core metrics, so a patient with days of history is scored rather than refused                                                                                       |
+| Detection on gait                       | one real person's 1,451 days of phone gait, thirty injected episodes: the rule sees a 2 sd coordinated decline the next day; the model catches 77–90% of them and speaks on a tenth as many untouched episodes (`analysis/sensitivity_gait.py`, `fixtures/sensitivity_gait.json`)                                             |
+| Real data                               | 99 days of one team member's wearable physiology and 1,451 days of their phone's gait, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`)                                                                                                               |
 
 Thresholds are demo settings and are labelled so in the interface. None of this is clinical validation, and the documents say that where it matters.
 
