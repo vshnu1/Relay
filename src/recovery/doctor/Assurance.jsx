@@ -5,6 +5,8 @@ import {
   Activity,
   Check,
   ClipboardCheck,
+  FileDown,
+  KeyRound,
   LockKeyhole,
   Minus,
   ShieldCheck,
@@ -33,7 +35,8 @@ const SAFEGUARDS = [
     cite: "164.312(a)(1)",
     name: "Access control",
     state: BUILT,
-    note: "Role gate with an allow-list of the routes the patient view uses, constant-time code comparison, deny by default. A patient is scoped server-side to the one record their discharge code opens.",
+    note: "Role gate with an allow-list of the routes the patient view uses, constant-time code comparison, deny by default. A patient is scoped server-side to the one record their account is for. A clinician account is for one care team and is refused every other team's records, on reads and on writes.",
+    live: "scoping",
   },
   {
     cite: "164.312(a)(2)(i)",
@@ -47,11 +50,12 @@ const SAFEGUARDS = [
   {
     cite: "164.312(a)(2)(ii)",
     name: "Emergency access procedure",
-    state: PARTIAL,
-    was: "No path of any kind existed.",
-    note: "There is a break-glass control. It requires a reason in a sentence, lasts fifteen minutes, is recorded with that reason, and is shown on this page while it is open. Clinician access is not partitioned here, so nothing an emergency needs is ever refused.",
+    state: BUILT,
+    was: "A break-glass control that recorded a declaration and lifted nothing, because clinician access was not partitioned. This row read Partial for that reason.",
+    note: "A clinician whose account is for one care team is refused any other record. Declaring emergency access opens that one record for fifteen minutes. It requires a reason in a sentence, and the refusal, the declaration and every read made under it are written to the audit chain under the clinician's name. It is shown on this page while it is open.",
     caveat:
-      "Which means the control grants nothing that was not already reachable. It records a declaration; it does not lift a restriction, because there is no restriction to lift. This stays Partial until access is scoped per care team, and saying otherwise would be the kind of green row this page exists to argue against.",
+      "Which team an account is for is chosen at sign-up, where a hospital would have an administrator assign it. The demo identities are for the whole ward on purpose, so a visitor sees every patient; sign in with an account for one unit to see a record refused.",
+    live: "scoping",
   },
   {
     cite: "164.312(a)(2)(iii)",
@@ -107,6 +111,27 @@ const SAFEGUARDS = [
   },
 ];
 
+// Privacy Rule obligations that a program can carry part of. Kept apart from the
+// Security Rule table above because they are a different rule, and because one of
+// them is still only partly done.
+const PRIVACY = [
+  {
+    cite: "164.524",
+    name: "Right of access",
+    state: BUILT,
+    was: "No patient-facing export of any kind.",
+    note: "A patient can save a copy of everything held about them from Your data, as text to read or print and as data for another clinic or app: discharge notes, medicines, appointments, check-ins, messages and every reading. Taking a copy is recorded on their own record. The sign-in code is left out of the file.",
+  },
+  {
+    cite: "164.502(b)",
+    name: "Minimum necessary",
+    state: PARTIAL,
+    note: "Access is limited by role and now by care team: a patient reaches one record, a clinician reaches their team's, and the ward list carries no raw events.",
+    caveat:
+      "Within a record a clinician still receives all of it. Limiting fields by job (a scheduler does not need check-in answers) is not built.",
+  },
+];
+
 // The other half, and the reason this page is worth reading. Software closed
 // the rows above; nothing in this list can be closed by writing more of it.
 const BEYOND_SOFTWARE = [
@@ -126,9 +151,9 @@ const BEYOND_SOFTWARE = [
     note: "Individuals without unreasonable delay and within 60 days, and the Secretary within 60 days at 500 or more affected. A procedure, not a feature.",
   },
   {
-    name: "Right of access, and deletion",
-    cite: "164.524 · RCW 19.373",
-    note: "A patient may have their record in the form they ask for within 30 days, and Washington law gives a right to delete that reaches processors. Neither exists here. Both are feasible and simply not built.",
+    name: "Deletion on request",
+    cite: "RCW 19.373",
+    note: "Washington law gives a right to delete that reaches backups and processors. It is not a HIPAA right, and HIPAA requires some records to be kept. It is not built here, and doing it properly depends on agreements with those processors.",
   },
   {
     name: "Clinical validation",
@@ -173,6 +198,12 @@ const ACTION = {
   "simulation.run": "Ran a simulation",
   "clinician.voice_summary.generated": "Spoke a clinician summary",
   "audit.unreadable": "An entry written under a previous key",
+  "account.created": "Created an account",
+  "account.signed_in": "Signed in",
+  "account.signed_out": "Signed out",
+  "account.demo_issued": "Entered as a demo identity",
+  "access.refused": "Refused a record outside the care team",
+  "emergency.access_opened": "Declared emergency access",
 };
 
 // What this process is doing, as opposed to what this file says it does. A
@@ -222,6 +253,8 @@ function AuditTrail() {
           <span className="rx-audit-what">
             {ACTION[r.action] || r.action}
             {r.patientId ? ` · ${r.patientId}` : ""}
+            {r.onBehalfOf === "break-glass" ? " · under emergency access" : ""}
+            {r.actorEmail ? ` · ${r.actorEmail}` : ""}
           </span>
           <time dateTime={r.at}>{ago(r.at)}</time>
         </li>
@@ -244,10 +277,11 @@ export default function Assurance() {
           <h1>What is true about how this handles health data</h1>
           <p className="rx-assurance-sub">
             Every patient here is synthetic, and this is not a compliant system.
-            The technical safeguards below are now all in place; the second
-            table is the reason that is not the same thing, and it is the one
-            worth reading. Compliance is a state an organisation is in, and
-            software cannot put it there.
+            The technical safeguards below are now all in place, and a patient
+            can take a copy of their own record. The last table is the reason
+            that is not the same thing as compliance, and it is the one worth
+            reading: compliance is a state an organisation is in, and software
+            cannot put it there.
           </p>
         </div>
       </header>
@@ -269,12 +303,22 @@ export default function Assurance() {
         </article>
         <article className="rx-assurance-point">
           <span>
+            <KeyRound size={18} aria-hidden="true" />
+          </span>
+          <h3>You see your own team&apos;s patients</h3>
+          <p>
+            Any other record is refused until you declare an emergency for it,
+            with a reason, for fifteen minutes. All of that is recorded.
+          </p>
+        </article>
+        <article className="rx-assurance-point">
+          <span>
             <Activity size={18} aria-hidden="true" />
           </span>
           <h3>Sessions end by themselves</h3>
           <p>
-            Fifteen minutes without activity, then ended on the server than in
-            your browser.
+            Fifteen minutes without activity, then ended on the server, not only
+            in your browser.
           </p>
         </article>
         <article className="rx-assurance-point">
@@ -295,6 +339,16 @@ export default function Assurance() {
           <p>
             Encrypted at rest, TLS in transit, and no outside script on the page
             that opens a record.
+          </p>
+        </article>
+        <article className="rx-assurance-point">
+          <span>
+            <FileDown size={18} aria-hidden="true" />
+          </span>
+          <h3>Patients can take their record with them</h3>
+          <p>
+            A full copy from their own app, to read or to hand to another
+            clinic, and taking one is recorded too.
           </p>
         </article>
       </section>
@@ -334,6 +388,22 @@ export default function Assurance() {
                         : `${live.encryptionAtRest.mode}, key present.`}
                     </p>
                   )}
+                  {s.live === "scoping" && live && live.accessScoping && (
+                    <p className="rx-safeguard-live">
+                      Live: {live.accessScoping.careTeams} care teams.{" "}
+                      {live.accessScoping.scopedAccounts} clinician{" "}
+                      {live.accessScoping.scopedAccounts === 1
+                        ? "account is"
+                        : "accounts are"}{" "}
+                      for one team, {live.accessScoping.wardWideAccounts} for
+                      the whole ward
+                      {live.accessScoping.unassignedAccounts > 0 &&
+                        `, and ${live.accessScoping.unassignedAccounts} from before teams existed, which still reach the whole ward`}
+                      {live.accessScoping.sharedCodesAccepted &&
+                        ". This deployment also accepts a shared code, which names no person and cannot be scoped"}
+                      .
+                    </p>
+                  )}
                   {s.live === "chain" && live && (
                     <p className="rx-safeguard-live">
                       Live:{" "}
@@ -363,10 +433,46 @@ export default function Assurance() {
         </ul>
       </section>
 
+      <section className="rx-card" aria-label="Privacy Rule">
+        <h2>
+          HIPAA Privacy Rule, the parts a program can carry{" "}
+          <small>45 CFR 164.502, 164.524</small>
+        </h2>
+        <ul className="rx-safeguards">
+          {PRIVACY.map((s) => {
+            const mark = MARK[s.state];
+            const Icon = mark.icon;
+            return (
+              <li key={s.cite} className={s.state}>
+                <span className="rx-safeguard-mark" title={mark.label}>
+                  <Icon size={14} aria-hidden="true" />
+                  <span className="rx-visually-hidden">{mark.label}</span>
+                </span>
+                <div>
+                  <p className="rx-safeguard-name">{s.name}</p>
+                  <p className="rx-safeguard-note">{s.note}</p>
+                  {s.was && (
+                    <p className="rx-safeguard-was">
+                      <strong>Was:</strong> {s.was}
+                    </p>
+                  )}
+                  {s.caveat && (
+                    <p className="rx-safeguard-caveat">
+                      <strong>Still not:</strong> {s.caveat}
+                    </p>
+                  )}
+                </div>
+                <code>{s.cite}</code>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
       <section className="rx-card" aria-label="What software cannot fix">
         <h2>What is still not true, and no amount of code would fix</h2>
         <p className="rx-assurance-sub">
-          The table above went green this morning. That is the smaller half. A
+          The Security Rule table went green today. That is the smaller half. A
           system can hold every technical safeguard in the Security Rule and
           still not be compliant, because compliance is a state an organisation
           is in, not a property a program has.
@@ -512,14 +618,16 @@ export default function Assurance() {
       <section className="rx-assurance-deploy" aria-label="Before clinical use">
         <h2>Before clinical use</h2>
         <p>
-          Individual accounts, emergency access and encryption at rest were on
-          this list until today and are now above it. What is left is not
-          engineering.
+          Individual accounts, care-team scoping with emergency access,
+          encryption at rest and a patient&apos;s copy of their record were on
+          this list until today and are now above it. Most of what is left is
+          not engineering.
         </p>
         <ul>
           <li>
-            A second factor, and someone checking that an account belongs to the
-            clinician it names
+            A second factor, and an administrator who checks that an account
+            belongs to the clinician it names and assigns its care team, which
+            the clinician currently picks at sign-up
           </li>
           <li>
             Managed storage with verified backups, under a business associate

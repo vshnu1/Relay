@@ -16,11 +16,12 @@ live site unless one of us chooses to set it.
 Once it is set, these accounts exist on the deployed site and keep their identity
 across sign-outs, restarts and deploys:
 
-| Who               | Email                            | Role      | Record  |
-| ----------------- | -------------------------------- | --------- | ------- |
-| Dr. Elena Alvarez | `elena.alvarez@bayfront.example` | clinician | any     |
-| Maya Okafor       | `maya@patients.relay.example`    | patient   | `maya`  |
-| Priya Nair        | `priya@patients.relay.example`   | patient   | `priya` |
+| Who               | Email                             | Role      | Record   |
+| ----------------- | --------------------------------- | --------- | -------- |
+| Dr. Elena Alvarez | `elena.alvarez@bayfront.example`  | clinician | any      |
+| Dr. Naomi Park    | `naomi.park@tampageneral.example` | clinician | one unit |
+| Maya Okafor       | `maya@patients.relay.example`     | patient   | `maya`   |
+| Priya Nair        | `priya@patients.relay.example`    | patient   | `priya`  |
 
 Locally (`NODE_ENV` not `production`) the password defaults to `relay-demo-2026`, so a
 plain checkout can sign in as them with no setup. Every patient here is synthetic.
@@ -156,8 +157,12 @@ suites and the build were re-run after that. **Nothing here has been tried on Re
 
 Ordered by what I would do first.
 
-1. **Care-team scoping.** Any clinician can open any patient's thread. This is item 3
-   in Anson's list and the same fix closes both.
+1. ~~Care-team scoping.~~ **Done.** A clinician account is for one care team and the
+   server refuses any other record, threads included, until the clinician declares
+   emergency access for it (`canReach` in `server/index.js`,
+   `tests/careTeam.integration.js`). Dr. Alvarez and the demo identities are
+   ward-wide on purpose; Dr. Naomi Park is for Tampa General, Cardiology, which is
+   the account to sign in with to see a record refused.
 2. **The sign-up form** now asks for a name and, for a patient, a discharge code.
    The server binds that patient account to the matching synthetic record so their
    messages and check-ins stay attached to the right person.

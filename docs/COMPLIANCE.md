@@ -32,18 +32,18 @@ analytics SDK, a misconfigured third-party call — a reportable breach.
 
 ## HIPAA Security Rule, technical safeguards (45 CFR 164.312)
 
-| Cite        | Safeguard                                 | Status                                                                                                                                                                                                                                                                                                                                |
-| ----------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| (a)(1)      | Access control                            | **Built.** Role gate, an allow-list of the routes the patient view uses, constant-time code comparison, deny by default, and a patient scoped server-side to the one record their discharge code opens                                                                                                                                |
-| (a)(2)(i)   | **Unique user identification** (required) | **Built.** Named accounts, scrypt-hashed passwords, and an audit line that carries the acting person rather than only their role (`server/accounts.js`). _Was: two shared codes._ Still missing multi-factor authentication and any check that an account belongs to the clinician it names                                           |
-| (a)(2)(ii)  | Emergency access (required)               | **Partial.** A break-glass control records who declared an emergency, why, over which record, for fifteen minutes, displayed while open. It grants nothing extra, because clinician access is not partitioned, so there is no restriction to lift. Scoping clinicians per care team is what would make it real. _Was: no path at all_ |
-| (a)(2)(iii) | **Automatic logoff**                      | **Built.** 15 minutes idle, activity measured from real user events (`src/recovery/idleSignOut.jsx`), and a server-side session store with a 12-hour ceiling, so signing out ends the session instead of clearing the tab. _Was: the credential stayed valid because there was nothing to revoke_                                     |
-| (a)(2)(iv)  | Encryption at rest                        | **Built.** AES-256-GCM over state, the account store and every audit line, under `RELAY_DATA_KEY` (`server/vault.js`). With no key the server writes what it wrote before and the security page reports it unencrypted, so a missing key degrades rather than breaking a deploy                                                       |
-| (b)         | **Audit controls**                        | **Built.** Every access recorded with the acting person and role — record views, roster views, recovery-log reads, consent changes, acknowledgements, exports, imports, sign-ins, emergency access — carried through the model's awaits by an `AsyncLocalStorage` so one request cannot be attributed to another                      |
-| (c)(1)      | Integrity                                 | **Built.** Atomic write via temp-and-rename, and the audit log is a hash chain: each line commits to the one before it. _Was: Partial, because nothing prevented editing the log afterwards_                                                                                                                                          |
-| (c)(2)      | Authenticate ePHI                         | **Built.** `verifyChain()` walks the log and reports the line number where the history stops adding up. The digest covers the bytes as written, so the chain is checkable by someone holding the file and no key                                                                                                                      |
-| (d)         | **Person or entity authentication**       | **Built.** A password checked in constant time against a stretched hash, exchanged for a revocable server-side session. This authenticates an account, not a human being: identity proofing and a second factor are what a hospital deployment adds                                                                                   |
-| (e)(1)      | Transmission security                     | **Built.** TLS terminated by Render; HSTS in production; a CSP with **no third-party script origin**, nosniff, frame denial, `Referrer-Policy: no-referrer`, restrictive permissions policy, same-origin check on writes                                                                                                              |
+| Cite        | Safeguard                                 | Status                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| (a)(1)      | Access control                            | **Built.** Role gate, an allow-list of the routes the patient view uses, constant-time code comparison, deny by default, and a patient scoped server-side to the one record their account is for. A clinician account is for one care team (a unit, or its hospital) and is refused every other team's records on reads and on writes (`canReach` in `server/index.js`, pinned by `tests/careTeam.integration.js`)                                                                                                                                            |
+| (a)(2)(i)   | **Unique user identification** (required) | **Built.** Named accounts, scrypt-hashed passwords, and an audit line that carries the acting person rather than only their role (`server/accounts.js`). _Was: two shared codes._ Still missing multi-factor authentication and any check that an account belongs to the clinician it names                                                                                                                                                                                                                                                                   |
+| (a)(2)(ii)  | Emergency access (required)               | **Built.** A clinician outside a record's care team is refused it. Declaring emergency access opens that one record for fifteen minutes, needs a reason in a sentence, and puts the refusal, the declaration and every read made under it on the audit chain under the clinician's name, marked `break-glass`. _Was: Partial, because clinician access was not partitioned and the control lifted nothing._ Still not: the team is chosen at sign-up where a hospital would have an administrator assign it, and the demo identities are ward-wide on purpose |
+| (a)(2)(iii) | **Automatic logoff**                      | **Built.** 15 minutes idle, activity measured from real user events (`src/recovery/idleSignOut.jsx`), and a server-side session store with a 12-hour ceiling, so signing out ends the session instead of clearing the tab. _Was: the credential stayed valid because there was nothing to revoke_                                                                                                                                                                                                                                                             |
+| (a)(2)(iv)  | Encryption at rest                        | **Built.** AES-256-GCM over state, the account store and every audit line, under `RELAY_DATA_KEY` (`server/vault.js`). With no key the server writes what it wrote before and the security page reports it unencrypted, so a missing key degrades rather than breaking a deploy                                                                                                                                                                                                                                                                               |
+| (b)         | **Audit controls**                        | **Built.** Every access recorded with the acting person and role — record views, roster views, recovery-log reads, consent changes, acknowledgements, exports, imports, sign-ins, emergency access — carried through the model's awaits by an `AsyncLocalStorage` so one request cannot be attributed to another                                                                                                                                                                                                                                              |
+| (c)(1)      | Integrity                                 | **Built.** Atomic write via temp-and-rename, and the audit log is a hash chain: each line commits to the one before it. _Was: Partial, because nothing prevented editing the log afterwards_                                                                                                                                                                                                                                                                                                                                                                  |
+| (c)(2)      | Authenticate ePHI                         | **Built.** `verifyChain()` walks the log and reports the line number where the history stops adding up. The digest covers the bytes as written, so the chain is checkable by someone holding the file and no key                                                                                                                                                                                                                                                                                                                                              |
+| (d)         | **Person or entity authentication**       | **Built.** A password checked in constant time against a stretched hash, exchanged for a revocable server-side session. This authenticates an account, not a human being: identity proofing and a second factor are what a hospital deployment adds                                                                                                                                                                                                                                                                                                           |
+| (e)(1)      | Transmission security                     | **Built.** TLS terminated by Render; HSTS in production; a CSP with **no third-party script origin**, nosniff, frame denial, `Referrer-Policy: no-referrer`, restrictive permissions policy, same-origin check on writes                                                                                                                                                                                                                                                                                                                                      |
 
 `GET /api/safeguards` reports what the running process is actually doing —
 encryption mode, chain length and whether it verifies, whether accounts are
@@ -102,14 +102,21 @@ read into one a breach investigation can find.
 
 ## Other HIPAA obligations
 
-- **Minimum necessary** (164.502(b)) — partly built by accident of design: the
-  roster strips raw events, and the patient role cannot list the ward. But
-  `GET /api/patients/:id` returns the entire record including every event to
-  any clinician code. _Field-level scoping is feasible and not done._
+- **Minimum necessary** (164.502(b)) — **Partial.** Access is limited by role
+  and by care team: a patient reaches one record, a clinician reaches their
+  team's, the roster strips raw events, and the patient role cannot list the
+  ward. Within a record a clinician still receives all of it.
+  _Field-level scoping by job is feasible and not done._
 - **Right of access** (164.524) — a patient may have their record, in the
-  electronic form requested, within 30 days. **Relay has no patient-facing
-  export.** The FHIR endpoint is clinician-only and exports only _flagged_
-  observations, which is not a record. _Written, not built._
+  electronic form requested, within 30 days. **Built.** From Your data a
+  patient saves a copy of everything held about them, as text to read or print
+  and as JSON for another clinic or app: discharge notes, medicines,
+  appointments, check-ins, messages and every reading, marked as
+  wearable-derived (`src/recovery/model/recordExport.js`, covered by
+  `tests/recordExport.test.js`). The copy is assembled in the browser, the
+  discharge code is left out because it is a credential, and taking a copy is
+  written to the patient's own record so the access is on the audit trail. It
+  is not a FHIR bundle; see Interoperability.
 - **Business associate agreements** (164.502(e)) — needed with every processor
   touching PHI. Two are checkable today and both fail: Render signs a BAA only
   on Scale or Enterprise workspaces and `render.yaml` specifies `starter`;
@@ -194,15 +201,16 @@ _Organisational._
 
 ## Honest summary
 
-Built: **nine of the ten technical safeguards in 45 CFR 164.312**, the tenth Partial and explained — transport security
+Built: **all ten technical safeguards in 45 CFR 164.312**, each with what it still does not do stated beside it — transport security
 and headers, automatic logoff with a revocable server-side session, audit
 controls with per-person attribution over a hash chain, encryption at rest,
-named accounts, emergency access, role separation with a deny-by-default
-allow-list — plus consent enforced on both sides, de-identification under a
+named accounts, clinician access scoped per care team with an emergency
+procedure that lifts it, role separation with a deny-by-default allow-list, a
+patient's own copy of their record — plus consent enforced on both sides, de-identification under a
 secret that is not in the repository, and a runtime boundary on every generated
 sentence.
 
-Not built and feasible: patient data export, deletion, FHIR conformance,
+Not built and feasible: deletion, FHIR conformance,
 field-level minimum-necessary scoping, billing-readiness counters, multi-factor
 authentication, identity proofing.
 
