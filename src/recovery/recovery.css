@@ -1821,3 +1821,553 @@ p.rx-row-summary {
     flex-direction: column;
   }
 }
+
+/* ---------- Patient view: end-to-end screens ---------- */
+.rx-p-tabs.four {
+  grid-template-columns: repeat(4, 1fr);
+}
+.rx-p-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.rx-p-select,
+.rx-p-code input,
+.rx-p-input input,
+.rx-p-entry input {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  border: 1.5px solid var(--control);
+  border-radius: 14px;
+  background: var(--surface);
+  font-size: 18px;
+  color: var(--ink);
+}
+.rx-p-code {
+  position: relative;
+}
+.rx-p-code svg {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--faint);
+}
+.rx-p-code input {
+  padding-left: 48px;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.rx-p-field small {
+  font-size: 15px;
+  color: var(--faint);
+}
+.rx-p-error {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fbe9e4;
+  color: #8a3b2a;
+  font-size: 16px;
+}
+.rx-p-demo {
+  margin-top: 4px;
+}
+.rx-p-demo ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.rx-p-demo li button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 15px;
+  text-align: left;
+}
+.rx-p-demo li button strong {
+  margin-right: 8px;
+  letter-spacing: 0.06em;
+}
+.rx-p-demo li button small {
+  color: var(--faint);
+}
+.rx-p-hello {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rx-p-hello h1 {
+  font-size: 28px;
+}
+.rx-p-hello span {
+  font-size: 15px;
+  color: var(--faint);
+}
+.rx-p-notif {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.rx-p-notif.action {
+  border-color: var(--pine);
+  box-shadow: inset 4px 0 0 var(--pine);
+}
+.rx-p-notif.alert {
+  border-color: #dcc48a;
+  background: var(--amber-tint);
+  box-shadow: inset 4px 0 0 var(--amber);
+}
+.rx-p-notif strong {
+  font-size: 18px;
+}
+.rx-p-notif p {
+  font-size: 16px;
+  color: var(--ink-2);
+}
+.rx-p-notif a {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--pine);
+}
+.rx-p-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.rx-p-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.rx-p-action svg {
+  color: var(--pine);
+}
+.rx-p-action small {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--faint);
+}
+.rx-p-kv > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 16px;
+}
+.rx-p-kv > div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.rx-p-kv dt {
+  color: var(--faint);
+}
+.rx-p-kv code {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.rx-p-notes {
+  font-size: 18px;
+  line-height: 1.5;
+}
+.rx-p-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 20px;
+  font-size: 16.5px;
+  list-style: disc;
+}
+.rx-p-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 19px;
+  font-weight: 600;
+}
+.rx-p-card.alert {
+  border-color: #dcc48a;
+  background: var(--amber-tint);
+}
+.rx-p-device small {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--faint);
+}
+.rx-p-btn.small {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 16px;
+  border-radius: 10px;
+}
+.rx-p-progressbar {
+  position: relative;
+  height: 44px;
+  border-radius: 12px;
+  background: #eef1ec;
+  overflow: hidden;
+}
+.rx-p-progressbar i {
+  display: block;
+  height: 100%;
+  background: #cfe0d6;
+  transition: width 0.2s;
+}
+.rx-p-progressbar span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.rx-p-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(31, 47, 42, 0.45);
+}
+.rx-p-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  padding: 28px 24px 32px;
+  border-radius: 28px 28px 0 0;
+  background: var(--surface);
+  font-size: 17px;
+}
+.rx-p-sheet-body svg {
+  color: var(--pine);
+}
+.rx-p-sheet-body h2 {
+  font-size: 22px;
+  font-weight: 600;
+}
+.rx-p-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.rx-p-pills button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 500;
+}
+.rx-p-pills button::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cfd6cf;
+}
+.rx-p-pills button.drifting::before {
+  background: #f0e1bb;
+  border: 1.5px solid var(--amber);
+}
+.rx-p-pills button.moved::before {
+  background: var(--amber);
+}
+.rx-p-pills button[aria-selected="true"] {
+  border-color: var(--pine);
+  background: var(--pine);
+  color: #ffffff;
+  font-weight: 600;
+}
+.rx-p-metric {
+  gap: 12px;
+}
+.rx-p-metric > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rx-p-metric > header > div {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+.rx-p-metric > header span {
+  display: block;
+  font-size: 13.5px;
+  color: var(--faint);
+}
+.rx-p-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+}
+.rx-p-iconbtn.live {
+  border-color: #b5453a;
+  color: #b5453a;
+  animation: rx-pulse 1s infinite;
+}
+@keyframes rx-pulse {
+  50% {
+    box-shadow: 0 0 0 6px rgba(181, 69, 58, 0.15);
+  }
+}
+.rx-p-now {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
+}
+.rx-p-now strong {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.rx-p-now span,
+.rx-p-now small {
+  color: var(--faint);
+  font-size: 15px;
+}
+.rx-p-now em {
+  font-style: normal;
+  margin-left: auto;
+}
+.rx-p-plain {
+  font-size: 17px;
+  color: var(--ink-2);
+}
+.rx-p-plain.moved {
+  color: var(--amber-ink);
+  font-weight: 600;
+}
+.rx-p-plot {
+  margin: 0 -6px;
+}
+.rx-p-plot .rx-signal-plot text,
+.rx-p-plot text {
+  font-size: 11.5px;
+  fill: var(--faint);
+}
+.rx-p-plot .rx-rule-label {
+  font-weight: 600;
+}
+.rx-p-plot .rx-rule-label.amber {
+  fill: var(--amber-ink);
+}
+.rx-p-plot .rx-rule-label.pine {
+  fill: var(--pine);
+}
+.rx-p-plot .rx-axis-cap {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.rx-p-plot .rx-last-label {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--pine);
+}
+.rx-p-plot .rx-plot-wrap {
+  position: relative;
+}
+.rx-p-plot svg {
+  display: block;
+  overflow: visible;
+}
+.rx-p-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+.rx-p-entry label {
+  font-size: 16px;
+  font-weight: 600;
+}
+.rx-p-entry label small {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--faint);
+}
+.rx-p-entry > div {
+  display: flex;
+  gap: 10px;
+}
+.rx-p-saved {
+  font-size: 15px;
+  color: #2f7a62;
+}
+.rx-p-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 200px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+.rx-p-bubble {
+  max-width: 88%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 17px;
+  line-height: 1.4;
+}
+.rx-p-bubble.relay {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 6px;
+}
+.rx-p-bubble.you {
+  align-self: flex-end;
+  background: var(--pine);
+  color: #ffffff;
+  border-bottom-right-radius: 6px;
+}
+.rx-p-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rx-p-quick button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1.5px solid var(--pine);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--pine);
+  font-size: 16px;
+  font-weight: 600;
+}
+.rx-p-quick button[aria-pressed="true"] {
+  background: var(--pine);
+  color: #ffffff;
+}
+.rx-p-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rx-p-input input {
+  flex: 1;
+  min-height: 48px;
+  font-size: 17px;
+}
+.rx-p-entryrow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.rx-p-entryrow:first-of-type {
+  border-top: 0;
+}
+.rx-p-entryrow > span {
+  font-size: 14px;
+  color: var(--faint);
+}
+.rx-p-entryrow p {
+  font-size: 17px;
+}
+.rx-p-entryrow.unread {
+  box-shadow: inset 4px 0 0 var(--pine);
+  padding-left: 12px;
+}
+.rx-p-report {
+  max-height: 260px;
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  font-family: inherit;
+}
+.rx-p-insight {
+  gap: 10px;
+}
+.rx-p-insight.send {
+  border-color: #dcc48a;
+  background: var(--amber-tint);
+}
+.rx-p-insight.fine {
+  background: #e3f0ea;
+  border-color: #cfe0d6;
+}
+.rx-p-eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.rx-p-insight h2 {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.rx-p-insight p {
+  font-size: 17px;
+  line-height: 1.45;
+}
+.rx-p-card details summary {
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--pine);
+  font-weight: 600;
+}
+.rx-p-stephead .rx-p-iconbtn {
+  margin-left: auto;
+}

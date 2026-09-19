@@ -10,6 +10,8 @@ import {
 import DoctorApp from "./doctor/DoctorApp.jsx";
 import PatientApp from "./patient/PatientApp.jsx";
 import Landing, { ROLE_KEY } from "./Landing.jsx";
+import SignIn from "./patient/SignIn.jsx";
+import { currentPatientId, signIn, signOut } from "./patient/session.js";
 import "./recovery.css";
 
 export default function Root() {
@@ -49,7 +51,7 @@ function DemoBar({ isPatient, roster, actingId, onSelect }) {
         <div className="rx-demobar-right">
           {isPatient && roster && (
             <label>
-              Acting as
+              Signed in as
               <select
                 value={actingId}
                 onChange={(e) => onSelect(e.target.value)}
@@ -90,40 +92,52 @@ function DoctorRoot({ route }) {
 }
 
 function PatientRoot({ route }) {
-  // Only a light roster (id/name/pending) for the demo switcher — never the derived
-  // clinical records of the rest of the cohort. The acting patient's own record is the
-  // only one this component ever derives or holds; the patient app cannot reach another.
+  // The patient side is gated by the discharge code: one profile per sign-in, and
+  // the app never derives or holds another patient's record. The roster carries
+  // identities and codes only, for the sign-in screen.
   const roster = useRoster();
-  const [chosen, setChosen] = useState(() =>
-    sessionStorage.getItem("rx-acting"),
-  );
-  // Pin the identity once resolved. Otherwise answering the questions would hand the
-  // screen to the next patient who has some waiting, in the middle of the flow.
-  useEffect(() => {
-    if (!chosen && roster.length)
-      setChosen((roster.find((p) => p.pending) || roster[0]).id);
-  }, [chosen, roster.length]);
-  const actingId =
-    roster.find((p) => p.id === chosen)?.id ??
-    roster.find((p) => p.pending)?.id ??
-    roster[0]?.id ??
-    null;
+  const [signedIn, setSignedIn] = useState(() => currentPatientId());
+  const actingId = roster.find((p) => p.id === signedIn)?.id ?? null;
   const patient = usePatient(actingId);
-  const select = (id) => {
-    sessionStorage.setItem("rx-acting", id);
-    setChosen(id);
+  const enter = (id) => {
+    signIn(id);
+    setSignedIn(id);
+    go("/patient");
   };
-  if (!patient)
+  const leave = () => {
+    signOut();
+    setSignedIn(null);
+    go("/patient");
+  };
+  if (!roster.length)
     return <div className="rx rx-loading">Connecting to the data stream…</div>;
+  if (!patient)
+    return (
+      <div className="rx">
+        <DemoBar isPatient />
+        <div className="rx-patient">
+          <div className="rx-phone">
+            <main className="rx-p-screen">
+              <SignIn roster={roster} onSignIn={enter} />
+            </main>
+          </div>
+        </div>
+      </div>
+    );
   return (
     <div className="rx">
       <DemoBar
         isPatient
         roster={roster}
         actingId={patient.id}
-        onSelect={select}
+        onSelect={enter}
       />
-      <PatientApp key={patient.id} patient={patient} route={route} />
+      <PatientApp
+        key={patient.id}
+        patient={patient}
+        route={route}
+        onSignOut={leave}
+      />
     </div>
   );
 }

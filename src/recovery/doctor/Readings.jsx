@@ -12,6 +12,7 @@ import { dayColumns, domain, labelEvery, ticks } from "./chartScale.js";
 
 const HOME_DAYS = 14;
 const CHART_H = 172;
+const COMPACT_H = 150;
 const M = { top: 20, right: 112, bottom: 38, left: 44 };
 const FILL = {
   "-3": "#3d7ab8",
@@ -56,7 +57,7 @@ const segments = (points) =>
     )
     .filter((s) => s.length);
 
-function SignalChart({ signal: s, homeFrom, width }) {
+export function SignalChart({ signal: s, homeFrom, width, compact = false }) {
   const [hover, setHover] = useState(null);
   const inner = width - M.left - M.right;
   const homeDays = s.home.slice(homeFrom);
@@ -84,7 +85,8 @@ function SignalChart({ signal: s, homeFrom, width }) {
     threshold: s.threshold,
     unit: s.unit,
   });
-  const plotH = CHART_H - M.top - M.bottom;
+  const H = compact ? COMPACT_H : CHART_H;
+  const plotH = H - M.top - M.bottom;
   const y = (v) => M.top + plotH - ((v - lo) / (hi - lo)) * plotH;
   const stay = cols[s.before.length];
   const runCol =
@@ -121,7 +123,7 @@ function SignalChart({ signal: s, homeFrom, width }) {
     <div className="rx-plot-wrap">
       <svg
         width={width}
-        height={CHART_H}
+        height={H}
         role="img"
         aria-label={`${s.name}, one reading per day. Today ${s.fmt(s.today)} ${s.unit}; usual ${s.fmt(s.usual)}${s.threshold !== null ? `; counted past ${s.fmt(s.threshold)}` : ""}.`}
         onMouseMove={pick}
@@ -306,7 +308,7 @@ function SignalChart({ signal: s, homeFrom, width }) {
         {/* day axis */}
         {before.map((d, i) =>
           i === 0 || i === before.length - 1 ? (
-            <text key={d.day} x={d.x} y={CHART_H - 22} textAnchor="middle">
+            <text key={d.day} x={d.x} y={H - 22} textAnchor="middle">
               {d.day}
             </text>
           ) : null,
@@ -317,7 +319,7 @@ function SignalChart({ signal: s, homeFrom, width }) {
             <text
               key={d.day}
               x={d.x}
-              y={CHART_H - 22}
+              y={H - 22}
               textAnchor="middle"
               style={{ fontWeight: d === last ? 700 : 400 }}
             >
@@ -327,7 +329,7 @@ function SignalChart({ signal: s, homeFrom, width }) {
         )}
         <text
           x={M.left + inner / 2}
-          y={CHART_H - 4}
+          y={H - 4}
           textAnchor="middle"
           className="rx-axis-unit"
         >

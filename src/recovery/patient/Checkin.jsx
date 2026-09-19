@@ -1,19 +1,41 @@
-import { useState } from "react";
-import { CheckCircle2, ChevronLeft, Mic } from "lucide-react";
-import { actions, useRecovery } from "../useRecovery.js";
+import { useEffect, useRef, useState } from "react";
+import { CheckCircle2, ChevronLeft, Volume2 } from "lucide-react";
+import { actions } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
+import { checkinDue } from "../model/schedule.js";
+
+const canSpeak = () => typeof speechSynthesis !== "undefined";
+function speak(text) {
+  if (!canSpeak()) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.95;
+  speechSynthesis.speak(u);
+}
 
 // question -> review -> more -> done. The required answers are sent at "review",
-// so skipping the free-text step never loses them.
+// so skipping the free-text step never loses them. Questions come from the watch
+// profile and map one-to-one onto the ML model's context fields.
 export default function Checkin({ patient: p }) {
-  const { capabilities } = useRecovery();
   const questions = p.profile.questions;
+  const due = checkinDue(p);
   const [mode, setMode] = useState("question");
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [agreed, setAgreed] = useState(false);
   const [note, setNote] = useState("");
   const [sentNote, setSentNote] = useState(false);
+  const [aloud, setAloud] = useState(false);
+  const spoken = useRef(null);
+  useEffect(() => {
+    if (mode === "question" && aloud && spoken.current !== step) {
+      spoken.current = step;
+      speak(
+        `${QUESTIONS[questions[step]].text} ${QUESTIONS[questions[step]].options.join(", or ")}?`,
+      );
+    }
+  }, [mode, step, aloud, questions]);
+  useEffect(() => () => canSpeak() && speechSynthesis.cancel(), []);
 
   if (mode === "question") {
     const id = questions[step];
@@ -44,6 +66,13 @@ export default function Checkin({ patient: p }) {
             ))}
           </div>
         </header>
+        {step === 0 && (
+          <p className="rx-p-fine">
+            {due.reason === "asked"
+              ? "Your readings changed. These questions help your care team understand why."
+              : `Day ${p.dayHome} check-in. Your answers are scored together with your readings.`}
+          </p>
+        )}
         <h1 className="rx-p-question">{QUESTIONS[id].text}</h1>
         <div className="rx-p-options" role="group" aria-label="Your answer">
           {QUESTIONS[id].options.map((option) => (
@@ -61,11 +90,27 @@ export default function Checkin({ patient: p }) {
             </button>
           ))}
         </div>
-        {capabilities.voice && (
-          <button type="button" className="rx-p-btn bottom">
-            <Mic size={22} aria-hidden="true" /> Answer by voice instead
-          </button>
-        )}
+        <div className="rx-p-stack bottom">
+          {canSpeak() && (
+            <button
+              type="button"
+              className="rx-p-btn"
+              aria-pressed={aloud}
+              onClick={() => {
+                const next = !aloud;
+                setAloud(next);
+                spoken.current = null;
+                if (!next) speechSynthesis.cancel();
+              }}
+            >
+              <Volume2 size={22} aria-hidden="true" />{" "}
+              {aloud ? "Stop reading aloud" : "Read the questions aloud"}
+            </button>
+          )}
+          <a className="rx-p-textbtn" href="#/patient/assistant">
+            Prefer to talk it through? Use the assistant
+          </a>
+        </div>
       </>
     );
   }
@@ -133,11 +178,6 @@ export default function Checkin({ patient: p }) {
             placeholder="For example: how you slept, a new symptom, or a question."
           />
         </div>
-        {capabilities.voice && (
-          <button type="button" className="rx-p-btn">
-            <Mic size={22} aria-hidden="true" /> Say it instead
-          </button>
-        )}
         <p className="rx-p-fine">
           Your care team reads messages during working hours, not right away. If
           you feel very unwell, follow the emergency instructions in your
@@ -181,14 +221,18 @@ export default function Checkin({ patient: p }) {
           {sentNote
             ? "Your answers and your message were sent. "
             : "Your answers were sent. "}
-          Your care team reads them during working hours, together with your
-          watch readings. If you feel very unwell, follow the emergency
-          instructions in your discharge papers.
+          They are scored together with your readings. See what that means for
+          you today.
         </p>
       </div>
-      <a className="rx-p-btn primary" href="#/patient">
-        Back to home
-      </a>
+      <div className="rx-p-stack bottom">
+        <a className="rx-p-btn primary" href="#/patient/insight">
+          What this means for me
+        </a>
+        <a className="rx-p-textbtn" href="#/patient">
+          Back to home
+        </a>
+      </div>
     </>
   );
 }

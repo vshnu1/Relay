@@ -24,7 +24,13 @@ export function useRoster() {
   return state.order.map((id) => {
     const p = state.patients[id];
     const last = p.checkins[p.checkins.length - 1];
-    return { id, name: p.name, pending: !!(last && !last.answeredAt) };
+    return {
+      id,
+      name: p.name,
+      hospital: p.hospital,
+      code: p.code,
+      pending: !!(last && !last.answeredAt),
+    };
   });
 }
 export function usePatient(id) {
