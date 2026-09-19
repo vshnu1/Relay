@@ -1,0 +1,35 @@
+.workflow {
+  margin-top: 18px;
+  padding: 16px 20px;
+}
+.workflow > div:first-child {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 10px;
+  color: #879678;
+}
+.workflow > div:first-child > span {
+  margin-left: auto;
+  font-size: 8px;
+  color: #a3ae95;
+}
+.workflow-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  color: #c1c9b8;
+}
+.workflow-steps > span {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 8px;
+  color: #819a6c;
+}
+.workflow-steps > span.pending {
+  color: #b79b68;
+}

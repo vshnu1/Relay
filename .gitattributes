@@ -1,0 +1,17 @@
+# One line-ending convention for every checkout, so a Windows or misconfigured
+# editor can never turn a one-line edit into a whole-file conflict.
+* text=auto eol=lf
+
+# Generated. Never hand-merge: resolve package.json, then run
+#   npm install --package-lock-only
+package-lock.json linguist-generated=true
+
+*.svg text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

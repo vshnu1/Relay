@@ -1,0 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap");
+@import "./base.css";
+@import "./sidebar.css";
+@import "./layout.css";
+@import "./stats.css";
+@import "./patient-list.css";
+@import "./patient-header.css";
+@import "./timeline.css";
+@import "./evidence-brief.css";
+@import "./workflow.css";
+@import "./feedback.css";
+@import "./context.css";
+@import "./pages.css";
+@import "./modals.css";
+@import "./responsive.css";
