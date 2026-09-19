@@ -2,44 +2,46 @@
 
 Lines in _[square brackets]_ are for whoever drives the app. Do not read them.
 
-**538 words, about 3 minutes 20 spoken.** Devpost wants 2 to 3 minutes, so three
-sentences are marked **(cut for 3:00)**. Drop all three and you land at 3:00
-with every topic still in. Decide before you record, not during.
+**544 words, about 3 minutes 25.** Devpost caps at three minutes, so two
+sentences are marked **(cut)**. Drop both and you are at 3:00 with every topic
+still in. Decide before you record.
+
+Everything that does not fit is in `docs/DEVPOST.md`, which the judges read.
 
 ---
 
-## The problem · 0:00–0:25
+## The problem · 0:00–0:20
 
 _[Landing page. Slow scroll. Do not click during this section.]_
 
 In healthcare, the hardest person to watch is the one who has gone home. The
 thirty days after a discharge are when a patient is most likely to come back,
 and when the line to their care team goes quiet. They do not know what is
-worth a phone call. The clinician has forty of them. And the watch on that
-wrist records the whole time, unread.
+worth a phone call, and the clinician has forty of them.
 
-> **(cut for 3:00)** the last sentence, "And the watch on that wrist records the
-> whole time, unread."
+> **(cut)** the last clause, "and the clinician has forty of them".
 
 ---
 
-## What it does with the data · 0:25–0:55
+## What it does with the data · 0:20–0:55
 
-_[Click "I have a discharge code". Bayfront Health, BAY-2741. Land on the
-patient home, point at the four readings.]_
+_[Click "I have a discharge code". Bayfront Health, BAY-2741. Point at the four
+readings.]_
 
-Relay turns that stream into something a clinician can act on. It cuts every
-signal into six-hour windows, compares each with that patient's own baseline
-rather than a population range, and speaks only when several move together and
-stay moved for a day.
+Relay turns that stream into something a clinician can act on. Every signal is
+cut into six-hour windows and compared with that patient's own median and
+median absolute deviation, so the threshold is theirs, not a population's. For
+pneumonia, three of four signals must stay past threshold for twenty-four
+hours before Relay says anything.
 
 _[Check-in tab. Start the voice check-in, answer one question, point at the
-draft.]_
+draft it writes.]_
 
-Then it does what most monitoring gets wrong. It does not alarm. It asks. This
-is an ElevenLabs agent, and the questions come from the discharge plan, so
-pneumonia asks about breathing and fever. Nothing reaches the care team until
-the patient approves it.
+And then it does what most monitoring gets wrong. It does not alarm. It asks.
+This is an ElevenLabs conversational agent, and the questions come from the
+discharge plan: pneumonia asks about breathing and fever, sleep apnoea about
+nights without the CPAP machine. Nothing reaches the care team until the
+patient approves it.
 
 ---
 
@@ -48,68 +50,64 @@ the patient approves it.
 _[Clinician tab. Ward list. Point at each of the four state cards.]_
 
 That is the point for a hospital. Twenty-eight patients, and today two need a
-clinician. Not twenty-eight charts, two. Twelve are waiting on a check-in, and
-two the system admits it cannot see well enough to judge. Medicare penalises
-six conditions on a thirty-day readmission window; four are already pathways
-here.
+clinician. Not twenty-eight charts, two. And Medicare penalises six conditions
+on a thirty-day readmission window; four are already pathways here.
 
-> **(cut for 3:00)** the last sentence, the Medicare one. Keep it if any judge
-> has asked about reimbursement.
+_[Open Maya Okafor. Down the left summary, her own words, then "Listen to
+summary".]_
 
-_[Open Maya Okafor. Down the left summary, then her own words. Then point at
-"Listen to summary".]_
-
-Open one and you get the story, not a chart. Drifting on day seven, four
-signals past threshold together for thirty-five hours, and her own words
-beside the numbers. There is a spoken version too, our second use of
+Open one and you get the story, not a chart. Four signals past threshold
+together for thirty-five hours, her own words beside the numbers, and a FHIR
+bundle for the record. There is a spoken version too, our second use of
 ElevenLabs, for a clinician between rooms.
 
 ---
 
-## The model, and why it stayed quiet · 1:20–2:00
+## The model, and why it stayed quiet · 1:20–2:05
 
 _[Model view. Stop on the score.]_
 
 A second model runs beside that rule: an Isolation Forest, unsupervised,
 because nobody in our reference data deteriorated, so there was never a
-positive class to train on. It learns this patient's own windows and scores
-how far today's sits from them.
+positive class. It learns this patient's own six-hour windows, and its
+threshold is the ninety-fifth percentile of their own validation split.
 
 _[Scroll slowly through "why it stayed quiet" so all four gates are readable.
-Hold this shot the longest in the video.]_
+Hold this shot longest in the video.]_
 
 And look what it did. It scored above its own line, so the model alone would
-have spoken. It stayed quiet because the coordination gate failed, and it
-shows you that rather than hiding it. A product that tells a clinician why it
-said nothing is doing the harder half.
+have spoken. It stayed quiet because the coordination gate failed. Four gates,
+each with what was required and what was observed. A product that tells a
+clinician why it said nothing is doing the harder half.
 
-_[Render dashboard tab, most recent run. Point at the execution ID.]_
+_[Render dashboard tab, most recent run. Point at the execution ID as you say
+the word.]_
 
-All of it runs as a Render Workflow, every time a check-in starts or a
-clinician analyses a case, and every run has an execution ID that any number
-on screen traces back to.
+Render Workflow orchestrates the analysis: it runs the machine learning model
+and our evidence checks, then returns traceable results that help focus the
+patient's check-in and inform the clinician's review. Every run carries an
+execution ID.
 
 ---
 
-## Where the data goes · 2:00–2:45
+## Where the data goes · 2:05–2:50
 
-_[Back to the app. Patient side, "Your data", the Health import panel.]_
+_[Patient side, "Your data", the Health import panel.]_
 
 Where does the data go? That Apple Health import is 284 megabytes, parsed
-entirely in the browser. Nothing uploaded, no third-party model sees it. Staff
+entirely in the browser. Nothing uploaded, no third-party model sees it, and
+our content security policy names no third-party script origin at all. Staff
 reaching for tools without knowing where data goes is the top named risk in
-this field. This is that claim demonstrated.
+this field.
 
-_[Clinician side. Security in the sidebar. Point at the two green "Live:"
-lines, then at a row of the audit trail.]_
+> **(cut)** the last sentence, about staff reaching for tools.
+
+_[Clinician side. Security in the sidebar. Point at the green "Live:" lines,
+then at a row of the audit trail.]_
 
 Every technical safeguard in the HIPAA Security Rule, cite by cite. Nine
-built, one partial. Two read from the running process rather than asserted:
-whether the data is really encrypted, and whether the audit log verifies.
-Every access names a person.
-
-> **(cut for 3:00)** the sentence beginning "Two read from the running
-> process".
+built, one partial. Encrypted at rest, every audit entry carrying the digest
+of the one before it, and every access naming a person, not a role.
 
 _[Scroll to the second table and let it sit.]_
 
@@ -121,33 +119,21 @@ system is what we do.
 
 _[Back to the ward list. Hold.]_
 
-Relay never diagnoses, never scores risk, never escalates by itself. Every
-generated sentence passes a guard that blocks clinical claims. A clinician
-decides.
+Calibrated on seventy-one real wearable subjects. Ninety JavaScript tests,
+sixty-three Python. Relay never diagnoses, never scores risk, never escalates
+by itself. A clinician decides.
 
 ---
 
 ## Before you start
 
-**Check three numbers on screen.** They are worked out from the clock.
+Three numbers are worked out from the clock, so check them on screen.
 
-1. The four ward counts. They were **2, 12, 12 and 2**.
-2. Maya's persistence. It was **thirty-five hours**.
+1. Ward counts, last seen **2, 12, 12 and 2**.
+2. Maya's persistence, last seen **thirty-five hours**.
 3. The model score, **above** its nought-point-five line. If it is below that
    day: _"it scored below its own line, so the model stayed quiet, and it still
    shows you every gate it checked."_
 
-**Never say** that the labelled fallback was a Render Workflow run, or that a
-reading is irrelevant to a condition. Neither is true.
-
-## If a judge asks
-
-| Question                             | Answer                                                                                                                                                                                                                |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Where did the data come from?        | LifeSnaps, a public research cohort: 71 subjects, 4,453 subject-days, for calibration. One team member's own Apple Health export for engineering validation. 28 synthetic patients in the demo. No patient data, ever |
-| How do you know the thresholds work? | 3.35% of subject-days fire on a whole-series baseline, **6.04%** on the trailing baseline a deployment actually has. We quote the second and volunteer the first                                                      |
-| Sensitivity?                         | **Unmeasured.** Nobody in the reference cohort deteriorated, so there is no positive class. We say so rather than estimate it                                                                                         |
-| What was the model trained on?       | Synthetic only, labelled as such in the artefact's own metadata. Forty synthetic patients per pathway, split 24/8/8                                                                                                   |
-| Oncology?                            | Post-chemotherapy is a pathway, neutropenic-fever watch, two patients discharged from Moffitt                                                                                                                         |
-| Testing?                             | 90 JavaScript tests, 63 Python, plus integration suites. One runs the Python language guard and its Node port over the same corpus and fails if they disagree phrase for phrase                                       |
-| Who signed off the thresholds?       | Nobody. The file says so in capitals: illustrative, not clinically validated. A clinician owns that table before real use                                                                                             |
+**Never say** the labelled fallback was a Render Workflow run, or that a reading
+is irrelevant to a condition.
