@@ -4,7 +4,7 @@ Spoken pitch, submission copy, and the answers to the questions that will
 actually get asked. Numbers here come from [DATA.md](DATA.md) and
 `fixtures/calibration.json`. If you change a threshold, change it here too.
 
-Two claims in this document are **conditional** and marked `[VERIFY]`. Do not
+One claim in this document is **conditional** and marked `[VERIFY]`. Do not
 say them on stage until the thing is true.
 
 ---
@@ -180,7 +180,7 @@ same reason as the thirty-second version.
 
 - Frontend: React provider portal, synchronized evidence timeline
 - Backend: Express API, normalized event store, consent and audit controls
-- Render Workflows: ingest → baseline → deviation → context request → compile `[VERIFY]`
+- Render Workflows: ingest → baseline → deviation → context request → compile
 - ElevenLabs: consented structured voice check-in `[VERIFY]`
 - Mock FHIR: Observation, Communication, Task
 - Validation: 99 days of real wearable physiology; 4,453 subject-days from
@@ -247,17 +247,41 @@ Run any new stage copy through the guard before it goes in a slide:
 python analysis/language_guard.py "your sentence here"
 ```
 
-### The two `[VERIFY]` claims
+### Render Workflows — VERIFIED, safe to claim
+
+Executed on Render at 01:4x on 19 September. `/api/status` reports
+`render: true`, and the five-stage chain ran in Virginia, not locally:
+
+```
+POST /api/patients/demo-01/analyze  →  6.8s
+execution: { "mode": "Render Workflows", "id": "trn-0b14gdan29jrm8hqs739pgi5g" }
+state: review   coordinated: true
+```
+
+Dashboard confirms all six tasks at 1 run, 100% success:
+`ingestAndNormalize`, `calculateBaseline`, `detectCoordinatedDeviation`,
+`requestContext`, `compileReviewItem`, `monitoringPipeline`.
+
+**Say it plainly.** Show the execution ID or the dashboard — an ID a judge can
+see beats a claim they have to take on trust.
+
+Two honest caveats. The round trip is about 7 seconds, so pre-warm it once
+before recording rather than triggering it live twice. And the Recovery watch
+computes client side and never calls the API — only `#/classic` goes through
+the server and therefore through Render. Phrase it as "the analysis runs as a
+five-stage Render Workflow, here is the execution", not as though the
+watchlist triggered it.
+
+### The one remaining `[VERIFY]` claim
 
 | Claim | True when | Current |
 |---|---|---|
-| "Render Workflows runs the analysis" | a workflow has executed on Render | `/api/status` → `render:false`; never executed |
 | "A live ElevenLabs voice check-in" | a real conversation has completed | `/api/status` → `voice:false`; key unset, untested |
 
-Both fall back cleanly — analysis runs on the local engine, the check-in
-offers a working text form. **If they are still false at demo time, present
-the text check-in as the check-in and do not mention voice.** A judge who
-hears "voice" and sees a form will discount everything else you said.
+It falls back cleanly to a working text form. **If it is still false at demo
+time, present the text check-in as the check-in and do not mention voice.** A
+judge who hears "voice" and sees a form will discount everything else you
+said.
 
 ### Resolved: the Isolation Forest claim now has a source
 
