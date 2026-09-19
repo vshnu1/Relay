@@ -25,6 +25,11 @@ export default function PatientOverview({ id }) {
   const asked = p.answered
     ? p.profile.questions.filter((q) => p.answered.answers[q])
     : [];
+  const activeDevices = Object.values(p.devices).filter(
+    (d) => d.sharing,
+  ).length;
+  const totalDevices = Object.values(p.devices).length;
+  const strongest = p.moved[0];
   return (
     <div className="rx-page">
       <header className="rx-patienthead">
@@ -50,6 +55,38 @@ export default function PatientOverview({ id }) {
           </span>
         </div>
       </header>
+
+      <div className="rx-patient-summary" aria-label="Patient recovery summary">
+        <div className="rx-patient-summary-main">
+          <span className="rx-summary-label">At a glance</span>
+          <strong>
+            {p.pattern
+              ? `${p.moved.length} of ${p.counted.length} signals shifted`
+              : "Signals are inside the usual range"}
+          </strong>
+          <span>
+            {p.pattern
+              ? `For ${p.hours} hours · ${strongest?.name || "multiple signals"} is furthest from usual`
+              : "No persistent coordinated change detected"}
+          </span>
+        </div>
+        <div className="rx-patient-summary-stat">
+          <strong>{p.pattern ? `${p.hours}h` : "—"}</strong>
+          <span>Pattern duration</span>
+        </div>
+        <div className="rx-patient-summary-stat">
+          <strong>
+            {p.moved.length}/{p.counted.length}
+          </strong>
+          <span>Signals shifted</span>
+        </div>
+        <div className="rx-patient-summary-stat">
+          <strong>
+            {activeDevices}/{totalDevices}
+          </strong>
+          <span>Devices sharing</span>
+        </div>
+      </div>
 
       <div className="rx-overview">
         <section className="rx-card rx-shows" aria-label="What the data shows">

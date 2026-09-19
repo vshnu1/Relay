@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useCohort, useRecovery, useRoute } from "./useRecovery.js";
 import DoctorApp from "./doctor/DoctorApp.jsx";
 import PatientApp from "./patient/PatientApp.jsx";
+import Landing from "./Landing.jsx";
 import "./recovery.css";
 
 // The bar above the product is demo scaffolding: it lets one browser play both roles.
@@ -13,6 +14,7 @@ export default function Root() {
     sessionStorage.getItem("rx-acting"),
   );
   const isPatient = route[0] === "patient";
+  const isLanding = route.length === 0 || route[0] === "welcome";
   // Pin the identity once resolved. Otherwise answering the questions would hand the
   // screen to the next patient who has some waiting, in the middle of the flow.
   useEffect(() => {
@@ -21,6 +23,12 @@ export default function Root() {
   }, [chosen, cohort.length]);
   if (!cohort.length)
     return <div className="rx rx-loading">Connecting to the data stream…</div>;
+  if (isLanding)
+    return (
+      <div className="rx">
+        <Landing />
+      </div>
+    );
   // Default to someone with questions waiting, so the demo loop starts in the right place.
   const acting =
     cohort.find((p) => p.id === chosen) ||

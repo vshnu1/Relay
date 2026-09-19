@@ -32,10 +32,13 @@ export default function Watchlist({ cohort }) {
     p.name.toLowerCase().includes(query.trim().toLowerCase()),
   );
   const reviews = cohort.filter((p) => p.group === "review").length;
+  const context = cohort.filter((p) => p.group === "context").length;
+  const monitoring = cohort.filter((p) => p.group === "monitoring").length;
   return (
     <div className="rx-page">
       <header className="rx-pagehead">
         <div>
+          <span className="rx-eyebrow">Care team workspace · Today</span>
           <h1>Recovery watch</h1>
           <p>
             {reviews
@@ -54,6 +57,33 @@ export default function Watchlist({ cohort }) {
           />
         </label>
       </header>
+      <div className="rx-watch-summary" aria-label="Watchlist summary">
+        <div className="rx-watch-summary-card attention">
+          <span className="rx-summary-icon">!</span>
+          <div>
+            <strong>{reviews}</strong>
+            <span>Need your review</span>
+          </div>
+        </div>
+        <div className="rx-watch-summary-card waiting">
+          <span className="rx-summary-icon">○</span>
+          <div>
+            <strong>{context}</strong>
+            <span>Waiting on patient</span>
+          </div>
+        </div>
+        <div className="rx-watch-summary-card calm">
+          <span className="rx-summary-icon">✓</span>
+          <div>
+            <strong>{monitoring}</strong>
+            <span>Monitoring quietly</span>
+          </div>
+        </div>
+        <div className="rx-watch-summary-note">
+          <span className="rx-pulse-dot" />
+          <span>All connected devices checked in recently</span>
+        </div>
+      </div>
       {GROUPS.map((g) => {
         const rows = shown.filter((p) => p.group === g.id);
         if (!rows.length && !g.empty) return null;
