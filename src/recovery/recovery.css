@@ -91,12 +91,25 @@ body {
 /* Demo bar: scaffolding for presenting, deliberately not part of the product. */
 .rx-demobar {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 16px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 16px 9px;
   background: #16241f;
   color: #d7e0d9;
   font-size: 13px;
+}
+.rx-demobar-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.rx-demobar-note {
+  font-size: 12px;
+  color: #9db0a6;
+}
+.rx-demobar-note::before {
+  content: "▸ ";
+  color: #6fcf9f;
 }
 .rx-demobar-label {
   font-weight: 600;
