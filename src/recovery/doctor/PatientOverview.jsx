@@ -33,7 +33,15 @@ export default function PatientOverview({ id }) {
     (d) => d.sharing,
   ).length;
   const totalDevices = Object.values(p.devices).length;
-  const strongest = p.moved[0];
+  // p.moved is in profile order, so taking the first named whichever signal the
+  // program happens to list first rather than the one furthest from usual. The
+  // distance is measured in that signal's own trigger steps, which is the same
+  // quantity the rest of the page buckets, so the two cannot disagree.
+  const distance = (s) =>
+    s.usual === null || s.today === null || !s.step
+      ? 0
+      : Math.abs((s.today - s.usual) / s.step);
+  const strongest = [...p.moved].sort((a, b) => distance(b) - distance(a))[0];
   return (
     <div className="rx-page">
       <header className="rx-patienthead">

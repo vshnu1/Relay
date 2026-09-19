@@ -181,9 +181,18 @@ export function derive(p, now) {
     counted.filter((s) => s.enoughBaseline).length <= counted.length / 2 ||
     missingRecent >= recentDays.length / 2;
 
-  const last = p.checkins[p.checkins.length - 1] || null;
+  // A check-in that arrived over the sync API can carry a null answers object,
+  // and a dozen places downstream index into it. The cohort view derives every
+  // patient in one pass, so one such record does not break one screen: it
+  // takes down the whole ward list, for every tab, on every load, because the
+  // event is on disk and replays. Normalised once here rather than guarded in
+  // each reader, where the next reader added would miss it.
+  const checkins = p.checkins.map((c) =>
+    c && c.answers && typeof c.answers === "object" ? c : { ...c, answers: {} },
+  );
+  const last = checkins[checkins.length - 1] || null;
   const pending = last && !last.answeredAt ? last : null;
-  const answered = [...p.checkins].reverse().find((c) => c.answeredAt) || null;
+  const answered = [...checkins].reverse().find((c) => c.answeredAt) || null;
   const answeredForPattern =
     pattern && answered && answered.answeredAt >= patternStartT;
   const status = noData
@@ -375,7 +384,7 @@ export function derive(p, now) {
     acknowledged,
     pending,
     answered,
-    checkins: p.checkins,
+    checkins,
     code: p.code,
     careEmail: p.careEmail,
     notes: p.notes,

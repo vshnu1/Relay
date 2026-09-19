@@ -364,12 +364,12 @@ export default function Checkin({ patient: p }) {
       : null;
   const status = STATUS[voice.status] ?? voice.status;
   const focusRows = (p.counted || [])
-    .filter((signal) => checkinPlan.focusSignals.includes(signal.signal))
+    .filter((signal) => checkinPlan.focusSignals.includes(signal.id))
     .filter((signal) => signal.moved)
     .slice(0, 3);
   const visibleSignals = focusRows.length
     ? focusRows.map((signal) => ({
-        label: signal.plain || SIGNALS[signal.signal]?.plain || signal.signal,
+        label: signal.plain || SIGNALS[signal.id]?.plain || signal.id,
         direction: signal.watchDir > 0 ? "Higher" : "Lower",
         duration: signal.towardDays
           ? `${signal.towardDays} ${signal.towardDays === 1 ? "day" : "days"}`

@@ -715,6 +715,17 @@ app.post("/api/recovery/events", (req, res) => {
       recoveryIds.has(e.eid)
     )
       continue;
+    // A check-in whose answers are not an object is refused rather than
+    // stored. Once on disk it replays into every client on every load, and
+    // the cohort view derives all patients together, so one bad record is a
+    // permanently broken ward list rather than one broken screen.
+    if (
+      e.type === "checkin" &&
+      (typeof e.answers !== "object" ||
+        e.answers === null ||
+        Array.isArray(e.answers))
+    )
+      continue;
     const stored = { ...e, seq: lastSeq() + 1, role: req.role };
     recoveryEvents.push(stored);
     recoveryIds.add(e.eid);

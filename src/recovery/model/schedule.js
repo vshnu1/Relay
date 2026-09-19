@@ -118,7 +118,7 @@ export function nextScheduledDay(day) {
 // Concerning answers from the last check-in, in the doctor's words.
 export function concerningReports(answered) {
   if (!answered) return [];
-  return Object.entries(answered.answers)
+  return Object.entries(answered.answers || {})
     .filter(
       ([q, a]) =>
         QUESTIONS[q]?.reports && q !== "medicine" && CONCERNING.includes(a),
@@ -374,7 +374,7 @@ export function buildReport(p, now = Date.now()) {
         .slice(0, 4)
         .map(
           (c) =>
-            `- ${c.label}: ${c.direction.replace("_", " ")}, robust deviation ${c.robust_deviation}, ${c.persistence_windows} windows`,
+            `- ${c.label}: ${c.direction.replace("_", " ")}, robust deviation ${c.robust_deviation}, ${c.persistence_windows} ${c.persistence_windows === 1 ? "window" : "windows"}`,
         ),
     );
   lines.push(

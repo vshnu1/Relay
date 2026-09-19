@@ -88,7 +88,7 @@ export default function Insight({ patient: p }) {
                     usual by {Math.abs(c.robust_deviation).toFixed(1)} of your
                     usual spread
                     {c.persistence_windows
-                      ? `, for ${c.persistence_windows} six-hour windows`
+                      ? `, for ${c.persistence_windows} six-hour ${c.persistence_windows === 1 ? "window" : "windows"}`
                       : ""}
                   </li>
                 ))}

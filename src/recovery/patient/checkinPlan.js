@@ -34,7 +34,7 @@ function signalOrder(patient, analysis) {
   if (fromModel.length) return fromModel;
   return (patient.counted || [])
     .filter((signal) => signal.moved)
-    .map((signal) => signal.signal);
+    .map((signal) => signal.id);
 }
 
 function selectRelevantSymptoms(ranked, links, signals, limit) {
@@ -158,7 +158,7 @@ export function buildCheckinPlan(patient, analysis = patient.analysis) {
 function findingSummary(patient, analysis, focusSignals) {
   if (!focusSignals.length) return "";
   const readings = (patient.counted || [])
-    .filter((signal) => focusSignals.includes(signal.signal) && signal.moved)
+    .filter((signal) => focusSignals.includes(signal.id) && signal.moved)
     .slice(0, 3)
     .map((signal) => {
       const direction = signal.watchDir > 0 ? "higher" : "lower";

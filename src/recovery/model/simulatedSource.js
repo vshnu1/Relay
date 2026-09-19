@@ -731,6 +731,14 @@ function build(def, now, index) {
   // scenario says records it, and for nobody else. It is built into the history
   // but never streamed on the tick below, because a morning weight arrives once
   // a day, not every few seconds.
+  // A device this program reads from is a device this patient has connected.
+  // Hardcoding it the other way put "iPhone Health app is not connected" on the
+  // same screen as five counted gait signals streaming from the phone, and said
+  // WHOOP was absent while skin temperature from it drove the review.
+  const uses = (device) =>
+    [...profile.counted.map((c) => c.signal), ...profile.recorded].some(
+      (signal) => SIGNALS[signal].device === device,
+    );
   const signals = [
     ...profile.counted.map((c) => c.signal),
     ...profile.recorded,
@@ -795,15 +803,14 @@ function build(def, now, index) {
       whoop: {
         name: "WHOOP",
         sharing: true,
-        connected:
-          def.profile === "pneumonia" || def.profile === "abdominalSurgery",
+        connected: uses("whoop"),
         lastSync: now - 58 * 60000,
       },
       phone: {
         name: "iPhone Health app",
         sharing: true,
-        connected: false,
-        lastSync: null,
+        connected: uses("phone"),
+        lastSync: uses("phone") ? now - 26 * 60000 : null,
         imports: 0,
       },
       manual: {
