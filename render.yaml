@@ -6,7 +6,15 @@ services:
     # NODE_ENV=production below tells npm to skip devDependencies, and vite is
     # one of them, so a plain `npm ci` installs 101 packages and the build dies
     # on `vite: not found`. The build needs them; the running server does not.
-    buildCommand: npm ci --include=dev && npm run build && (echo '--- probe ---'; python3 --version; which python3 pip3 pip; python3 -m pip --version; python3 -m ensurepip --version) 2>&1 || true
+    # The model is a Python program and this is the Node runtime, but that
+    # runtime ships Python too, so it can run here. The verification at the end
+    # is deliberate and unguarded: if the model's dependencies do not import,
+    # the build fails and Render keeps the previous deploy serving, rather than
+    # putting up a site whose model button errors.
+    buildCommand: >-
+      npm ci --include=dev && npm run build &&
+      pip install -r requirements.txt &&
+      python3 -c "import sklearn, numpy; print('model deps ok:', sklearn.__version__, numpy.__version__)"
     startCommand: npm start
     healthCheckPath: /
     disk:
@@ -16,6 +24,11 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Render defaults to Python 3.14, which has no scikit-learn 1.5 wheel, and
+      # 1.5 is pinned because the priors in ml/artifacts were pickled with it.
+      # Building it from source on a starter instance is not worth the minutes.
+      - key: PYTHON_VERSION
+        value: 3.12.11
       - key: NODE_VERSION
         value: 24.11.1
       - key: DATA_DIR
@@ -30,11 +43,12 @@ services:
         sync: false
       - key: PATIENT_ACCESS_CODE
         sync: false
-      # The model is a Python program and this service runs the Node runtime,
-      # so it stays off here. Flip it in the dashboard only if the build has
-      # installed requirements.txt and PYTHON_BIN points at that interpreter.
+      # On because the build installs the model's dependencies and proves they
+      # import before the deploy is allowed to go live. PYTHON_BIN is left
+      # unset so the server falls back to python3, which Render resolves to the
+      # environment those dependencies were installed into.
       - key: RELAY_ML_ENABLED
-        value: "false"
+        value: "true"
       - key: RENDER_API_KEY
         sync: false
       - key: RENDER_WORKFLOW_SLUG
