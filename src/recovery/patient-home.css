@@ -3,14 +3,14 @@
 
 .rx-ph-kicker {
   display: block;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--faint);
 }
 .rx-ph-kicker.gap {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 /* Header: greeting on the left, progress on the right */
@@ -33,7 +33,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--muted);
 }
 .rx-ph-progress-labels {
@@ -58,7 +58,7 @@
 .rx-ph-device {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--muted);
   text-decoration: none;
 }
@@ -71,28 +71,28 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 16px 22px;
-  border-radius: 14px;
+  padding: 16px 24px;
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
 }
 .rx-ph-banner.unusual {
   background: var(--amber-tint);
-  border-color: #ead9b3;
+  border-color: #dcc48a;
 }
 .rx-ph-banner > div:not(.rx-ph-banner-actions) {
   flex-grow: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 .rx-ph-banner strong {
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.25;
 }
 .rx-ph-banner p {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--muted);
 }
 .rx-ph-banner.unusual p,
@@ -103,7 +103,7 @@
   width: 44px;
   height: 44px;
   flex-shrink: 0;
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -112,11 +112,11 @@
 }
 .rx-ph-banner.unusual .rx-ph-banner-icon {
   background: var(--amber);
-  color: #ffffff;
+  color: var(--surface);
 }
 .rx-ph-banner-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -126,24 +126,24 @@
   gap: 8px;
   min-height: 48px;
   padding: 0 20px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid transparent;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
 }
 .rx-ph-btn.primary {
   background: var(--pine);
-  color: #ffffff;
+  color: var(--surface);
 }
 .rx-ph-btn.primary:hover {
-  background: #1c3a30;
-  color: #ffffff;
+  background: var(--pine);
+  color: var(--surface);
 }
 .rx-ph-btn.ghost {
-  border-color: #c9a75a;
+  border-color: var(--amber);
   color: var(--amber-ink);
 }
 .rx-ph-btn.outline {
@@ -166,7 +166,7 @@
 .rx-ph-rows {
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
   overflow: hidden;
@@ -178,7 +178,7 @@
   gap: 16px;
   min-height: 46px;
   padding: 8px 16px;
-  font-size: 14.5px;
+  font-size: 14px;
   color: var(--ink);
   text-decoration: none;
 }
@@ -207,7 +207,7 @@
 .rx-ph-lane {
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
   overflow: hidden;
@@ -217,7 +217,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--line-soft);
   background: var(--paper);
 }
@@ -227,11 +227,11 @@
 .rx-ph-lane-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .rx-ph-lane-title h2 {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--ink);
 }
 .rx-ph-lane.readings .rx-ph-lane-title h2 {
@@ -246,12 +246,12 @@
   width: 32px;
   height: 32px;
   flex-shrink: 0;
-  border-radius: 9px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--pine);
-  color: #ffffff;
+  color: var(--surface);
 }
 .rx-ph-lane-icon.outline {
   background: var(--surface);
@@ -261,8 +261,8 @@
 .rx-ph-count {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
+  gap: 8px;
+  padding: 4px 12px;
   border-radius: 999px;
   background: var(--sage);
   color: var(--pine);
@@ -291,7 +291,7 @@
   padding: 0 20px;
   border-top: 1px solid var(--line-soft);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   text-decoration: none;
 }
 
@@ -306,14 +306,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 14px 16px;
-  border-radius: 12px;
+  padding: 16px 16px;
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
 }
 .rx-ph-tile.changed {
-  border-color: #ead9b3;
-  background: #fffaf0;
+  border-color: #dcc48a;
+  background: var(--amber-tint);
 }
 .rx-ph-tile-top {
   display: flex;
@@ -327,12 +327,12 @@
   color: var(--ink-2);
 }
 .rx-p-chip-sm {
-  padding: 3px 9px;
+  padding: 4px 8px;
   border-radius: 999px;
   background: var(--sage);
   color: var(--pine);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
 }
 .rx-ph-tile.changed .rx-p-chip-sm,
@@ -344,13 +344,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 6px;
+  gap: 4px 8px;
 }
 .rx-ph-tile-value strong {
-  font-size: 28px;
+  font-size: 24px;
   line-height: 1;
   letter-spacing: -0.02em;
-  font-weight: 700;
+  font-weight: 600;
 }
 .rx-ph-tile-value span {
   font-size: 14px;
@@ -372,7 +372,7 @@
 }
 .rx-ph-tile.model {
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   background: var(--sage);
   border-color: var(--sage);
 }
@@ -382,7 +382,7 @@
 .rx-ph-tile.model strong {
   display: block;
   margin-top: 4px;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.3;
 }
 .rx-ph-tile.model .rx-ph-btn {
@@ -397,8 +397,8 @@
 }
 .rx-ph-hrow {
   display: flex;
-  gap: 14px;
-  padding: 14px 20px;
+  gap: 16px;
+  padding: 16px 20px;
 }
 .rx-ph-hrow + .rx-ph-hrow {
   border-top: 1px solid var(--line-soft);
@@ -408,10 +408,10 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 .rx-ph-hrow strong {
-  font-size: 15.5px;
+  font-size: 16px;
 }
 .rx-ph-hrow > div > span:not(.rx-ph-kicker) {
   font-size: 14px;
@@ -421,7 +421,7 @@
   width: 36px;
   height: 36px;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -435,14 +435,14 @@
 .rx-ph-meds {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin-top: 4px;
 }
 .rx-ph-meds li {
-  padding: 9px 12px;
-  border-radius: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
   background: var(--paper);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
 }
 .rx-ph-dot {
@@ -460,19 +460,19 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--muted);
   white-space: nowrap;
 }
 .rx-ph-legend span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .rx-ph-legend i.band {
   width: 14px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--sage);
 }
 .rx-ph-legend i.thr {
@@ -498,8 +498,8 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
   text-align: left;
@@ -510,17 +510,17 @@
 }
 .rx-ph-sig[aria-selected="true"] {
   border: 2px solid var(--pine);
-  padding: 11px 13px;
+  padding: 12px 12px;
 }
 .rx-ph-sig > div:first-child {
   flex-grow: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 .rx-ph-sig-name {
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 600;
 }
 .rx-ph-sig-status {
@@ -534,15 +534,15 @@
 .rx-ph-sig-value {
   display: flex;
   align-items: baseline;
-  gap: 3px;
+  gap: 4px;
   white-space: nowrap;
 }
 .rx-ph-sig-value strong {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
 }
 .rx-ph-sig-value span {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--muted);
 }
 .rx-ph-sig-spark {
@@ -553,7 +553,7 @@
   margin-top: 8px;
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
   overflow: hidden;
@@ -564,8 +564,8 @@
   justify-content: space-between;
   gap: 12px;
   min-height: 48px;
-  padding: 8px 14px;
-  font-size: 14.5px;
+  padding: 8px 16px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
 }
@@ -576,9 +576,9 @@
 .rx-ph-detail {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 22px 24px;
-  border-radius: 16px;
+  gap: 16px;
+  padding: 24px 24px;
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
 }
@@ -590,33 +590,33 @@
 }
 .rx-ph-detail h2 {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
 }
 .rx-ph-detail > header span:not(.rx-p-chip-sm) {
   display: block;
   margin-top: 4px;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--muted);
 }
 .rx-ph-figures {
   display: flex;
   align-items: flex-end;
-  gap: 28px;
+  gap: 32px;
 }
 .rx-ph-figure {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  margin-top: 2px;
+  gap: 8px;
+  margin-top: 4px;
 }
 .rx-ph-figure strong {
-  font-size: 26px;
+  font-size: 24px;
   line-height: 1;
   font-weight: 600;
 }
 .rx-ph-figure.big strong {
-  font-size: 44px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 .rx-ph-figure strong.pine {
@@ -636,11 +636,11 @@
 }
 .rx-ph-plain {
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--sage);
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.5;
 }
 .rx-ph-plain.changed {
