@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { dateLong } from "../format.js";
+import { STATUS, DETAIL } from "./watchStatus.js";
 
 function greeting() {
   const hour = new Date().getHours();
@@ -17,43 +18,20 @@ function greeting() {
   return "Good evening";
 }
 
-const SUMMARY = [
-  {
-    key: "review",
-    title: "Review recommended",
-    icon: CircleAlert,
-    className: "review",
-    detail: "Persistent changes for clinician review",
-  },
-  {
-    key: "context",
-    title: "Waiting on patient",
-    icon: Clock3,
-    className: "context",
-    detail: "Check-in sent; response not yet received",
-  },
-  {
-    key: "nodata",
-    title: "Not enough data",
-    icon: CircleAlert,
-    className: "nodata",
-    detail: "Too few readings to compare with their usual",
-  },
-  {
-    key: "monitoring",
-    title: "Monitoring",
-    icon: CheckCircle2,
-    className: "monitoring",
-    detail: "No new persistent pattern to review",
-  },
-];
-
-const STATUS = {
-  review: "Review recommended",
-  context: "Check-in pending",
-  monitoring: "Monitoring",
-  nodata: "Data gap",
+const ICON = {
+  review: CircleAlert,
+  context: Clock3,
+  nodata: CircleAlert,
+  monitoring: CheckCircle2,
 };
+
+const SUMMARY = ["review", "context", "nodata", "monitoring"].map((key) => ({
+  key,
+  title: STATUS[key],
+  icon: ICON[key],
+  className: key,
+  detail: DETAIL[key],
+}));
 
 const DESCRIPTIONS = {
   review:

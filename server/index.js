@@ -223,6 +223,14 @@ const DISCHARGE_CODES = (() => {
   return byCode;
 })();
 
+// Every patient id in the synthetic roster. The voice check-in is the one path
+// that sends anything off this origin, and docs/COMPLIANCE.md says it is
+// restricted to synthetic patients. It was not: the classic /patients/:id/voice
+// route checked dataType, the route the recovery app actually calls checked
+// nothing, so a live roster plugged into the same contract would have sent real
+// names to a third party with no guard in the way. The claim is now enforced.
+const SYNTHETIC_PATIENTS = new Set(DISCHARGE_CODES.values());
+
 // Which record a patient-role caller has actually proved they may read.
 const provenPatient = (req) => {
   const supplied = req.headers["x-relay-discharge"];
@@ -571,6 +579,11 @@ app.post("/api/voice/session", async (req, res) => {
     return res
       .status(403)
       .json({ error: "Explicit consent is required for a voice session." });
+  if (!SYNTHETIC_PATIENTS.has(req.body?.patientId))
+    return res.status(403).json({
+      error: "A voice check-in is limited to the synthetic demo cohort.",
+      code: "VOICE_NOT_SYNTHETIC",
+    });
   if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_AGENT_ID)
     return res.status(503).json({
       error: "Voice is not configured. The text assistant is available.",

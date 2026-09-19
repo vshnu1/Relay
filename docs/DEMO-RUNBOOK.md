@@ -63,15 +63,15 @@ curl -s localhost:3001/api/status # confirm what to say about voice
 If `voice` is `false`, say "a short consented check-in" and never "voice".
 
 **1. The watchlist, about 15 seconds.** Open the root URL. Four sections, and
-name all four: *needs your review* (2), *waiting on the patient* (2),
-*nothing new* (3), *not enough data* (1).
+name all four: *review recommended* (2), *context needed* (12), *monitoring*
+(12), *not enough data* (2).
 
 Say the line that does the work: **most monitoring tools cannot tell you the
 difference between the last two.** One is a quiet patient, the other is one
 nobody can see.
 
 Point out the signal counts — "4 of 4 signals", "2 of 4 signals" — and that
-eight patients span six recovery programs.
+28 patients span 15 recovery pathways across 12 hospitals.
 
 **2. Maya Okafor, about 40 seconds. This is the demo.** Click Open.
 
@@ -127,8 +127,9 @@ security reviewer's whole argument says healthcare AI ships without.*
 
 **On the import beat.** "That is a 284 MB Apple Health export. It inflates and
 parses in the browser. Nothing is uploaded, and no third-party model sees it —
-the one path that leaves this origin is the voice check-in, it is restricted
-to synthetic patients, and it carries no name and no free text."
+the one path that leaves this origin is the voice check-in, and the server
+refuses it for anyone outside the synthetic cohort. It sends a first name and a
+readings summary, never a surname or an identifier."
 
 *Shadow AI — staff reaching for tools without knowing where the data goes — is
 the named top risk in this field. Demonstrate it rather than assert it.*
@@ -159,7 +160,7 @@ the neutropenic-fever watch. Open Grace, not a respiratory patient.
 | ML engine: 3.77%–5.77% of judged subjects across five programs; 5.77% for post-abdominal surgery | `fixtures/ml_calibration.json` |
 | The model is the quiet one: speaks on 9.8% of untouched subjects, the rule on 53.7% | `fixtures/sensitivity_ml.json` |
 | 99 days of real wearable data, one coordinated event found | `docs/DATA.md` |
-| 53 ML tests, 32 JS tests, API integration suite | run them |
+| 60 ML tests, 39 JS tests, API integration suite | run them |
 
 Never quote the 3.35% and the 5.77% as though one beats the other — the
 first is per subject-day, the second per subject.

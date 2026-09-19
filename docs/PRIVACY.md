@@ -75,7 +75,7 @@ worth noting because it means they cannot quietly drift:
   between the raw export and anything committed.
 - `analysis/language_guard.py` enforces the product's clinical boundary on
   every clinician-facing string: Relay describes what changed and by how much,
-  and never names a condition, a risk, a severity judgement, or a treatment
+  and never names a condition, a risk, a severity judgment, or a treatment
   recommendation. That is a confidentiality-adjacent guarantee — it keeps the
   system from asserting things about a patient it has no standing to assert.
 

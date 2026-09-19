@@ -1,24 +1,31 @@
 import { useState } from "react";
-import { Search, ArrowUpRight, CircleAlert, Clock3, CheckCircle2 } from "lucide-react";
+import {
+  Search,
+  ArrowUpRight,
+  CircleAlert,
+  Clock3,
+  CheckCircle2,
+} from "lucide-react";
 import { list, numberWord } from "../format.js";
+import { STATUS } from "./watchStatus.js";
 
 const GROUPS = [
   {
     id: "review",
-    title: "Needs your review",
+    title: STATUS.review,
     empty: "Nobody needs a review right now.",
   },
-  { id: "context", title: "Waiting on the patient" },
+  { id: "context", title: STATUS.context },
   {
     id: "monitoring",
-    title: "Nothing new",
+    title: STATUS.monitoring,
     collapsible: true,
     summary: (names) =>
       `${list(names)} ${names.length === 1 ? "has" : "have"} nothing new.`,
   },
   {
     id: "nodata",
-    title: "Not enough data",
+    title: STATUS.nodata,
     collapsible: true,
     summary: (names) =>
       `${list(names)} ${names.length === 1 ? "has" : "have"} too few readings to compare.`,
@@ -59,12 +66,20 @@ export default function Watchlist({ cohort }) {
       </header>
       <div className="rx-watch-statusbar" aria-label="Watchlist summary">
         <span className="rx-watch-total">{cohort.length} patients</span>
-        <span className="rx-watch-stat"><CircleAlert size={16} /> <strong>{reviews}</strong> need review</span>
-        <span className="rx-watch-stat waiting"><Clock3 size={16} /> <strong>{context}</strong> awaiting check-in</span>
-        <span className="rx-watch-stat"><CheckCircle2 size={16} /> <strong>{monitoring}</strong> monitoring</span>
+        <span className="rx-watch-stat">
+          <CircleAlert size={16} /> <strong>{reviews}</strong> need review
+        </span>
+        <span className="rx-watch-stat waiting">
+          <Clock3 size={16} /> <strong>{context}</strong> awaiting check-in
+        </span>
+        <span className="rx-watch-stat">
+          <CheckCircle2 size={16} /> <strong>{monitoring}</strong> monitoring
+        </span>
       </div>
       {query.trim() && !shown.length && (
-        <p className="rx-card rx-row-summary">No patients match “{query.trim()}”.</p>
+        <p className="rx-card rx-row-summary">
+          No patients match “{query.trim()}”.
+        </p>
       )}
       {GROUPS.map((g) => {
         const rows = shown.filter((p) => p.group === g.id);
@@ -89,7 +104,11 @@ export default function Watchlist({ cohort }) {
             <div className="rx-card rx-rows">
               {expanded && rows.length > 0 && (
                 <div className="rx-watch-columns" aria-hidden="true">
-                  <span>Patient</span><span>Recovery pathway</span><span>Latest summary</span><span>Signals changed</span><span />
+                  <span>Patient</span>
+                  <span>Recovery pathway</span>
+                  <span>Latest summary</span>
+                  <span>Signals changed</span>
+                  <span />
                 </div>
               )}
               {!rows.length ? (

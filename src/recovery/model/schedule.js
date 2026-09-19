@@ -279,7 +279,7 @@ export function notifications(p, now = Date.now()) {
         due.reason === "asked"
           ? "Your care team has questions for you"
           : due.reason === "readings"
-            ? "Your readings changed. Please check in"
+            ? "Your readings moved. Please check in"
             : `Day ${p.dayHome} check-in`,
       body:
         due.reason === "scheduled"

@@ -8,13 +8,7 @@ import { exportHandoff } from "./handoff.js";
 import CareTeamPanel from "./CareTeamPanel.jsx";
 import PatientActivity from "./PatientActivity.jsx";
 import ClinicianVoiceSummary from "./ClinicianVoiceSummary.jsx";
-
-export const STATUS = {
-  review: "Review recommended",
-  context: "Context needed",
-  monitoring: "Monitoring",
-  nodata: "Not enough data",
-};
+import { STATUS } from "./watchStatus.js";
 
 export default function PatientOverview({ id }) {
   const p = usePatient(id);

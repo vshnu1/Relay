@@ -77,7 +77,7 @@ this criterion contemplates.
 
 This is enforced at runtime rather than promised: every generated sentence
 passes `server/languageGuard.js` before it leaves the process, against five
-rule families — diagnostic claim, risk prediction, severity judgement,
+rule families — diagnostic claim, risk prediction, severity judgment,
 treatment recommendation, autonomous escalation. A sentence that trips one is
 replaced with a description of the readings and the redaction is recorded in
 `guard.withheld` and shown to the clinician. `analysis/language_guard.py` is

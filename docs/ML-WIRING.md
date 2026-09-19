@@ -1,6 +1,6 @@
 # Wiring the ML engine: verified recipe, and why it is not applied
 
-The Python engine in `ml/relay_ml` passes 53 tests, covers six programs, and
+The Python engine in `ml/relay_ml` passes 60 tests, covers 15 recovery pathways, and
 has a measured false-positive rate. **It has no caller.** `grep` finds zero
 references to it in `server/index.js`, `workflows/tasks.js` or anywhere under
 `src/`.

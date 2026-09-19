@@ -39,7 +39,7 @@ const SAFEGUARDS = [
     cite: "164.312(a)(2)(iii)",
     name: "Automatic logoff",
     state: BUILT,
-    note: "Fifteen minutes, warned at fourteen. Activity is measured from real user events, so a polling timer or a streaming reading cannot hold a session open.",
+    note: "Fifteen minutes, warned at fourteen. Activity is measured from real user events, so a polling timer or a streaming reading cannot hold a session open. Client-side only: the bearer code stays valid because there is no session store to revoke.",
   },
   {
     cite: "164.312(a)(2)(iv)",
@@ -103,7 +103,12 @@ const ACTION = {
   "handoff.exported": "Exported a handoff",
   "dataset.imported": "Imported readings",
   "checkin.voice.started": "Started a voice check-in",
+  "checkin.recorded": "Recorded a check-in",
   "ml.guard": "Model output checked by the language guard",
+  "ml.scored": "Scored a patient's readings",
+  "analysis.run": "Ran the analysis",
+  "simulation.run": "Ran a simulation",
+  "clinician.voice_summary.generated": "Spoke a clinician summary",
 };
 
 function AuditTrail() {
@@ -245,8 +250,11 @@ export default function Assurance() {
                 An Apple Health export is inflated and parsed{" "}
                 <strong>in the browser</strong>. It is never uploaded, and no
                 third-party model sees it. The voice check-in is the only path
-                that leaves this origin, it is restricted to synthetic patients,
-                and it carries no name or free text.
+                that leaves this origin, and the server refuses it for any
+                record outside the synthetic roster. It carries a first name,
+                the recovery pathway and a readings summary — and, it being a
+                call, whatever the patient says. No surname, no identifier, no
+                stored note.
               </dd>
             </div>
           </dl>
@@ -271,7 +279,7 @@ export default function Assurance() {
               <strong>6.04%</strong>. The same rule judging each day only
               against the days before it, which is all a deployment has. The two
               are reported separately because quoting the first as the second
-              overstates this by nearly half.
+              overstates the product by nearly half.
             </dd>
           </div>
           <div>

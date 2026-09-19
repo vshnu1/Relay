@@ -91,8 +91,9 @@ read into one a breach investigation can find.
   touching PHI. Two are checkable today and both fail: Render signs a BAA only
   on Scale or Enterprise workspaces and `render.yaml` specifies `starter`;
   ElevenLabs offers one only on Enterprise with Zero Retention Mode. The voice
-  routes send patient prose off-platform, which is why they are restricted to
-  synthetic data. *Organisational — but the procurement gap is real and named.*
+  routes send a first name, the recovery pathway and a readings summary
+  off-platform, plus the patient's own speech, which is why the server refuses
+  a voice session for any record outside the synthetic roster. *Organisational — but the procurement gap is real and named.*
 - **Breach notification** (164.400–414) — individuals without unreasonable
   delay and no later than 60 days; HHS within 60 days at 500+ affected. As a
   business associate Relay would notify the hospital, not patients.

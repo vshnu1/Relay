@@ -34,7 +34,7 @@ that pace — do not speed up to fit more in.
 Three notes on delivery:
 
 - **"It asks the patient" — not "voice."** This wording stays true whether or
-  not ElevenLabs is live. See [the `[VERIFY]` claims](#the-two-verify-claims).
+  not ElevenLabs is live. See [the remaining `[VERIFY]` claim](#the-one-remaining-verify-claim).
 - **The 31 beats is the hook, not the false-alarm rate.** Thirty seconds only
   buys one number. Lead with the one that makes personal baselines obviously
   necessary; hold 3.35% for when they ask a follow-up, where it lands harder.
@@ -56,7 +56,7 @@ Three notes on delivery:
   accuracy figures beside ours: theirs are classification accuracies on
   curated sets, ours is a false-alarm rate per subject-day and a detection
   lag, and the two answer different questions.
-- **End on the boundary.** In a health pitch it reads as judgement, not as a
+- **End on the boundary.** In a health pitch it reads as judgment, not as a
   limitation, and it is the line that most reliably earns the next two minutes.
 
 ---
@@ -133,8 +133,8 @@ every axis this pitch depends on. The four application states are its primary
 structure rather than badges on a list, so "nothing new" and "not enough
 data" are visible sections a judge can see. It states what it is *not*
 counting — sleep is down, and it says sleep is not counted for pneumonia. It
-shows which device last synced and when. It covers eight patients across six
-recovery programs instead of three synthetic cases. And the patient side
+shows which device last synced and when. It covers 28 patients across 15
+recovery pathways instead of three synthetic cases. And the patient side
 exists, with its own consent and check-in.
 
 The day-by-day squares also tell a longer story than a 36-hour window could:
@@ -266,8 +266,10 @@ reaches either with a private right of action.
 
 Nowhere. The Apple Health export inflates and parses **in the browser** — 284
 MB, 852,000 records, never uploaded, and no third-party model sees it. The one
-path that leaves our origin is the voice check-in: restricted to synthetic
-patients, and it carries no name and no free text. The typefaces are served
+path that leaves our origin is the voice check-in, and the server refuses it
+for any record outside the synthetic cohort. It carries a first name, the
+recovery pathway and a readings summary — and, it being a call, whatever the
+patient says. No surname, no identifier, no stored note. The typefaces are served
 from our own origin too, so not even a font request tells anyone who opened a
 record.
 

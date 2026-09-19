@@ -402,15 +402,16 @@ function describe(s, p, homeFrom) {
   const shownDays = p.dayHome + 1 - homeFrom;
   const missing = s.home.slice(homeFrom).filter((d) => d.v === null).length;
   const parts = [];
-  if (s.usual === null) parts.push("No pre-admission baseline is available.");
+  if (s.usual === null)
+    parts.push("No usual yet: no readings before admission.");
   else if (s.today === null)
     parts.push(`Usual: ${s.fmt(s.usual)} ${unitWord(s)}. No reading today.`);
   else if (s.counted && s.threshold !== null)
     parts.push(
-      `Usual ${s.fmt(s.usual)} · trigger ${s.fmt(s.threshold)} · today ${s.fmt(s.today)} ${unitWord(s)}.`,
+      `Usual ${s.fmt(s.usual)} · threshold ${s.fmt(s.threshold)} · today ${s.fmt(s.today)} ${unitWord(s)}.`,
       s.moved
-        ? `Past the trigger since day ${s.runStart}.`
-        : `${s.change} from usual; ${s.towardDays > 0 ? `moving ${dirWord(s)}, below the trigger` : "inside the usual range"}.`,
+        ? `Past the threshold since day ${s.runStart}.`
+        : `${s.change} from usual; ${s.towardDays > 0 ? `moving ${dirWord(s)}, below the threshold` : "inside the usual range"}.`,
     );
   else
     parts.push(
