@@ -1,10 +1,12 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { actions } from "../useRecovery.js";
+import { actions, useRoute } from "../useRecovery.js";
 import { SignalChart } from "../doctor/Readings.jsx";
 import { SIGNALS } from "../model/profiles.js";
 import { numberWord } from "../format.js";
 import Sparkline from "./Sparkline.jsx";
+import GuidanceCard from "./GuidanceCard.jsx";
+import { metricGuidance } from "./guidance.js";
 
 const HOME_DAYS = 14;
 
@@ -113,7 +115,14 @@ export default function Metrics({ patient: p }) {
   const counted = p.counted;
   const others = p.signals.filter((s) => !s.counted);
   const order = [...counted, ...others];
-  const [openId, setOpenId] = useState(order[0]?.id);
+  // #/patient/readings/<signal> opens that reading; the Home card links here.
+  const wanted = useRoute()[2];
+  const [openId, setOpenId] = useState(
+    order.find((x) => x.id === wanted)?.id ?? order[0]?.id,
+  );
+  useEffect(() => {
+    if (wanted && order.some((x) => x.id === wanted)) setOpenId(wanted);
+  }, [wanted]);
   const index = Math.max(
     0,
     order.findIndex((s) => s.id === openId),
@@ -277,6 +286,8 @@ export default function Metrics({ patient: p }) {
               />
             )}
           </div>
+
+          <GuidanceCard guidance={metricGuidance(s, p)} compact level={3} />
 
           {s.device === "manual" && <ManualEntry patient={p} signal={s} />}
 

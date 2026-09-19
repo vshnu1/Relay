@@ -22,6 +22,8 @@ import Care from "./Care.jsx";
 import HomeAlert from "./HomeAlert.jsx";
 import HomeReadings from "./HomeReadings.jsx";
 import HomeHospital from "./HomeHospital.jsx";
+import GuidanceCard from "./GuidanceCard.jsx";
+import { homeGuidance } from "./guidance.js";
 
 // Five places to go. Everything else is reached from inside one of them.
 const NAV = [
@@ -109,6 +111,7 @@ function Home({ patient: p }) {
 
       <HomeMessages patient={p} />
       <HomeAlert patient={p} />
+      <GuidanceCard guidance={homeGuidance(p)} />
 
       <div className="rx-ph-lanes">
         <HomeReadings patient={p} />
