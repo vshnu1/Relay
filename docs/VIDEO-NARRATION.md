@@ -1,108 +1,123 @@
 # Read this out loud
 
-The lines in _[square brackets]_ are for whoever is driving the app. Do not
-read them. Everything else is yours, top to bottom.
+Lines in _[square brackets]_ are for whoever drives the app. Do not read them.
 
-About 500 words, so roughly three minutes at a normal pace. Pause a beat at
-each paragraph break; that is where your teammate catches up.
+**538 words, about 3 minutes 20 spoken.** Devpost wants 2 to 3 minutes, so three
+sentences are marked **(cut for 3:00)**. Drop all three and you land at 3:00
+with every topic still in. Decide before you record, not during.
 
 ---
 
-## Set the problem first · about 0:00–0:40
+## The problem · 0:00–0:25
 
-_[Landing page. Slow scroll through the top. Do not click during this whole
-section.]_
+_[Landing page. Slow scroll. Do not click during this section.]_
 
 In healthcare, the hardest person to watch is the one who has gone home. The
-thirty days after a discharge are when a patient is most likely to end up back
-in hospital, and they are also when the line to their care team goes quiet.
+thirty days after a discharge are when a patient is most likely to come back,
+and when the line to their care team goes quiet. They do not know what is
+worth a phone call. The clinician has forty of them. And the watch on that
+wrist records the whole time, unread.
 
-The patient does not know which change is worth a phone call. The clinician
-has forty patients and cannot watch any of them continuously. And the watch on
-that wrist records the whole time, unread, because one reading alone tells you
-nothing.
-
-Relay is what those thirty days look like instead. It watches each patient's
-readings against their own baseline, and when several move together and stay
-moved, it asks the patient what was going on. Then it hands the care team the
-pattern, with the patient's own words beside it.
+> **(cut for 3:00)** the last sentence, "And the watch on that wrist records the
+> whole time, unread."
 
 ---
 
-## The patient · about 0:40–1:10
+## What it does with the data · 0:25–0:55
 
-_[Click "I have a discharge code". Bayfront Health, code BAY-2741, continue.
-Land on the patient home and point at the four readings.]_
+_[Click "I have a discharge code". Bayfront Health, BAY-2741. Land on the
+patient home, point at the four readings.]_
 
-The patient signs in with the code from their discharge letter. No new
-hardware: it reads the watch they already own, and compares every reading with
-their own usual, never a population range.
+Relay turns that stream into something a clinician can act on. It cuts every
+signal into six-hour windows, compares each with that patient's own baseline
+rather than a population range, and speaks only when several move together and
+stay moved for a day.
 
-_[Check-in tab. Start the voice check-in, answer one question, then point at
-the draft it writes.]_
+_[Check-in tab. Start the voice check-in, answer one question, point at the
+draft.]_
 
-And here is where most monitoring gets it wrong. When readings move, Relay
-does not raise an alarm. It asks. This is an ElevenLabs agent, and the
-questions come from the discharge plan itself, so pneumonia asks about
-breathing and fever. Nothing reaches the care team until the patient approves
-it.
+Then it does what most monitoring gets wrong. It does not alarm. It asks. This
+is an ElevenLabs agent, and the questions come from the discharge plan, so
+pneumonia asks about breathing and fever. Nothing reaches the care team until
+the patient approves it.
 
 ---
 
-## The clinician · about 1:10–1:35
+## Why a hospital cares · 0:55–1:20
 
 _[Clinician tab. Ward list. Point at each of the four state cards.]_
 
-The care team sees one screen. Twenty-eight patients in four states: two need
-review, twelve waiting on a check-in, two without enough data. Most tools
-cannot tell a quiet patient from one nobody can see.
+That is the point for a hospital. Twenty-eight patients, and today two need a
+clinician. Not twenty-eight charts, two. Twelve are waiting on a check-in, and
+two the system admits it cannot see well enough to judge. Medicare penalises
+six conditions on a thirty-day readmission window; four are already pathways
+here.
 
-_[Open Maya Okafor. Down the left-hand summary, then to her own words.]_
+> **(cut for 3:00)** the last sentence, the Medicare one. Keep it if any judge
+> has asked about reimbursement.
 
-Open one and you get the story, not a chart. Settled by day three, drifting on
-day seven, four signals past threshold together for thirty-five hours, and her
-own words beside the numbers.
+_[Open Maya Okafor. Down the left summary, then her own words. Then point at
+"Listen to summary".]_
+
+Open one and you get the story, not a chart. Drifting on day seven, four
+signals past threshold together for thirty-five hours, and her own words
+beside the numbers. There is a spoken version too, our second use of
+ElevenLabs, for a clinician between rooms.
 
 ---
 
-## The model, and why it stayed quiet · about 1:35–2:15
+## The model, and why it stayed quiet · 1:20–2:00
 
 _[Model view. Stop on the score.]_
 
 A second model runs beside that rule: an Isolation Forest, unsupervised,
 because nobody in our reference data deteriorated, so there was never a
-positive class to train on. It learns this patient's own six-hour windows,
-then scores how far today's sits from them.
+positive class to train on. It learns this patient's own windows and scores
+how far today's sits from them.
 
 _[Scroll slowly through "why it stayed quiet" so all four gates are readable.
-Hold this shot the longest of any in the video.]_
+Hold this shot the longest in the video.]_
 
-Now look what it did. It scored above its own line, so the model alone would
+And look what it did. It scored above its own line, so the model alone would
 have spoken. It stayed quiet because the coordination gate failed, and it
 shows you that rather than hiding it. A product that tells a clinician why it
 said nothing is doing the harder half.
 
 _[Render dashboard tab, most recent run. Point at the execution ID.]_
 
-All of it runs as a Render Workflow, and every run has an execution ID, so any
-number on that screen traces back to the run that produced it.
+All of it runs as a Render Workflow, every time a check-in starts or a
+clinician analyses a case, and every run has an execution ID that any number
+on screen traces back to.
 
 ---
 
-## How the data is handled · about 2:15–2:50
+## Where the data goes · 2:00–2:45
 
-_[Back to the app. Security in the sidebar. Point at the two green "Live:"
-lines.]_
+_[Back to the app. Patient side, "Your data", the Health import panel.]_
 
-This is the part most demos skip. Every technical safeguard in the HIPAA
-Security Rule, cite by cite. Nine built, one partial, and two of them read
-from the running process rather than asserted.
+Where does the data go? That Apple Health import is 284 megabytes, parsed
+entirely in the browser. Nothing uploaded, no third-party model sees it. Staff
+reaching for tools without knowing where data goes is the top named risk in
+this field. This is that claim demonstrated.
 
-_[Scroll to the second table and let it sit on screen.]_
+_[Clinician side. Security in the sidebar. Point at the two green "Live:"
+lines, then at a row of the audit trail.]_
 
-Then the half that matters. Business associate agreements. Risk analysis. FDA
-clearance. All not met, none of them fixable in software. We would rather show
-you the gaps than have you find them.
+Every technical safeguard in the HIPAA Security Rule, cite by cite. Nine
+built, one partial. Two read from the running process rather than asserted:
+whether the data is really encrypted, and whether the audit log verifies.
+Every access names a person.
+
+> **(cut for 3:00)** the sentence beginning "Two read from the running
+> process".
+
+_[Scroll to the second table and let it sit.]_
+
+Then the half that matters. Business associate agreements, risk analysis, FDA
+clearance: all not met, none fixable in software. And our own reading is that
+this is probably a regulated device. We fail Criterion 1 of the decision-
+support exemption, because analysing a pattern from a signal acquisition
+system is what we do.
 
 _[Back to the ward list. Hold.]_
 
@@ -114,18 +129,25 @@ decides.
 
 ## Before you start
 
-**Check three numbers on screen.** They are worked out from the clock, so they
-move.
+**Check three numbers on screen.** They are worked out from the clock.
 
 1. The four ward counts. They were **2, 12, 12 and 2**.
 2. Maya's persistence. It was **thirty-five hours**.
-3. The model score, **above** its nought-point-five line. If it is below on the
-   day, say instead: _"it scored below its own line, so the model stayed quiet,
-   and it still shows you every gate it checked."_
-
-**If you need to lose fifteen seconds**, drop the second paragraph of the
-opening, the one beginning "The patient does not know". The first and third
-still set the problem and say what Relay is.
+3. The model score, **above** its nought-point-five line. If it is below that
+   day: _"it scored below its own line, so the model stayed quiet, and it still
+   shows you every gate it checked."_
 
 **Never say** that the labelled fallback was a Render Workflow run, or that a
 reading is irrelevant to a condition. Neither is true.
+
+## If a judge asks
+
+| Question                             | Answer                                                                                                                                                                                                                |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Where did the data come from?        | LifeSnaps, a public research cohort: 71 subjects, 4,453 subject-days, for calibration. One team member's own Apple Health export for engineering validation. 28 synthetic patients in the demo. No patient data, ever |
+| How do you know the thresholds work? | 3.35% of subject-days fire on a whole-series baseline, **6.04%** on the trailing baseline a deployment actually has. We quote the second and volunteer the first                                                      |
+| Sensitivity?                         | **Unmeasured.** Nobody in the reference cohort deteriorated, so there is no positive class. We say so rather than estimate it                                                                                         |
+| What was the model trained on?       | Synthetic only, labelled as such in the artefact's own metadata. Forty synthetic patients per pathway, split 24/8/8                                                                                                   |
+| Oncology?                            | Post-chemotherapy is a pathway, neutropenic-fever watch, two patients discharged from Moffitt                                                                                                                         |
+| Testing?                             | 90 JavaScript tests, 63 Python, plus integration suites. One runs the Python language guard and its Node port over the same corpus and fails if they disagree phrase for phrase                                       |
+| Who signed off the thresholds?       | Nobody. The file says so in capitals: illustrative, not clinically validated. A clinician owns that table before real use                                                                                             |
