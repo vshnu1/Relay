@@ -17,6 +17,7 @@ import {
 import { useAnalysis } from "./useAnalysis.js";
 import { startPatientVoiceSession, voiceAvailable } from "./voice.js";
 import { buildCheckinPlan } from "./checkinPlan.js";
+import { matchOption } from "./answerText.js";
 
 // The check-in is one conversation. Relay opens by saying why it is checking in
 // (daily for the first week home, every other day after, or because the readings
@@ -30,49 +31,6 @@ const Recognition =
   typeof window !== "undefined"
     ? window.SpeechRecognition || window.webkitSpeechRecognition
     : null;
-
-function matchOption(text, options) {
-  const t = (text || "").trim().toLowerCase();
-  if (!t) return null;
-  const direct = options.find((o) => o.toLowerCase() === t);
-  if (direct) return direct;
-  const has = (...words) => words.some((w) => t.includes(w));
-  if (
-    options.includes("A lot") &&
-    has("a lot", "lot", "much", "very", "really", "worse", "badly")
-  )
-    return "A lot";
-  if (
-    options.includes("A little") &&
-    has("little", "bit", "slight", "some", "kind of", "somewhat")
-  )
-    return "A little";
-  if (
-    options.includes("Not sure") &&
-    has("not sure", "unsure", "don't know", "dont know", "maybe", "hard to say")
-  )
-    return "Not sure";
-  if (
-    options.includes("Yes") &&
-    has("yes", "yeah", "yep", "i have", "i did", "i am")
-  )
-    return "Yes";
-  if (
-    options.includes("No") &&
-    has(
-      "no",
-      "nope",
-      "not really",
-      "haven't",
-      "havent",
-      "didn't",
-      "didnt",
-      "same",
-    )
-  )
-    return "No";
-  return null;
-}
 
 const STATUS = {
   "": "Not started",
