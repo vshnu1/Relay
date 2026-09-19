@@ -5,6 +5,7 @@
 // structured answers and one recommendation; this app decides what to show and the
 // patient decides what to send. The agent never diagnoses; the prompt in
 // docs/voice-agent.md forbids it and the tools give it nothing to diagnose with.
+import { authHeaders } from "../model/authHeaders.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { describeAnalysis } from "../model/mlClient.js";
 import { checkinWhy } from "../model/schedule.js";
@@ -32,17 +33,6 @@ export async function voiceStatus(fetchFn = fetch) {
         "Relay’s server could not be reached. You can still check in by text.",
     };
   }
-}
-
-function authHeaders() {
-  const headers = { "content-type": "application/json" };
-  try {
-    const code = sessionStorage.getItem("rx-code");
-    if (code) headers.authorization = `Bearer ${code}`;
-  } catch {
-    // no session storage
-  }
-  return headers;
 }
 
 // What the agent may know. Plain values only, no free text from the record.

@@ -1,3 +1,4 @@
+import { authHeaders } from "./authHeaders.js";
 // The shared recovery log. Everything either view enters (a check-in, a report, a
 // journal entry, the model's result; a message, discharge notes, an appointment,
 // a check-in request) is one event. The store applies it locally at once, then
@@ -16,22 +17,6 @@ export const newId = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-
-function authHeaders() {
-  const headers = { "content-type": "application/json" };
-  try {
-    const code = sessionStorage.getItem("rx-code");
-    if (code) headers.authorization = `Bearer ${code}`;
-    // Proof of which record this browser is entitled to. The role code alone
-    // cannot say, so without this the server can only take the client's word
-    // for the patientId it asks about.
-    const proof = sessionStorage.getItem("rx-patient-proof");
-    if (proof) headers["x-relay-discharge"] = proof;
-  } catch {
-    // no session storage
-  }
-  return headers;
-}
 
 // The signed-in patient, if any. The server filters the patient role to one
 // record, so the poll has to say whose.
@@ -78,7 +63,7 @@ export function createSync({
         const batch = queue.slice(0, BATCH);
         const res = await fetchFn(path, {
           method: "POST",
-          headers: authHeaders(),
+          headers: authHeaders({ discharge: true }),
           body: JSON.stringify({ events: batch.map((item) => item.event) }),
         });
         if (!res.ok) throw new Error(`push ${res.status}`);
@@ -104,7 +89,9 @@ export function createSync({
     }
     try {
       const url = `${path}?after=${seq}${who ? `&patientId=${encodeURIComponent(who)}` : ""}`;
-      const res = await fetchFn(url, { headers: authHeaders() });
+      const res = await fetchFn(url, {
+        headers: authHeaders({ discharge: true }),
+      });
       if (!res.ok) throw new Error(`poll ${res.status}`);
       const body = await res.json();
       const events = Array.isArray(body.events) ? body.events : [];

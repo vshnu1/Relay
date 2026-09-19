@@ -1,6 +1,7 @@
 // What the patient enters survives a reload: imports, own readings, journal, device
 // connections, check-ins and sent reports are kept as an event log in this browser
-// and replayed onto the next snapshot. Nothing here leaves the device.
+// and replayed onto the next snapshot. Nothing here leaves the device, and a sign-out
+// behind access codes clears it (patient/session.js).
 const KEY = "rx-patient-log";
 const MAX_EVENTS = 400;
 

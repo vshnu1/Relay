@@ -1,3 +1,4 @@
+import { authHeaders } from "../model/authHeaders.js";
 import { useEffect, useState } from "react";
 import {
   Activity,
@@ -180,14 +181,7 @@ function useSafeguards() {
   const [live, setLive] = useState(null);
   useEffect(() => {
     let alive = true;
-    const headers = {};
-    try {
-      const code = sessionStorage.getItem("rx-code");
-      if (code) headers.authorization = `Bearer ${code}`;
-    } catch {
-      // no session storage
-    }
-    fetch("/api/safeguards", { headers })
+    fetch("/api/safeguards", { headers: authHeaders({ json: false }) })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
       .then((body) => alive && setLive(body))
       .catch(() => alive && setLive(false));
@@ -203,14 +197,7 @@ function AuditTrail() {
   const [error, setError] = useState("");
   useEffect(() => {
     let live = true;
-    const headers = {};
-    try {
-      const code = sessionStorage.getItem("rx-code");
-      if (code) headers.authorization = `Bearer ${code}`;
-    } catch {
-      // no session storage
-    }
-    fetch("/api/audit", { headers })
+    fetch("/api/audit", { headers: authHeaders({ json: false }) })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
       .then(
         (list) => live && setRows(Array.isArray(list) ? list.slice(0, 8) : []),

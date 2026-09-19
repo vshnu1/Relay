@@ -151,11 +151,6 @@
   color: var(--pine);
   background: transparent;
 }
-.rx-ph-btn.small {
-  min-height: 40px;
-  padding: 0 16px;
-  font-size: 14px;
-}
 
 .rx-ph-quiet {
   display: flex;
@@ -1058,10 +1053,6 @@
 
 /* Alert banners carry no icon: the text is the alert. A thicker left edge
    marks a worsening one. */
-.rx-ph-banner.noicon {
-  align-items: flex-start;
-  padding: 16px 24px;
-}
 .rx-ph-banner.unusual.noicon {
   box-shadow: inset 4px 0 0 var(--amber);
 }
@@ -1071,9 +1062,6 @@
 }
 .rx-ph-banner.unusual .rx-ph-kicker {
   font-weight: 600;
-}
-.rx-ph-banner.noicon .rx-ph-banner-actions {
-  align-self: center;
 }
 
 /* Compact alert: one kicker, one line, one short sentence. */
