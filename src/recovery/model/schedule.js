@@ -8,6 +8,7 @@ import {
   isScheduledDay,
   toModelContext,
 } from "./profiles.js";
+import { plainMetric } from "./mlClient.js";
 import { list, numberWord } from "../format.js";
 
 const DAY = 86400000;
@@ -95,7 +96,7 @@ export function checkinWhy(p, now = Date.now()) {
   if (due.reason === "readings") {
     const noticed = (p.analysis?.contributors || []).slice(0, 3).map((c) => {
       const direction = c.direction === "above_baseline" ? "higher" : "lower";
-      return `${String(c.label || c.metric || "a reading").toLowerCase()} ${direction} than your usual`;
+      return `${plainMetric(c).toLowerCase()} ${direction} than your usual`;
     });
     const details = noticed.length
       ? `Relay noticed ${list(noticed)}`
@@ -136,12 +137,28 @@ export function insight(p) {
   const active = answered?.answers.activity === "Yes";
   const moved = p.moved.map((s) => s.plain.toLowerCase());
   const a = p.analysis;
+  // An unanswered request from the care team outranks everything below it.
+  // Without this the model's "monitoring" fell through to the generic
+  // reassurance, and a patient whose clinician was waiting on them read
+  // "nothing is needed from you" on one screen and "your care team has
+  // questions for you" on the next.
+  if (p.pending)
+    return {
+      level: "watch",
+      title: "Your care team is waiting for your check-in",
+      body: `${
+        moved.length
+          ? `${sentenceList(moved)} moved away from your usual, so they asked a few questions.`
+          : "They asked a few questions about how you are doing."
+      } It takes about two minutes.`,
+      send: false,
+    };
   // When the model has scored this patient, its state leads. The rules below are
   // the fallback when it has not run.
   if (a) {
     const top = (a.contributors || [])
       .slice(0, 3)
-      .map((c) => c.label.toLowerCase());
+      .map((c) => plainMetric(c).toLowerCase());
     const why = top.length
       ? `${sentenceList(top)} ${top.length === 1 ? "is" : "are"} away from your usual`
       : "Your readings are away from your usual";

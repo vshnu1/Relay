@@ -44,6 +44,23 @@ const LIMIT = {
   steps: [0, 200000],
 };
 
+// The model names a metric the way a clinical registry does — "respiratory
+// rate", "oxygen saturation". The patient's own screens call those "breathing
+// while asleep" and "blood oxygen". Without this the two disagree on the same
+// signal, on two screens a patient flips between in one sitting.
+const PLAIN_BY_METRIC = Object.fromEntries(
+  Object.entries(METRIC_MAP).map(([signal, [metric]]) => [
+    metric,
+    SIGNALS[signal]?.plain || SIGNALS[signal]?.name || metric,
+  ]),
+);
+
+export const plainMetric = (contributor) =>
+  PLAIN_BY_METRIC[contributor?.metric] ||
+  contributor?.label ||
+  contributor?.metric ||
+  "a reading";
+
 export function toModelEvents(readings) {
   const events = [];
   const seen = new Set();
@@ -138,7 +155,7 @@ export function describeAnalysis(a, profile = null) {
   const top = (a.contributors || []).slice(0, 3);
   const names = top.map(
     (c) =>
-      `${c.label.toLowerCase()} ${c.direction === "above_baseline" ? "higher" : "lower"} than your usual`,
+      `${plainMetric(c).toLowerCase()} ${c.direction === "above_baseline" ? "higher" : "lower"} than your usual`,
   );
   const listed = names.length ? `: ${names.join(", ")}` : "";
   switch (a.application_state) {

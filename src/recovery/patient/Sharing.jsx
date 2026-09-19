@@ -18,11 +18,19 @@ export default function Sharing({ patient: p }) {
             <div>
               <strong>{d.name}</strong>
               <span>
+                {/* A device that has never synced has lastSync null, and
+                    Date.now() - null is Date.now(), which dated every manual
+                    and unconnected device to 1970 and printed "synced 20716
+                    days ago" on the one screen meant to reassure. */}
                 {!d.sharing
                   ? "Not sharing"
-                  : d.live
-                    ? "Sharing now"
-                    : `Sharing, synced ${ago(Date.now() - d.lastSync)}`}
+                  : d.connected === false
+                    ? "Not connected"
+                    : d.live
+                      ? "Sharing now"
+                      : d.lastSync
+                        ? `Sharing, synced ${ago(Date.now() - d.lastSync)}`
+                        : "Sharing, nothing sent yet"}
               </span>
             </div>
             <button

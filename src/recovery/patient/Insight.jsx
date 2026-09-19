@@ -3,7 +3,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { insight, concerningReports } from "../model/schedule.js";
 import { SendReport } from "./Care.jsx";
 import { useAnalysis } from "./useAnalysis.js";
-import { describeAnalysis } from "../model/mlClient.js";
+import { describeAnalysis, plainMetric } from "../model/mlClient.js";
+
+// Six-hour windows are how the model counts; hours are how a person does.
+const hoursWord = (h) =>
+  h < 24
+    ? `${h} hours`
+    : `${Math.round(h / 24)} ${Math.round(h / 24) === 1 ? "day" : "days"}`;
 import { QUESTIONS } from "../model/profiles.js";
 import { clock, list } from "../format.js";
 
@@ -73,23 +79,28 @@ export default function Insight({ patient: p }) {
         {a ? (
           <>
             <p>{describeAnalysis(a, p.profile)}</p>
+            {/* This used to print the raw state, an unrounded 0-1 score, the
+                data-quality enum and the model version. That is a debug line,
+                and it sat directly under the one plain sentence the card
+                exists to give. The score is expressed the way every other
+                patient screen expresses it. */}
             <p className="rx-p-fine">
-              State: {a.application_state.replace("_", " ")} · score{" "}
-              {a.anomaly_score ?? "n/a"} · data {a.data_quality?.status} ·{" "}
-              {a.withContext ? "with your answers" : "readings only"} ·{" "}
-              {a.model_version}
+              {typeof a.anomaly_score === "number"
+                ? `Scored ${Math.round(a.anomaly_score * 100)} out of 100`
+                : "Not scored"}{" "}
+              · {a.withContext ? "using your answers too" : "readings only"}
             </p>
             {a.contributors?.length > 0 && (
               <ul className="rx-p-bullets">
                 {a.contributors.slice(0, 4).map((c) => (
                   <li key={c.metric}>
-                    {c.label}:{" "}
+                    {plainMetric(c)} is{" "}
                     {c.direction === "above_baseline" ? "higher" : "lower"} than
-                    usual by {Math.abs(c.robust_deviation).toFixed(1)} of your
-                    usual spread
+                    your usual
                     {c.persistence_windows
-                      ? `, for ${c.persistence_windows} six-hour ${c.persistence_windows === 1 ? "window" : "windows"}`
+                      ? `, and has been for ${hoursWord(c.persistence_windows * 6)}`
                       : ""}
+                    .
                   </li>
                 ))}
               </ul>
