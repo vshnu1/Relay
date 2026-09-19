@@ -61,6 +61,7 @@ export default function Root() {
         else {
           sessionStorage.removeItem(SIGNED_ROLE_KEY);
           sessionStorage.removeItem(CODE_KEY);
+          signOut();
         }
         setGate({ checked: true, required, role });
       } catch {
@@ -79,6 +80,7 @@ export default function Root() {
   const idleLeft = useIdleSignOut(!!gate.role, () => {
     sessionStorage.removeItem(SIGNED_ROLE_KEY);
     sessionStorage.removeItem(CODE_KEY);
+    signOut();
     sessionStorage.setItem(TIMED_OUT_KEY, "1");
     location.hash = "";
     location.reload();
@@ -174,6 +176,7 @@ function DemoBar({ isPatient, roster, actingId, onSelect }) {
     sessionStorage.removeItem(SIGNED_ROLE_KEY);
     sessionStorage.removeItem(CODE_KEY);
     sessionStorage.removeItem(ROLE_KEY);
+    signOut();
     location.hash = "";
     location.reload();
   };

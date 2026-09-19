@@ -37,6 +37,11 @@ function authHeaders() {
 // record, so the poll has to say whose.
 function currentScope() {
   try {
+    // Only a patient has a patient scope. A clinician signing in on a browser
+    // that had held a patient session would otherwise keep polling for that one
+    // record, with a discharge proof that is no longer theirs, and collect a 403
+    // every three seconds while the shared record quietly stopped syncing.
+    if (sessionStorage.getItem("rx-signed-role") === "clinician") return null;
     return sessionStorage.getItem("rx-patient-session") || null;
   } catch {
     return null;
