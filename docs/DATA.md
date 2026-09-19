@@ -106,6 +106,12 @@ and `fixtures/evidence.json` are the committed outputs.
 participants. Nobody in that cohort is post-surgical, so every trigger the
 rule produces there is a false alarm — which makes it a false-positive rate.
 
+The rates below are over the 66 subjects and 4,420 subject-days that have a
+usable baseline for two signals at once; the other five subjects never reach
+one, so the rule cannot fire for them either way. `analysis/calibrate.py
+fixtures/lifesnaps_daily.csv --sweep` prints this table and writes
+`fixtures/calibration.json`.
+
 | Threshold | Fires on | Per patient / 14 days | Keeps the real event |
 |---|---|---|---|
 | 1.5 sd | 6.92% | 0.97 | yes |

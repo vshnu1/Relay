@@ -16,16 +16,33 @@ from .contracts import normalize
 from .features import build_features
 from .model import N_ESTIMATORS, calibrate, make_pipeline, save_prior, usable_rows, _raw
 from .programs import get_program
-from .synthetic import POSTOP_LEVELS, population
+from .synthetic import CLINICAL_LEVELS, GAIT_LEVELS, POSTOP_LEVELS, population
 from .windows import build_grid
 
 ANCHOR = 1789732800000  # fixed so the artifact is reproducible
 
 
-def train_synthetic_prior(program_key="post_abdominal_surgery", n_patients=40, days=28, seed=0, out_dir=None):
+def levels_for(program):
+    """The synthetic population a program's own core metrics can be drawn from.
+
+    Training a program against levels that lack its core metrics produces a
+    prior fitted on empty columns, which is worse than having no prior at all:
+    it would score confidently from nothing. So the levels are chosen by what
+    the program actually counts, and a program whose core is not covered is
+    refused rather than trained badly.
+    """
+    core = set(program.core)
+    for levels in (POSTOP_LEVELS, GAIT_LEVELS, CLINICAL_LEVELS):
+        if core <= set(levels):
+            return levels
+    raise ValueError(f"no synthetic levels cover the core metrics of {program.key}: {sorted(core)}")
+
+
+def train_synthetic_prior(program_key="post_abdominal_surgery", n_patients=40, days=28, seed=0, out_dir=None, levels=None):
     t0 = time.perf_counter()
     program = get_program(program_key)
-    patients = population(n_patients, days, ANCHOR, seed, levels=POSTOP_LEVELS)
+    levels = levels or levels_for(program)
+    patients = population(n_patients, days, ANCHOR, seed, levels=levels)
     rows = []
     for events in patients:
         grid = build_grid(normalize(events), core_metrics=program.core)
@@ -50,6 +67,7 @@ def train_synthetic_prior(program_key="post_abdominal_surgery", n_patients=40, d
         "training_data": "synthetic",
         "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
         "n_patients": n_patients,
+        "core_metrics": list(program.core),
         "patients_train_val_test": [n_train, n_val, n - n_train - n_val],
         "rows_train_val_test": [int(len(X_train)), int(len(X_val)), int(len(X_test))],
         "feature_dim_in": int(X_train.shape[1]),

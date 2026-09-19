@@ -5152,3 +5152,16 @@ p.rx-row-summary {
     grid-template-columns: 1fr;
   }
 }
+
+/* A program that needs a boundary stated carries it on its own card, where a
+   clinician reading the review criteria will see it. */
+.rx-profile-caution {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #d9c38a;
+  background: #fbf7ec;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: #5d5540;
+}

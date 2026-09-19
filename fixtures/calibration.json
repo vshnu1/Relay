@@ -70,6 +70,54 @@
       "rate_pct": 2.35
     },
     {
+      "threshold_sd": 1.7,
+      "min_signals": 2,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 178,
+      "rate_pct": 4.03
+    },
+    {
+      "threshold_sd": 1.7,
+      "min_signals": 3,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 58,
+      "rate_pct": 1.31
+    },
+    {
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 148,
+      "rate_pct": 3.35
+    },
+    {
+      "threshold_sd": 1.75,
+      "min_signals": 3,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 48,
+      "rate_pct": 1.09
+    },
+    {
+      "threshold_sd": 1.8,
+      "min_signals": 2,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 136,
+      "rate_pct": 3.08
+    },
+    {
+      "threshold_sd": 1.8,
+      "min_signals": 3,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 42,
+      "rate_pct": 0.95
+    },
+    {
       "threshold_sd": 2.0,
       "min_signals": 2,
       "subjects": 66,

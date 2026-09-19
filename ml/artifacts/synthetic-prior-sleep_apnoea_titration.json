@@ -1,0 +1,32 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "program": "sleep_apnoea_titration",
+  "training_data": "synthetic",
+  "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+  "n_patients": 40,
+  "core_metrics": [
+    "spo2",
+    "sleep",
+    "rhr"
+  ],
+  "patients_train_val_test": [
+    24,
+    8,
+    8
+  ],
+  "rows_train_val_test": [
+    1726,
+    584,
+    565
+  ],
+  "feature_dim_in": 10,
+  "feature_dim_model": 16,
+  "threshold_raw": 0.0473,
+  "score_scale_raw": 0.0526,
+  "val_exceed_rate": 0.029,
+  "test_exceed_rate": 0.057,
+  "quantile": 0.95,
+  "n_estimators": 200,
+  "seed": 0,
+  "train_seconds": 0.61
+}
