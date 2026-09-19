@@ -121,3 +121,50 @@ class PriorModelTest(unittest.TestCase):
         if r["model"]["status"] == "prior":
             self.assertEqual(r["model"]["training_data"], "synthetic")
             self.assertIn("synthetic", r["rule"].lower())
+
+
+class SensorDropoutTest(unittest.TestCase):
+    """Sensors stopping is a data-quality fact, not a physiological anomaly.
+
+    Regression for the LifeSnaps cohort case where four of five core sensors
+    went stale for a week with no deviation above one robust unit, and the
+    missingness indicators alone pushed the window over the threshold."""
+
+    def test_partial_dropout_without_deviation_is_not_context_needed(self):
+        from relay_ml.synthetic import POSTOP_LEVELS, synthetic_patient
+
+        for seed in range(4):
+            events = synthetic_patient(
+                POSTOP_LEVELS, 35, ANCHOR, seed=seed, dropout={"hrv", "respiratory", "spo2", "heart_rate"}, dropout_days=7
+            )
+            r = score_request({"events": events, "context": None, "program": "post_abdominal_surgery"}, seed=0)
+            self.assertNotEqual(r["application_state"], "context_needed", seed)
+            self.assertFalse(r["is_anomalous"], seed)
+            self.assertEqual(r["data_quality"]["status"], "partial", seed)
+            stale = {m["metric"] for m in r["missing_signals"] if m["reason"] == "stale"}
+            self.assertTrue({"hrv", "respiratory", "spo2"} <= stale, seed)
+
+    def test_neutralization_diagnostics_are_reported(self):
+        from relay_ml.synthetic import POSTOP_LEVELS, synthetic_patient
+
+        events = synthetic_patient(POSTOP_LEVELS, 35, ANCHOR, seed=0, dropout={"hrv", "respiratory", "spo2", "heart_rate"}, dropout_days=7)
+        r = score_request({"events": events, "context": None, "program": "post_abdominal_surgery"}, seed=0)
+        self.assertIn("missingness_neutralized_windows", r["model"])
+        self.assertGreater(r["model"]["missingness_neutralized_windows"], 0)
+        self.assertLessEqual(r["model"]["latest_raw_net_of_missingness"], r["model"]["latest_raw_with_missingness"])
+
+    def test_real_deviation_still_detected_when_a_sensor_stops(self):
+        """Same patient as the committed drift fixture, with one sensor's last two
+        days removed after generation: the deviation on the remaining sensors
+        must still be enough. Missingness may amplify, never originate."""
+        from relay_ml.fixtures import load_fixture
+
+        fx = load_fixture("postoperative_drift")
+        req = fx["request"]
+        cut = "2026-09-16T12:00:00.000Z"
+        for dropped in ({"spo2"}, {"spo2", "respiratory"}):
+            events = [e for e in req["events"] if not (e["metric"] in dropped and e["timestamp"] >= cut)]
+            r = score_request({**req, "events": events}, seed=0)
+            self.assertEqual(r["application_state"], "context_needed", dropped)
+            self.assertTrue(r["is_anomalous"], dropped)
+            self.assertTrue({"rhr", "hrv"} <= {c["metric"] for c in r["contributors"]}, dropped)

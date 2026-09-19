@@ -129,9 +129,9 @@
       "walking_asymmetry_rescaled_fraction": 1,
       "walking_steadiness_rescaled_fraction": 1
     },
-    "parse_seconds": 4.85,
+    "parse_seconds": 4.88,
     "events_emitted": 22033,
-    "read_seconds": 4.9,
+    "read_seconds": 4.93,
     "normalized_events": 22033
   },
   "programs": {
@@ -217,6 +217,7 @@
         },
         "model": {
           "status": "fitted",
+          "anomaly_without_contributors": false,
           "feature_columns": [
             "dev:rhr",
             "dev:hrv",
@@ -236,6 +237,11 @@
           "usable_history_rows": 333,
           "feature_dim_in": 13,
           "history_rows_without_core_signals": 5099,
+          "missingness_neutralized_windows": 0,
+          "latest_explained_by_missingness": false,
+          "latest_raw_with_missingness": -0.0849,
+          "latest_raw_net_of_missingness": -0.0849,
+          "latest_raw_decisive": -0.0849,
           "n_train": 200,
           "n_val": 67,
           "n_test": 66,
@@ -247,10 +253,10 @@
           "quantile": 0.95,
           "n_estimators": 200,
           "seed": 0,
-          "elapsed_seconds": 0.531
+          "elapsed_seconds": 0.484
         }
       },
-      "latest_score_seconds": 0.532,
+      "latest_score_seconds": 0.485,
       "backtest": {
         "analysis_points": 61,
         "application_states": {
@@ -266,16 +272,16 @@
           "fitted": 61
         },
         "anomaly_score_quantiles": {
-          "0.5": 0.094,
-          "0.9": 0.282,
-          "0.95": 0.359,
+          "0.5": 0.076,
+          "0.9": 0.164,
+          "0.95": 0.263,
           "0.99": 0.596
         },
         "share_is_anomalous_points": 0.0,
         "flagged_signal_counts": {
           "steps": 3
         },
-        "mean_score_seconds": 0.278
+        "mean_score_seconds": 0.281
       }
     },
     "stroke_rehabilitation": {
@@ -369,6 +375,7 @@
         },
         "model": {
           "status": "fitted",
+          "anomaly_without_contributors": false,
           "feature_columns": [
             "dev:walking_speed",
             "dev:step_length",
@@ -385,6 +392,11 @@
           "usable_history_rows": 5412,
           "feature_dim_in": 10,
           "history_rows_without_core_signals": 19,
+          "missingness_neutralized_windows": 0,
+          "latest_explained_by_missingness": false,
+          "latest_raw_with_missingness": -0.1229,
+          "latest_raw_net_of_missingness": -0.1229,
+          "latest_raw_decisive": -0.1229,
           "n_train": 3247,
           "n_val": 1082,
           "n_test": 1083,
@@ -396,10 +408,10 @@
           "quantile": 0.95,
           "n_estimators": 200,
           "seed": 0,
-          "elapsed_seconds": 0.777
+          "elapsed_seconds": 0.788
         }
       },
-      "latest_score_seconds": 0.778,
+      "latest_score_seconds": 0.789,
       "backtest": {
         "analysis_points": 61,
         "application_states": {
@@ -412,16 +424,16 @@
           "fitted": 61
         },
         "anomaly_score_quantiles": {
-          "0.5": 0.13,
-          "0.9": 0.286,
-          "0.95": 0.309,
-          "0.99": 0.36
+          "0.5": 0.119,
+          "0.9": 0.229,
+          "0.95": 0.282,
+          "0.99": 0.315
         },
         "share_is_anomalous_points": 0.0,
         "flagged_signal_counts": {},
-        "mean_score_seconds": 0.764
+        "mean_score_seconds": 0.773
       }
     }
   },
-  "total_seconds": 69.82
+  "total_seconds": 70.6
 }

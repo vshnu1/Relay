@@ -31,6 +31,8 @@ class FeatureSet:
     coverage: np.ndarray  # per window core coverage in [0, 1]
     n_fresh: np.ndarray
     core_columns: list = None  # indices of the core metrics' deviation columns
+    dev_columns: list = None  # indices of every deviation column
+    coverage_columns: list = None  # indices of the coverage / fresh-count columns
 
 
 def build_features(grid, program):
@@ -70,4 +72,6 @@ def build_features(grid, program):
     X = np.column_stack(cols + [coverage, n_fresh, n_deviating, mean_abs])
     columns = [f"dev:{m}" for m in metrics] + ["coverage", "n_fresh", "n_deviating_core", "mean_abs_dev_core"]
     core_columns = [metrics.index(m) for m in core if m in metrics]
-    return FeatureSet(columns, X, deviations, percents, tracks, coverage, n_fresh, core_columns)
+    dev_columns = list(range(len(metrics)))
+    coverage_columns = [columns.index("coverage"), columns.index("n_fresh")]
+    return FeatureSet(columns, X, deviations, percents, tracks, coverage, n_fresh, core_columns, dev_columns, coverage_columns)

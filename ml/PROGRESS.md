@@ -73,3 +73,11 @@ Back-test over the last 61 days, one analysis per day: 48 `monitoring`, 13 `insu
 Gait program (four years of phone gait): `monitoring` at the latest point and at all 61 back-test points, data quality sufficient throughout, no contributors. Validation exceed rate 0.024, test 0.026.
 
 Reading: on a healthy subject the engine stays quiet and says `insufficient_data` when it cannot see, which is the behaviour the product promises. This is software validation on one person's data, not clinical validation, and the subject is not post-surgical, so it says nothing about sensitivity.
+
+## Cohort anomaly scoring fix (fix cohort anomaly scoring)
+
+- Investigated the LifeSnaps context requests. Reproduction on the committed de-identified fixture: 71 subjects, 52 evaluable, 1 firm `context_needed` plus 1 to 2 borderline under alternative timestamp or column choices. Perturbation attribution showed the firm case was driven entirely by missingness indicators (four core sensors stale for a week, no present deviation above one robust unit); a synthetic partial-dropout patient reproduced it on 6 of 6 seeds.
+- Fix: missingness may amplify a flag but never originate one. Each recent window is also scored with absent sensors neutralized (deviation at the imputer's training median, coverage at its training median). Unless at least two present core signals exceed the deviation threshold, the lower of the two raw scores decides. A model flag also needs at least one contributor. Diagnostics: `missingness_neutralized_windows`, `latest_explained_by_missingness`, `latest_raw_with_missingness`, `latest_raw_net_of_missingness`, `latest_raw_decisive`, `anomaly_without_contributors`.
+- Regression tests: partial dropout without deviation is never `context_needed` (4 seeds); the committed drift fixture still detects when one or two sensors' last two days are removed after generation.
+- Results: 56 tests pass. Cohort: 52 monitoring, 0 context_needed, stable over model seeds 0 to 2 (`ml/reports/lifesnaps_cohort_eval_post_abdominal_surgery.json`). Fixtures unchanged. Private back-test unchanged (48 / 13 / 0). Drift 4/8 and gait 6/8 generator seeds, same as before.
+- New subcommand: `python -m relay_ml cohort-eval [--program X] [--seed N]`, aggregate-only.
