@@ -55,23 +55,23 @@ export default function Landing() {
       <section className="rx-landing-hero">
         <div className="rx-landing-copy">
           <span className="rx-eyebrow">
-            <Sparkles size={14} /> Post-discharge recovery, made clearer
+            <Sparkles size={14} /> Meet Relay · recovery support after discharge
           </span>
           <h1>
-            Help every recovery
-            <em> stay on course.</em>
+            Recovery support
+            <em> that follows patients home.</em>
           </h1>
           <p>
-            Relay turns everyday wearable readings into a calm, shared picture
-            of what is changing at home—so patients know what to answer and care
-            teams know what deserves their time.
+            After discharge, Relay turns everyday wearable readings into a calm,
+            shared picture of what is changing at home. Patients get a simple
+            check-in; care teams get the context they need to follow up.
           </p>
           <div className="rx-landing-actions">
             <a className="rx-btn primary tall" href="#/doctor">
-              See the recovery watch <ArrowRight size={17} />
+              Start the care team demo <ArrowRight size={17} />
             </a>
             <a className="rx-btn tall" href="#/patient">
-              View patient experience
+              See the patient journey
             </a>
           </div>
           <div className="rx-landing-proof">

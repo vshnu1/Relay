@@ -14,7 +14,7 @@ export default function DoctorApp({ route, cohort }) {
   return (
     <div className="rx-doctor">
       <nav className="rx-side" aria-label="Workspace">
-        <a className="rx-brand" href="#/doctor">
+        <a className="rx-brand" href="#/">
           <span className="rx-brand-mark">
             <Activity size={18} strokeWidth={2.4} />
           </span>

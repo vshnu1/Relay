@@ -6,7 +6,6 @@ import {
   CircleAlert,
   CircleCheck,
   Home as HomeIcon,
-  MessageSquare,
   Sparkles,
   Watch,
 } from "lucide-react";
@@ -17,12 +16,6 @@ import Sharing from "./Sharing.jsx";
 
 const TABS = [
   { id: "home", label: "Home", href: "#/patient", icon: HomeIcon },
-  {
-    id: "checkin",
-    label: "Questions",
-    href: "#/patient/checkin",
-    icon: MessageSquare,
-  },
   { id: "sharing", label: "Sharing", href: "#/patient/sharing", icon: Watch },
 ];
 
