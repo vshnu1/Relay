@@ -341,17 +341,28 @@ points reported from a single person. The single-subject number was not
 wrong, just far too small a sample to see anything.
 
 **Two of the three false alarms had no flagged signals at all.** The model
-fired while the deterministic rule stayed silent. So the model is
-contributing false alarms the rule would not have raised — which is the
-honest counterweight to the `gait_decline` scenario, where the model catches
-a real pattern the rule misses. It trades sensitivity for specificity in both
-directions, and now we can say so with numbers.
+fired while the deterministic rule stayed silent, so it contributes false
+alarms the rule would not have raised. The `gait_decline` scenario used to be
+offered as the counterweight, but that scenario shows only that the model can
+read gait where the rule does not; on the same injected change over the same
+signals (`analysis/sensitivity_ml.py`) the model catches fewer than the rule
+at every size. It is the quieter detector, not the more sensitive one.
 
-**Stroke-rehabilitation program, same 64 subjects:** all 64 return
-`insufficient_data`. LifeSnaps carries no gait metrics, so the engine cannot
-see the signals that program depends on — and reports exactly that rather
-than defaulting to `monitoring`. Refusing to judge when it cannot see is the
-correct behaviour, and it means the stroke program has no cohort-validated
+**The same measurement for every program this cohort can supply:**
+
+| Program | Judged | False alarms | Rate |
+|---|---|---|---|
+| `post_abdominal_surgery` | 52 | 3 | 5.77% |
+| `copd_recovery` | 52 | 2 | 3.85% |
+| `pneumonia_recovery` | 52 | 2 | 3.85% |
+| `sleep_apnoea_titration` | 52 | 3 | 5.77% |
+| `cardiac_recovery` | 53 | 2 | 3.77% |
+
+`python3 analysis/calibrate_ml.py --all` prints this and writes
+`fixtures/ml_calibration.json`. The other nine programs count temperature,
+weight, average heart rate or gait, none of which LifeSnaps records, and the
+tool refuses to score them rather than report a rate about the wrong program.
+The stroke and hip-or-knee programs therefore have no cohort-measured
 false-positive rate. Stated, not interpolated.
 
 ### Denominators are not interchangeable

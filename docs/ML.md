@@ -153,11 +153,17 @@ real wearables (see Anson's `docs/INTEROP.md`).
 
 ## Programs
 
-Configuration only, in `ml/vesper_ml/programs.py`. Six monitoring programs
-share the engine: `post_abdominal_surgery` (fully demonstrated),
+Configuration only, in `ml/vesper_ml/programs.py`. Fourteen monitoring
+programs share the engine: `post_abdominal_surgery` (the one measured most),
 `copd_recovery`, `pneumonia_recovery`, `heart_failure_recovery`,
+`sepsis_watch`, `respiratory_infection`, `asthma_recovery`,
+`pulmonary_embolism_recovery`, `sleep_apnoea_titration`,
+`postpartum_recovery`, `joint_replacement_recovery`, `post_chemotherapy`,
 `stroke_rehabilitation` (functional recovery only; it does not detect or rule
-out a new stroke), `cardiac_recovery`. Each lists its metrics, core metrics
+out a new stroke) and `cardiac_recovery`. Every one has a synthetic-only prior
+under `ml/artifacts/`, trained by `ml/vesper_ml/train.py` on a population
+drawn from that program's own core metrics, so a patient with days of history
+is scored rather than refused. Each lists its metrics, core metrics
 for coverage, relevant check-in fields, and one or two illustrative protocol
 rules (for example `shortness_of_breath: true` in the surgical program lifts
 the state to `review_recommended` regardless of the score). They are
@@ -235,10 +241,15 @@ matches the program.
 
 - Demo thresholds, not clinical rules. Nothing here is clinically validated.
 - Isolation Forest on a handful of features is modest; the deterministic rule
-  and the explanations carry the auditability. The model earns its place on
-  coordinated moderate shifts that no single-signal rule catches.
+  and the explanations carry the auditability. Measured against the rule on
+  the same injected change (`analysis/sensitivity_ml.py`), the model is the
+  quiet one, not the sensitive one: it speaks for about a fifth as many
+  untouched subjects and catches fewer injected changes at every size. It
+  does not catch what the rule misses on this data. Its place is as a second
+  opinion beside the rule, which is how the clinician view uses it.
 - Per-patient fit needs roughly two weeks of history at daily cadence; before
-  that the synthetic prior stands in and is labelled.
+  that the program's synthetic prior stands in and is labelled as such in
+  `model.status` and `model.training_data`.
 - A metric absent from the whole history is silently dropped by the imputer,
   which is the intended new-device behaviour, but it also means a brand-new
   sensor contributes nothing until it has a baseline.
