@@ -1,5 +1,9 @@
 import { ChevronRight, CheckCircle2, Mic } from "lucide-react";
-import { checkinDue, notifications } from "../model/schedule.js";
+import {
+  checkinAnsweredRecently,
+  checkinDue,
+  notifications,
+} from "../model/schedule.js";
 import { ago, list } from "../format.js";
 
 // The alert at the top of the home: one kicker, one line, one short sentence,
@@ -14,7 +18,12 @@ export default function HomeAlert({ patient: p }) {
   const notes = notifications(p);
   const due = checkinDue(p);
   const checkin = notes.find((n) => n.id === "checkin");
-  const report = notes.find((n) => n.id === "report");
+  // Once a patient submits a check-in, clear the matching alert from Home.
+  // A new clinician request still wins because it is represented by `pending`.
+  const report =
+    checkinAnsweredRecently(p) && !p.pending
+      ? null
+      : notes.find((n) => n.id === "report");
   // Unread messages have their own banner at the top of Home (HomeMessages.jsx), so
   // they are left out here rather than shown twice.
   const rest = notes.filter(

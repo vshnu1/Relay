@@ -68,6 +68,7 @@ export default function Checkin({ patient: p }) {
   const voiceQuestionIndexRef = useRef(0);
   const voiceFollowUpUsedRef = useRef(false);
   const voiceAwaitingFollowUpRef = useRef(false);
+  const voiceContextPromptedRef = useRef(false);
 
   const noteWithVoiceTranscript = (note) => {
     const transcript = voiceTranscriptRef.current
@@ -123,6 +124,7 @@ export default function Checkin({ patient: p }) {
     voiceQuestionIndexRef.current = 0;
     voiceFollowUpUsedRef.current = false;
     voiceAwaitingFollowUpRef.current = false;
+    voiceContextPromptedRef.current = false;
     completedDraftRef.current = null;
     endingByPatientRef.current = false;
     setEngine("elevenlabs");
@@ -143,10 +145,17 @@ export default function Checkin({ patient: p }) {
         onPatientSaid: (text, sendContextualUpdate) => {
           voiceTranscriptRef.current.push(text);
           say("you", text);
+          if (voiceContextPromptedRef.current) {
+            sendContextualUpdate?.(
+              "This is the patient's answer to the one optional context prompt. Do not ask another question. Call record_checkin_response now with the selected answers and the patient's context in their own words (or note None). After the tool confirms, say the short review handoff and end the conversation.",
+            );
+            return;
+          }
           const questionId = plan.questions[voiceQuestionIndexRef.current];
           if (!questionId) {
+            voiceContextPromptedRef.current = true;
             sendContextualUpdate?.(
-              "The selected check-in questions are complete. Invite the patient to add optional context in their own words, or say no. Do not ask another symptom question or probe for a cause.",
+              `Ask this optional context question once: “${plan.contextPrompt}” Accept the patient's answer or no. Do not probe. Then call record_checkin_response and close into the review handoff.`,
             );
             return;
           }
@@ -156,7 +165,6 @@ export default function Checkin({ patient: p }) {
             text,
             voiceFollowUpUsedRef.current,
           );
-          sendContextualUpdate?.(guidance.message);
           if (wasFollowUp) {
             voiceAwaitingFollowUpRef.current = false;
             voiceQuestionIndexRef.current += 1;
@@ -165,6 +173,17 @@ export default function Checkin({ patient: p }) {
             voiceAwaitingFollowUpRef.current = true;
           } else {
             voiceQuestionIndexRef.current += 1;
+          }
+          if (
+            !voiceAwaitingFollowUpRef.current &&
+            voiceQuestionIndexRef.current >= plan.questions.length
+          ) {
+            voiceContextPromptedRef.current = true;
+            sendContextualUpdate?.(
+              `The selected questions are complete. Ask this optional context question once: “${plan.contextPrompt}” Accept the patient's answer or no. Do not ask any more symptom questions. Then call record_checkin_response, wait for the result, give the brief review handoff, and end the conversation.`,
+            );
+          } else {
+            sendContextualUpdate?.(guidance.message);
           }
         },
         onAnswers: (a, note) => {
@@ -368,13 +387,17 @@ export default function Checkin({ patient: p }) {
     setPhase("sending");
     const deliveries = [
       actions.submitCheckin(p.id, reviewDraft.answers, {
-        kind: checkinPlan.priority ? "priority" : "routine",
-        triggerKey: checkinPlan.priority
-          ? checkinTriggerKey({
-              ...p,
-              analysis: checkinPlan.analysis,
-            })
-          : null,
+        kind:
+          checkinPlan.priority || ["asked", "readings"].includes(due.reason)
+            ? "priority"
+            : "routine",
+        triggerKey:
+          checkinPlan.priority || ["asked", "readings"].includes(due.reason)
+            ? checkinTriggerKey({
+                ...p,
+                analysis: checkinPlan.analysis,
+              })
+            : null,
       }),
     ];
     const noteToShare = [reviewDraft.transcriptNote, reviewDraft.note.trim()]
@@ -435,11 +458,7 @@ export default function Checkin({ patient: p }) {
                 {phase === "done" ? "Sent" : status}
               </span>
               <span className="rx-p-fine">
-                {questions.length} questions
-                {checkinPlan.priority
-                  ? ", about two minutes"
-                  : ", about one minute"}
-                .{" "}
+                A few questions, usually about two minutes.{" "}
                 {inputMode === "text"
                   ? "Type freely in the conversation."
                   : "Speak naturally. Your words appear here as text."}
@@ -576,12 +595,12 @@ export default function Checkin({ patient: p }) {
               </div>
             )}
             {phase === "interrupted" && (
-              <p className="rx-p-error" role="status">
-                The call ended early. Your answers are still here. Continue by
-                typing, then review before sharing.
+              <p className="rx-p-error" role="alert">
+                {voice.error ||
+                  "The voice session ended before all answers were recorded. Your draft is still private; continue by text or restart the call."}
               </p>
             )}
-            {voice.error && (
+            {voice.error && phase !== "interrupted" && (
               <p className="rx-p-error" role="alert">
                 {voice.error}
               </p>
@@ -669,8 +688,7 @@ export default function Checkin({ patient: p }) {
             >
               <h2>Review what Relay heard</h2>
               <p>
-                Check the answers below. The conversation above will be shared
-                with your care team too.
+                Check your answers and note. Nothing is sent until you submit.
               </p>
               <dl>
                 {questions.map((q) => (
@@ -741,8 +759,11 @@ export default function Checkin({ patient: p }) {
                 }
                 onClick={submitVoiceDraft}
               >
-                Share check-in with my care team
+                Submit check-in to my care team
               </button>
+              <small className="rx-p-handoff-note">
+                Your answers and optional note will be sent when you submit.
+              </small>
               <button
                 type="button"
                 className="rx-p-textbtn"

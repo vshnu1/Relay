@@ -4,7 +4,6 @@ import { QUESTIONS } from "../model/profiles.js";
 import { ago, clock, dateLong } from "../format.js";
 import ModelCard from "./ModelCard.jsx";
 import Readings from "./Readings.jsx";
-import { exportHandoff } from "./handoff.js";
 import PatientActivity from "./PatientActivity.jsx";
 import ClinicianVoiceSummary from "./ClinicianVoiceSummary.jsx";
 import { STATUS } from "./watchStatus.js";
@@ -210,17 +209,24 @@ export default function PatientOverview({ id }) {
               )}
             </div>
             {p.answered && (
-              <div className="rx-inline-checkin-body">
-                <dl>
-                  {asked.map((q) => (
-                    <div key={q}>
-                      <dt>{QUESTIONS[q].short}</dt>
-                      <dd>{p.answered.answers[q]}</dd>
-                    </div>
-                  ))}
-                </dl>
+              <div
+                className={`rx-inline-checkin-body ${asked.length ? "has-answers" : "note-only"}`}
+              >
+                {asked.length > 0 && (
+                  <dl>
+                    {asked.map((q) => (
+                      <div key={q}>
+                        <dt>{QUESTIONS[q].short}</dt>
+                        <dd>{p.answered.answers[q]}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
                 {p.answered.note && (
-                  <blockquote>“{p.answered.note}”</blockquote>
+                  <div className="rx-inline-checkin-note">
+                    <span>Patient’s words</span>
+                    <blockquote>{p.answered.note}</blockquote>
+                  </div>
                 )}
               </div>
             )}
@@ -235,13 +241,6 @@ export default function PatientOverview({ id }) {
               onClick={() => actions.acknowledge(p.id)}
             >
               {p.acknowledged ? "Review acknowledged" : "Acknowledge review"}
-            </button>
-            <button
-              type="button"
-              className="rx-btn"
-              onClick={() => exportHandoff(p)}
-            >
-              Export handoff
             </button>
             <button
               type="button"

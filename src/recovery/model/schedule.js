@@ -24,6 +24,8 @@ const sameDay = (a, b) =>
 // windows unusual. Either is an alert the dashboard and the sidebar show at once.
 const RECENT_ANSWER = 18 * 3600000;
 const MODEL_CHANGE_STATES = new Set(["context_needed", "review_recommended"]);
+export const checkinAnsweredRecently = (p, now = Date.now()) =>
+  p.checkins.some((c) => c.answeredAt && now - c.answeredAt < RECENT_ANSWER);
 export const readingsAsk = (p) =>
   !!(
     p.pattern ||
@@ -55,9 +57,7 @@ export function checkinTriggerKey(p) {
 
 export function checkinDue(p, now = Date.now()) {
   const dayNumber = p.dayHome + 1;
-  const answeredRecently = p.checkins.some(
-    (c) => c.answeredAt && now - c.answeredAt < RECENT_ANSWER,
-  );
+  const answeredRecently = checkinAnsweredRecently(p, now);
   if (p.pending) return { due: true, reason: "asked" };
   const triggerKey = checkinTriggerKey(p);
   // A priority check-in answered in the last 18 hours covers this change even

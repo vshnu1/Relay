@@ -307,21 +307,6 @@ export default function Assurance() {
         <p className="rx-assurance-count">
           {counts[BUILT]} built · {counts[PARTIAL] || 0} partial ·{" "}
           {counts[NOT_MET] || 0} not met
-          {live && live.identity && (
-            <span className="rx-assurance-live">
-              {" · "}
-              {live.identity.accountsRequired
-                ? [
-                    `${live.identity.accounts} ${live.identity.accounts === 1 ? "account" : "accounts"}`,
-                    live.identity.demoPrincipals > 0 &&
-                      `${live.identity.demoPrincipals} demo ${live.identity.demoPrincipals === 1 ? "identity" : "identities"}`,
-                    `${live.identity.openSessions} open ${live.identity.openSessions === 1 ? "session" : "sessions"}`,
-                  ]
-                    .filter(Boolean)
-                    .join(", ")
-                : "this deployment still accepts the shared demo codes"}
-            </span>
-          )}
         </p>
         <ul className="rx-safeguards">
           {SAFEGUARDS.map((s) => {

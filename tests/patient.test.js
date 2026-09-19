@@ -18,6 +18,7 @@ const { PROFILES, QUESTIONS, isScheduledDay, toModelContext } =
   await import("../src/recovery/model/profiles.js");
 const {
   checkinDue,
+  checkinAnsweredRecently,
   checkinWhy,
   checkinTriggerKey,
   insight,
@@ -173,6 +174,24 @@ test("an answered priority check-in stays answered when the model re-scores", as
     "readings",
     "a change on a later day opens a new prompt",
   );
+});
+
+test("submitting a priority check-in clears its matching Home alert", async () => {
+  clearLog();
+  const { store, view } = await cohort();
+  const patient = view("maya");
+  assert.equal(checkinDue(patient).reason, "readings");
+  const now = Date.now();
+  store.actions.submitCheckin(
+    patient.id,
+    { breathing: "A little", medicine: "No" },
+    { kind: "priority", triggerKey: checkinTriggerKey(patient), at: now },
+  );
+  await flush();
+  const submitted = view("maya");
+  assert.equal(checkinAnsweredRecently(submitted, now), true);
+  assert.equal(checkinDue(submitted, now).due, false);
+  clearLog();
 });
 
 test("due, insight and notifications follow the readings and the answers", async () => {
