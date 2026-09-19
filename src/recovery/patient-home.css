@@ -663,6 +663,56 @@
   gap: 8px;
 }
 
+/* The readings page is a workspace, not a document. It fills the window: the
+   list of readings scrolls inside its own column so every one is reachable,
+   and the chart panel stretches instead of ending halfway down and leaving a
+   field of white beside a list that carries on. Below 1100px the grid
+   collapses to one column and the page scrolls normally again. */
+@media (min-width: 1101px) {
+  /* The demo bar sits above the app inside .rx, so putting 100vh on the
+     screen alone overflows the page by exactly its height. Locking the root
+     and letting the app fill what is left needs no measurement of it. */
+  .rx:has(.rx-ph-metrics) {
+    height: 100vh;
+    overflow: hidden;
+  }
+  .rx:has(.rx-ph-metrics) .rx-doctor,
+  .rx:has(.rx-ph-metrics) .rx-main {
+    min-height: 0;
+  }
+  .rx:has(.rx-ph-metrics) .rx-side {
+    height: auto;
+  }
+  .rx-p-screen:has(.rx-ph-metrics) {
+    height: 100%;
+    overflow: hidden;
+  }
+  .rx-ph-metrics {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .rx-ph-siglist {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 8px;
+    padding-bottom: 8px;
+  }
+  .rx-ph-detail {
+    min-height: 0;
+    overflow-y: auto;
+  }
+  /* The chart takes whatever the panel has left, so the panel has no blank
+     middle. flex-basis 0 with min-height 0 means this box is sized by the
+     space available and never by the chart drawn into it. */
+  .rx-ph-detail .rx-p-plot {
+    flex: 1 1 0;
+    min-height: 210px;
+    overflow: hidden;
+  }
+}
+
 @media (max-width: 1100px) {
   .rx-ph-lanes,
   .rx-ph-metrics {
@@ -697,4 +747,354 @@
     white-space: normal;
     text-align: center;
   }
+}
+
+/* Clickable hospital rows: colour only on hover, a chevron says "opens". */
+.rx-ph-hrow.clickable,
+.rx-ph-lane-title.clickable {
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.rx-ph-hrow.clickable {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+}
+.rx-ph-lane-title.clickable {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+}
+.rx-ph-hrow-chev {
+  align-self: center;
+  color: var(--faint);
+}
+.rx-ph-hrow.clickable:hover,
+.rx-ph-lane-title.clickable:hover {
+  background: var(--paper);
+}
+.rx-ph-hrow.clickable:hover .rx-ph-hrow-chev,
+.rx-ph-lane-title.clickable:hover .rx-ph-hrow-chev {
+  color: var(--pine);
+}
+.rx-ph-hrow.clickable:focus-visible,
+.rx-ph-lane-title.clickable:focus-visible {
+  outline: 2px solid var(--pine);
+  outline-offset: -2px;
+}
+
+/* Side panel */
+.rx-panel-root {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+}
+.rx-panel-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(31, 47, 42, 0.32);
+}
+.rx-panel {
+  position: relative;
+  width: min(440px, 100%);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  box-shadow: -8px 0 24px rgba(31, 47, 42, 0.08);
+}
+.rx-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.rx-panel-head h2 {
+  margin-top: 4px;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.rx-panel-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.rx-panel-close:hover {
+  color: var(--pine);
+}
+.rx-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px 32px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+.rx-panel-kv {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+.rx-panel-kv > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.rx-panel-kv > div:last-child {
+  border-bottom: 0;
+}
+.rx-panel-kv dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.rx-panel-kv dd {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.rx-panel-kv code {
+  font: 600 14px ui-monospace, Menlo, monospace;
+  letter-spacing: 0.06em;
+}
+.rx-panel-notes {
+  font-size: 16px;
+  line-height: 1.55;
+}
+.rx-panel-meds {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rx-panel-meds li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+.rx-panel-meds svg {
+  margin-top: 2px;
+  color: var(--pine);
+}
+.rx-panel-meds strong {
+  display: block;
+}
+.rx-panel-meds span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+/* Model summary tile: a state, a score, what moved, what it means. */
+.rx-ph-tile.model.wide {
+  grid-column: 1 / -1;
+  gap: 12px;
+}
+.rx-ph-tile.model.alert {
+  background: var(--amber-tint);
+  border-color: #dcc48a;
+}
+.rx-ph-tile.model.alert .rx-ph-kicker {
+  color: var(--amber-ink);
+}
+.rx-model-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+.rx-model-head strong {
+  margin-top: 4px;
+  font-size: 16px;
+}
+.rx-ph-tile.model .rx-model-head .rx-ph-btn {
+  align-self: center;
+}
+.rx-model-score {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.rx-model-score strong {
+  display: inline;
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink);
+}
+.rx-model-bar {
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(31, 47, 42, 0.1);
+  overflow: hidden;
+}
+.rx-model-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--pine);
+}
+.rx-ph-tile.model.alert .rx-model-bar i {
+  background: var(--amber);
+}
+.rx-model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rx-model-list li {
+  display: grid;
+  grid-template-columns: 20px auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+}
+.rx-model-dir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--pine);
+}
+.rx-model-dir.up {
+  color: var(--amber-ink);
+}
+.rx-model-name {
+  font-weight: 600;
+}
+.rx-model-name::first-letter {
+  text-transform: uppercase;
+}
+.rx-model-how {
+  color: var(--muted);
+}
+.rx-model-note,
+.rx-model-meaning {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.rx-model-note {
+  color: var(--faint);
+  font-size: 13px;
+}
+
+/* Under review: unusual readings already answered and reported. */
+.rx-ph-banner.reviewing {
+  background: var(--surface);
+  border: 1px solid var(--pine);
+}
+.rx-ph-banner.reviewing .rx-ph-kicker {
+  color: var(--pine);
+}
+.rx-ph-banner.reviewing .rx-ph-banner-icon {
+  background: var(--sage);
+  color: var(--pine);
+}
+
+/* Compact model tile: head, bar, one sentence. */
+.rx-ph-tile.model.compact {
+  gap: 8px;
+  padding: 12px 16px;
+}
+.rx-ph-tile.model.compact .rx-model-head strong {
+  font-size: 14px;
+}
+.rx-model-scorenum {
+  font-weight: 500;
+  color: var(--muted);
+}
+.rx-ph-tile.model.compact .rx-model-meaning {
+  font-size: 13px;
+}
+
+/* Alert banners carry no icon: the text is the alert. A thicker left edge
+   marks a worsening one. */
+.rx-ph-banner.noicon {
+  align-items: flex-start;
+  padding: 16px 24px;
+}
+.rx-ph-banner.unusual.noicon {
+  box-shadow: inset 4px 0 0 var(--amber);
+}
+.rx-ph-banner.unusual.worsening {
+  box-shadow: inset 4px 0 0 var(--amber-ink);
+  border-color: var(--amber);
+}
+.rx-ph-banner.unusual .rx-ph-kicker {
+  font-weight: 600;
+}
+.rx-ph-banner.noicon .rx-ph-banner-actions {
+  align-self: center;
+}
+
+/* Compact alert: one kicker, one line, one short sentence. */
+.rx-ph-banner.noicon {
+  gap: 16px;
+  padding: 10px 16px;
+  align-items: center;
+}
+.rx-ph-banner.noicon > div:not(.rx-ph-banner-actions) {
+  gap: 2px;
+}
+.rx-ph-banner.noicon .rx-ph-kicker {
+  font-size: 11px;
+}
+.rx-ph-banner.noicon strong {
+  font-size: 14px;
+}
+.rx-ph-banner.noicon p {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.rx-ph-banner.noicon .rx-ph-banner-actions {
+  align-self: center;
+}
+.rx-ph-btn.small {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
 }

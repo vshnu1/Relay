@@ -8,17 +8,24 @@ import Sparkline from "./Sparkline.jsx";
 
 const HOME_DAYS = 14;
 
-function useWidth() {
+// Both dimensions: the readings panel is as tall as the window allows, so the
+// chart is told how much room it has rather than guessing. The box is sized by
+// flex with min-height 0, so its height never follows the chart drawn into it
+// and the observer cannot chase itself.
+function useBox() {
   const ref = useRef(null);
-  const [width, setWidth] = useState(0);
+  const [box, setBox] = useState({ width: 0, height: 0 });
   useLayoutEffect(() => {
     const observer = new ResizeObserver(([entry]) =>
-      setWidth(Math.floor(entry.contentRect.width)),
+      setBox({
+        width: Math.floor(entry.contentRect.width),
+        height: Math.floor(entry.contentRect.height),
+      }),
     );
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
-  return [ref, width];
+  return [ref, box];
 }
 
 // One sentence a patient can read without the numbers.
@@ -100,7 +107,7 @@ function status(s) {
 }
 
 export default function Metrics({ patient: p }) {
-  const [ref, width] = useWidth();
+  const [ref, box] = useBox();
   const counted = p.counted;
   const others = p.signals.filter((s) => !s.counted);
   const order = [...counted, ...others];
@@ -207,7 +214,9 @@ export default function Metrics({ patient: p }) {
                 {s.device === "manual" ? "Today" : "Last night"}
               </span>
               <div className="rx-ph-figure big">
-                <strong>{s.today === null ? "Not available" : s.fmt(s.today)}</strong>
+                <strong>
+                  {s.today === null ? "Not available" : s.fmt(s.today)}
+                </strong>
                 <span>{s.unit}</span>
               </div>
             </div>
@@ -226,7 +235,9 @@ export default function Metrics({ patient: p }) {
               <span className="rx-ph-kicker">Change</span>
               <div className="rx-ph-figure">
                 <strong className={st.changed ? "amber" : "pine"}>
-                  {s.today === null || s.usual === null ? "Not available" : s.change}
+                  {s.today === null || s.usual === null
+                    ? "Not available"
+                    : s.change}
                 </strong>
                 <span>
                   {s.towardDays > 0
@@ -242,11 +253,12 @@ export default function Metrics({ patient: p }) {
           </p>
 
           <div ref={ref} className="rx-p-plot">
-            {width > 0 && (
+            {box.width > 0 && (
               <SignalChart
                 signal={s}
                 homeFrom={homeFrom}
-                width={width}
+                width={box.width}
+                height={box.height}
                 compact
               />
             )}

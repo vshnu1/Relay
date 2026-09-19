@@ -12,7 +12,7 @@ import { dayColumns, domain, labelEvery, ticks } from "./chartScale.js";
 
 const HOME_DAYS = 14;
 const CHART_H = 172;
-const COMPACT_H = 150;
+const COMPACT_H = 210; // patient readings page; the panel is tall enough to carry it
 const MARGIN = { top: 20, right: 112, bottom: 38, left: 44 };
 const FILL = {
   "-3": "#3d7ab8",
@@ -57,9 +57,17 @@ const segments = (points) =>
     )
     .filter((s) => s.length);
 
-export function SignalChart({ signal: s, homeFrom, width, compact = false }) {
+export function SignalChart({
+  signal: s,
+  homeFrom,
+  width,
+  compact = false,
+  height,
+}) {
   const [hover, setHover] = useState(null);
-  const M = compact ? { top: 20, right: 86, bottom: 36, left: 36 } : MARGIN;
+  // The compact chart still has to hold "counts past 15.6 per min" on the
+  // right and the unit on the left, so its gutters are sized for the text.
+  const M = compact ? { top: 20, right: 168, bottom: 36, left: 56 } : MARGIN;
   const inner = width - M.left - M.right;
   // A container mid-layout can report a width narrower than the axes it has to
   // hold. Drawing then gives every rect a negative width, which the browser
@@ -90,7 +98,11 @@ export function SignalChart({ signal: s, homeFrom, width, compact = false }) {
     threshold: s.threshold,
     unit: s.unit,
   });
-  const H = compact ? COMPACT_H : CHART_H;
+  // An explicit height lets a caller whose panel has room hand the chart that
+  // room, instead of drawing a short chart and leaving the rest of the panel
+  // blank. Falls back to the fixed sizes when nobody asks.
+  const H =
+    height && height > 80 ? Math.round(height) : compact ? COMPACT_H : CHART_H;
   const plotH = H - M.top - M.bottom;
   const y = (v) => M.top + plotH - ((v - lo) / (hi - lo)) * plotH;
   const stay = cols[s.before.length];
