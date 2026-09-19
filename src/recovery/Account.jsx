@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  LockKeyhole,
+  ShieldCheck,
+  Stethoscope,
+  User,
+} from "lucide-react";
+import { go } from "./useRecovery.js";
+import { signIn as openPatientProfile } from "./patient/session.js";
 
 // Signing in as a person, where the product used to sign you in as a role.
 //
@@ -72,6 +80,14 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
   const [busy, setBusy] = useState(false);
 
   const done = (payload) => {
+    // A demo patient arrives with one synthetic record already chosen, so the
+    // click opens the patient application rather than a second sign-in asking
+    // for a discharge code the visitor cannot know.
+    if (payload.patient?.patientId && payload.patient?.dischargeCode)
+      openPatientProfile(
+        payload.patient.patientId,
+        payload.patient.dischargeCode,
+      );
     onSignedIn(payload.user.role, payload.token, payload.user);
   };
 
@@ -124,6 +140,40 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
             <span className="rx-home-kicker">
               {audience === "patient" ? "Patient access" : "Clinician access"}
             </span>
+            {/* Relay is two applications that never open together, and until
+                now the patient one was reachable only by typing its URL. Both
+                doors are on the screen, and choosing changes the route, so the
+                address bar says which side you are looking at. */}
+            <div
+              className="rx-role-switch"
+              role="group"
+              aria-label="Who are you signing in as?"
+            >
+              <button
+                type="button"
+                className={audience === "clinician" ? "active" : ""}
+                aria-pressed={audience === "clinician"}
+                onClick={() => go("/doctor")}
+              >
+                <Stethoscope size={18} aria-hidden="true" />
+                <strong>I am on the care team</strong>
+                <span>
+                  The ward list, the readings, and the evidence packet
+                </span>
+              </button>
+              <button
+                type="button"
+                className={audience === "patient" ? "active" : ""}
+                aria-pressed={audience === "patient"}
+                onClick={() => go("/patient")}
+              >
+                <User size={18} aria-hidden="true" />
+                <strong>I am the patient</strong>
+                <span>
+                  Your own readings, your check-in, and what you share
+                </span>
+              </button>
+            </div>
             <h1>Sign in as yourself.</h1>
             <p className="rx-auth-lede">
               <strong>Just looking?</strong> Use the demo button under the form.

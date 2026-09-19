@@ -42,7 +42,10 @@ const call = async (path, { method = "GET", body, token } = {}) => {
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  return { status: response.status, body: await response.json().catch(() => ({})) };
+  return {
+    status: response.status,
+    body: await response.json().catch(() => ({})),
+  };
 };
 
 const ready = async () => {
@@ -80,7 +83,11 @@ try {
 
   const noInvite = await call("/api/auth/register", {
     method: "POST",
-    body: { email: "a@b.co", password: "a-long-enough-password", invite: "guess" },
+    body: {
+      email: "a@b.co",
+      password: "a-long-enough-password",
+      invite: "guess",
+    },
   });
   check("registration needs a real invitation", () =>
     assert.equal(noInvite.status, 403),
@@ -122,9 +129,49 @@ try {
   check("a patient invitation creates a patient", () =>
     assert.equal(asPatient.body.user.role, "patient"),
   );
-  const patientWard = await call("/api/patients", { token: asPatient.body.token });
+  const patientWard = await call("/api/patients", {
+    token: asPatient.body.token,
+  });
   check("a patient account still cannot list the ward", () =>
     assert.equal(patientWard.status, 403),
+  );
+
+  // A demo patient is handed one record so the click opens the patient app
+  // rather than a second sign-in. It must still reach that one and no other.
+  const demoPatient = await call("/api/auth/demo", {
+    method: "POST",
+    body: { role: "patient" },
+  });
+  check("a demo patient is handed one synthetic record to stand in", () => {
+    assert.equal(demoPatient.body.user.role, "patient");
+    assert.ok(demoPatient.body.patient?.patientId, "no patient handed over");
+    assert.ok(demoPatient.body.patient?.dischargeCode, "no discharge code");
+  });
+  const dp = demoPatient.body.patient || {};
+  const dpHeaders = {
+    authorization: `Bearer ${demoPatient.body.token}`,
+    "x-relay-discharge": dp.dischargeCode || "",
+  };
+  const own = await fetch(
+    `${base}/api/recovery/events?after=0&patientId=${encodeURIComponent(dp.patientId || "")}`,
+    { headers: dpHeaders },
+  );
+  check("the demo patient reaches the record they were handed", () =>
+    assert.equal(own.status, 200),
+  );
+  const other = await fetch(
+    `${base}/api/recovery/events?after=0&patientId=someone-else`,
+    { headers: dpHeaders },
+  );
+  check("and no other record", () => assert.equal(other.status, 403));
+
+  const demoClinician = await call("/api/auth/demo", {
+    method: "POST",
+    body: { role: "clinician" },
+  });
+  check(
+    "a demo clinician is handed no record, because they need the ward",
+    () => assert.equal(demoClinician.body.patient, undefined),
   );
 
   // Break-glass.
@@ -149,19 +196,24 @@ try {
   );
 
   const safeguards = await call("/api/safeguards", { token });
-  check("the safeguards report describes this process, not an intention", () => {
-    assert.equal(safeguards.status, 200);
-    assert.equal(safeguards.body.encryptionAtRest.mode, "aes-256-gcm");
-    assert.equal(safeguards.body.identity.accountsRequired, true);
-    assert.equal(safeguards.body.identity.sharedCodesAccepted, false);
-    assert.equal(safeguards.body.auditChain.intact, true);
-    assert.ok(safeguards.body.auditChain.lines > 0);
-    assert.equal(safeguards.body.emergencyAccess.open.length, 1);
-  });
+  check(
+    "the safeguards report describes this process, not an intention",
+    () => {
+      assert.equal(safeguards.status, 200);
+      assert.equal(safeguards.body.encryptionAtRest.mode, "aes-256-gcm");
+      assert.equal(safeguards.body.identity.accountsRequired, true);
+      assert.equal(safeguards.body.identity.sharedCodesAccepted, false);
+      assert.equal(safeguards.body.auditChain.intact, true);
+      assert.ok(safeguards.body.auditChain.lines > 0);
+      assert.equal(safeguards.body.emergencyAccess.open.length, 1);
+    },
+  );
 
   const audit = await call("/api/audit", { token });
   check("the audit log names the person, not only the role", () => {
-    const mine = audit.body.filter((r) => r.actorEmail === "elena@bayfront.test");
+    const mine = audit.body.filter(
+      (r) => r.actorEmail === "elena@bayfront.test",
+    );
     assert.ok(mine.length > 0, "no line attributed to the acting account");
     assert.ok(mine.some((r) => r.action === "emergency.access_opened"));
   });
@@ -179,4 +231,6 @@ if (failures) {
   console.error(`\nAccounts-mode integration FAILED: ${failures} check(s).`);
   process.exit(1);
 }
-console.log("\nAccounts-mode integration passed: invitation, session, role scoping, break-glass, encrypted at rest, chained audit naming the actor, server-side revocation.");
+console.log(
+  "\nAccounts-mode integration passed: invitation, session, role scoping, break-glass, encrypted at rest, chained audit naming the actor, server-side revocation.",
+);

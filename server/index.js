@@ -318,6 +318,15 @@ const DISCHARGE_CODES = (() => {
   return byCode;
 })();
 
+// One synthetic patient for a demo identity to land on, so "look around as a
+// demo patient" opens the patient application instead of a second sign-in
+// asking for a discharge code the visitor has no way to know. The first entry
+// in the roster is the one the runbook and the pitch both open with.
+const DEMO_PATIENT = (() => {
+  const [code, id] = DISCHARGE_CODES.entries().next().value || [];
+  return code && id ? { patientId: id, dischargeCode: code } : null;
+})();
+
 // Every patient id in the synthetic roster. The voice check-in is the one path
 // that sends anything off this origin, and docs/COMPLIANCE.md says it is
 // restricted to synthetic patients. It was not: the classic /patients/:id/voice
@@ -399,7 +408,14 @@ app.post("/api/auth/demo", (req, res) => {
   requestContext.run({ role, userId: user.id, email: user.email }, () =>
     audit("account.demo_issued", null, user.email),
   );
-  res.json({ token, user });
+  // A demo patient is handed one synthetic record to stand in, which is the
+  // same latitude the demo identity already has. It reaches that record and no
+  // other, because the server still checks the discharge code on every request.
+  res.json({
+    token,
+    user,
+    ...(role === "patient" && DEMO_PATIENT ? { patient: DEMO_PATIENT } : {}),
+  });
 });
 
 app.get("/api/auth/me", (req, res) => {
