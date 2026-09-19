@@ -1,4 +1,4 @@
-# Relay , Bay Hacks 2026
+# Relay - Bay Hacks 2026
 
 Provider-facing remote monitoring prototype. Synthetic measurements → individual baselines → persistent coordinated deviations → consented patient check-in → source-linked evidence summary and mock FHIR handoff.
 
