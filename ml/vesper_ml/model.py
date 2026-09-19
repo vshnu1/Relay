@@ -144,7 +144,13 @@ def _score_with_prior(prior, X_recent, diag):
     if X_recent.shape[1] != meta["feature_dim_in"]:
         diag["reason"] = "synthetic prior feature dimension does not match this program"
         return ModelResult("unavailable", diagnostics=diag)
-    raw = _raw(pipe, X_recent) if len(X_recent) else np.array([])
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            raw = _raw(pipe, X_recent) if len(X_recent) else np.array([])
+    except Exception as exc:  # pickled with another scikit-learn release: score nothing rather than guess
+        diag["reason"] = f"synthetic prior could not be applied with the installed scikit-learn ({type(exc).__name__})"
+        return ModelResult("unavailable", diagnostics=diag)
     thr, scale = meta["threshold_raw"], meta["score_scale_raw"]
     diag.update({"prior": meta.get("artifact"), "threshold_raw": thr, "score_scale_raw": scale, "training_data": "synthetic"})
     return ModelResult("prior", thr, scale, raw, to_scores(raw, thr, scale), raw > thr, diag)

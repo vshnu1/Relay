@@ -102,3 +102,18 @@ Reference: https://elevenlabs.io/docs/eleven-agents/customization/authentication
 7. Close: “The platform gives providers a source-linked statistical summary. It does not diagnose.”
 
 Submission: Nucleate Florida Healthcare Challenge main track. Optional ElevenLabs/Render tracks only with working integrations. Devpost lists the deadline as September 19, 2026, 7 PM ET and requires a 2–3 minute video and code link. The implementation was started during the event; the earlier document in `docs/project-handoff.md` is planning material.
+
+## Validation
+
+Every claim in the pitch has a test or a measurement behind it.
+
+| What | How it is checked |
+|---|---|
+| The rules and views | `npm test` — JS unit suite, plus `node tests/api.integration.js` against a live server |
+| The Python model | `PYTHONPATH=ml pytest ml/tests` — 53 tests across contracts, features, scoring, scenarios |
+| The clinical boundary | `analysis/language_guard.py` and its Node port `server/languageGuard.js`, checked for pattern-for-pattern parity; every model sentence passes it before leaving the server |
+| The false-alarm rate | measured on 71 real LifeSnaps subjects, 4,453 subject-days: 3.35% at the shipped threshold (`fixtures/calibration.json`) |
+| The model against the rule | 5.77% of judged subjects on the same cohort (`fixtures/ml_calibration.json`); the two use different denominators and are never compared as if they were one |
+| Real data | 99 days of one team member's wearable physiology, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`) |
+
+Thresholds are demo settings and are labelled so in the interface. None of this is clinical validation, and the documents say that where it matters.

@@ -226,7 +226,15 @@ test("an Apple Health export.zip is read in the browser and reduced to one value
   );
   assert.equal(summary.recordsScanned, 9);
   assert.equal(summary.recordsUsed.restingHr, 2);
-  assert.ok(!("steps" in readings));
+  // Steps are imported since the joint-replacement program: step count is a
+  // core recovery marker after arthroplasty. Per-interval records sum to a
+  // daily total rather than averaging.
+  assert.ok("steps" in readings, "steps are imported for gait programs");
+  assert.equal(
+    readings.steps.reduce((a, r) => a + r.v, 0),
+    120,
+    "step records sum to a daily total",
+  );
   // plain export.xml works too
   const xml = new File([XML], "export.xml", { type: "text/xml" });
   assert.deepEqual(

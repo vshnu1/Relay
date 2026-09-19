@@ -14,6 +14,12 @@ export const METRIC_MAP = {
   avgHr: ["heart_rate", "bpm"],
   weight: ["weight", "kg"],
   temperature: ["temperature", "degC"],
+  walkingSpeed: ["walking_speed", "m/s"],
+  stepLength: ["step_length", "cm"],
+  asymmetry: ["walking_asymmetry", "%"],
+  doubleSupport: ["double_support", "%"],
+  steadiness: ["walking_steadiness", "%"],
+  steps: ["steps", "count"],
 };
 const SOURCE = {
   watch: "wearable",

@@ -46,6 +46,11 @@ test("statuses are derived from readings and check-ins, not stored", async () =>
       mei: "monitoring",
       rosa: "context",
       amara: "monitoring",
+      // Hip/knee replacement and post-chemotherapy, one moved and one quiet each.
+      elena: "context",
+      raymond: "monitoring",
+      grace: "context",
+      victor: "monitoring",
     },
   );
   assert.equal(v.maya.moved.length, 4);
