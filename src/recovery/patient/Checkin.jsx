@@ -18,6 +18,7 @@ import {
 } from "./voice.js";
 import { buildCheckinPlan } from "./checkinPlan.js";
 import { matchOption, matchQuestionOption } from "./answerText.js";
+import { createVoiceHandoff } from "./voiceHandoff.js";
 
 // The check-in is one conversation. Relay opens by saying why it is checking in
 // (daily for the first week home, every other day after, or because the readings
@@ -60,6 +61,7 @@ export default function Checkin({ patient: p }) {
   const [noteDraft, setNoteDraft] = useState("");
   const syncStatus = useSyncStatus();
   const sessionRef = useRef(null);
+  const handoffRef = useRef(null);
   const endRef = useRef(null);
   const answersRef = useRef({});
   const completedDraftRef = useRef(null);
@@ -91,6 +93,7 @@ export default function Checkin({ patient: p }) {
     );
     return () => {
       live = false;
+      handoffRef.current?.cancel();
       sessionRef.current?.endSession?.();
     };
   }, []);
@@ -101,6 +104,7 @@ export default function Checkin({ patient: p }) {
   const say = (who, text) => setLog((l) => [...l, { who, text }]);
 
   const finish = (all, note, freeTextAnswers = {}) => {
+    handoffRef.current?.cancel();
     if (sessionRef.current) endingByPatientRef.current = true;
     sessionRef.current?.endSession?.();
     sessionRef.current = null;
@@ -113,7 +117,7 @@ export default function Checkin({ patient: p }) {
     });
     setShareConsent(false);
     setPhase("review");
-    setVoice((v) => ({ ...v, status: "review" }));
+    setVoice((v) => ({ ...v, status: "review", error: "" }));
   };
 
   // ---- ElevenLabs path -------------------------------------------------------
@@ -125,6 +129,10 @@ export default function Checkin({ patient: p }) {
     voiceAwaitingFollowUpRef.current = false;
     completedDraftRef.current = null;
     endingByPatientRef.current = false;
+    handoffRef.current?.cancel();
+    handoffRef.current = createVoiceHandoff({
+      complete: ({ answers, note }) => finish(answers, note),
+    });
     setEngine("elevenlabs");
     setPhase("live");
     setVoice((v) => ({ ...v, status: "connecting", error: "" }));
@@ -139,8 +147,13 @@ export default function Checkin({ patient: p }) {
         findingSummary: plan.findingSummary,
         consent: voiceConsent,
         onStatus: (st) => setVoice((v) => ({ ...v, status: st })),
-        onAgentSaid: (text) => say("relay", text),
+        onMode: (mode) => handoffRef.current?.mode(mode),
+        onAgentSaid: (text) => {
+          say("relay", text);
+          handoffRef.current?.agentMessage();
+        },
         onPatientSaid: (text, sendContextualUpdate) => {
+          if (handoffRef.current?.pending()) return;
           voiceTranscriptRef.current.push(text);
           say("you", text);
           const questionId = plan.questions[voiceQuestionIndexRef.current];
@@ -153,6 +166,7 @@ export default function Checkin({ patient: p }) {
           const wasFollowUp = voiceAwaitingFollowUpRef.current;
           const capturedAnswer =
             matchQuestionOption(questionId, text) ||
+            answersRef.current[questionId] ||
             (wasFollowUp && QUESTIONS[questionId].options.includes("Not sure")
               ? "Not sure"
               : null);
@@ -184,15 +198,14 @@ export default function Checkin({ patient: p }) {
             (id) => answersRef.current[id],
           );
           if (allQuestionsAnswered && !voiceAwaitingFollowUpRef.current) {
-            // Finish as soon as the last required answer (and any one allowed
-            // clarification) is complete. The patient reviews and submits on
-            // screen; the agent must not add an "anything else?" turn.
-            const all = answersRef.current;
-            say(
-              "relay",
-              "Thanks. Review your answers, then submit them to your care team.",
+            handoffRef.current.begin({
+              answers: { ...answersRef.current },
+              note: noteWithVoiceTranscript(null),
+            });
+            setPhase("closing");
+            sendContextualUpdate?.(
+              'All required answers are recorded. Your next and final spoken response must be: "Thanks. Review your answers, then submit them to your care team." Say it aloud now. Do not ask for context, confirmation, or anything else. The app will close the call after your audio finishes.',
             );
-            finish(all, noteWithVoiceTranscript(null));
           } else if (
             !voiceAwaitingFollowUpRef.current &&
             voiceQuestionIndexRef.current >= plan.questions.length
@@ -218,10 +231,16 @@ export default function Checkin({ patient: p }) {
           if (plan.questions.every((q) => merged[q]))
             completedDraftRef.current = { answers: merged, note };
         },
-        onError: (e) =>
-          setVoice((v) => ({ ...v, error: e?.message || String(e) })),
+        onError: (e) => {
+          if (!handoffRef.current?.pending())
+            setVoice((v) => ({ ...v, error: e?.message || String(e) }));
+        },
         onDisconnect: (details) => {
           sessionRef.current = null;
+          if (handoffRef.current?.pending()) {
+            handoffRef.current.finish();
+            return;
+          }
           setVoice((v) => ({ ...v, status: "ended" }));
           if (endingByPatientRef.current) {
             endingByPatientRef.current = false;
@@ -364,6 +383,7 @@ export default function Checkin({ patient: p }) {
   };
 
   const stop = () => {
+    handoffRef.current?.cancel();
     endingByPatientRef.current = true;
     sessionRef.current?.endSession?.();
     sessionRef.current = null;
@@ -383,15 +403,17 @@ export default function Checkin({ patient: p }) {
   const status =
     engine === "text" && phase === "live"
       ? "Text conversation"
-      : phase === "review"
-        ? "Ready to submit"
-        : phase === "sending"
-          ? "Submitting"
-          : phase === "interrupted"
-            ? "Check-in paused"
-            : phase === "done"
-              ? "Submitted"
-              : (STATUS[voice.status] ?? voice.status);
+      : phase === "closing"
+        ? "Finishing check-in…"
+        : phase === "review"
+          ? "Ready to submit"
+          : phase === "sending"
+            ? "Submitting"
+            : phase === "interrupted"
+              ? "Check-in paused"
+              : phase === "done"
+                ? "Submitted"
+                : (STATUS[voice.status] ?? voice.status);
   const focusRows = (p.counted || [])
     .filter((signal) => checkinPlan.focusSignals.includes(signal.id))
     .filter((signal) => signal.moved)
@@ -838,7 +860,11 @@ export default function Checkin({ patient: p }) {
           )}
 
           {phase === "done" && (
-            <section className="rx-p-card" aria-label="Sent">
+            <section
+              className="rx-p-card rx-p-checkin-success"
+              aria-label="Sent"
+              role="status"
+            >
               <p className="rx-p-sent">
                 <span>
                   <CheckCircle2 size={18} aria-hidden="true" /> Sent to your
@@ -846,11 +872,9 @@ export default function Checkin({ patient: p }) {
                   record.
                 </span>
               </p>
-              <div className="rx-p-stack">
-                <a className="rx-p-textbtn" href="#/patient">
-                  Back to home
-                </a>
-              </div>
+              <a className="rx-p-btn" href="#/patient">
+                Back to home
+              </a>
             </section>
           )}
         </main>

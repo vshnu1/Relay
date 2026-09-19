@@ -196,6 +196,7 @@ export async function startPatientVoiceSession({
   findingSummary,
   consent,
   onStatus,
+  onMode,
   onAgentSaid,
   onPatientSaid,
   onAnswers,
@@ -269,6 +270,7 @@ export async function startPatientVoiceSession({
     onConnect: () => onStatus?.("connected"),
     onDisconnect: (details) => onDisconnect?.(details),
     onStatusChange: ({ status: st }) => onStatus?.(st),
+    onModeChange: ({ mode }) => onMode?.(mode),
     onMessage: (m) => {
       if (!m?.message) return;
       if (m.source === "ai") onAgentSaid?.(m.message);

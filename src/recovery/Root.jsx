@@ -15,6 +15,7 @@ import SignIn from "./patient/SignIn.jsx";
 import { currentPatientId, signIn, signOut } from "./patient/session.js";
 import Login from "./Login.jsx";
 import Account from "./Account.jsx";
+import SignInChoice from "./SignInChoice.jsx";
 import RoleSignIn from "./SignIn.jsx";
 import { useIdleSignOut } from "./idleSignOut.jsx";
 import { LANDING_URL } from "./landingUrl.js";
@@ -161,6 +162,12 @@ export default function Root() {
       ? RoleSignIn
       : Login;
   if (gate.required && !gate.role) {
+    if (section === "signin")
+      return (
+        <div className="rx">
+          <SignInChoice />
+        </div>
+      );
     return (
       <div className="rx">
         <AccessScreen
