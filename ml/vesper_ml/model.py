@@ -56,11 +56,19 @@ def chronological_split(n, train_frac=0.6, val_frac=0.2):
     return idx[:n_train], idx[n_train : n_train + n_val], idx[n_train + n_val :]
 
 
-def usable_rows(X, n_dev_columns):
-    """Rows with at least one non-missing deviation."""
-    if n_dev_columns == 0:
+def usable_rows(X, core_columns):
+    """Rows with at least one non-missing *core* deviation.
+
+    `core_columns` is a list of column indices (an int means the first n
+    columns). Restricting training to windows where a core signal exists keeps
+    a long phone-only era from becoming the training set for a program whose
+    core signals arrived with a later device; the forest then learns the era
+    in which the signals it must judge actually exist."""
+    if isinstance(core_columns, (int, np.integer)):
+        core_columns = list(range(int(core_columns)))
+    if not core_columns:
         return np.ones(len(X), dtype=bool)
-    return ~np.all(np.isnan(X[:, :n_dev_columns]), axis=1)
+    return ~np.all(np.isnan(X[:, list(core_columns)]), axis=1)
 
 
 def _raw(pipe, X):
@@ -95,10 +103,12 @@ def to_scores(raw, threshold, scale):
     return 1.0 / (1.0 + np.exp(-np.clip(z, -30, 30)))
 
 
-def fit_and_score(X_hist, X_recent, n_dev_columns, quantile=0.95, seed=0, prior=None):
-    keep = usable_rows(X_hist, n_dev_columns)
+def fit_and_score(X_hist, X_recent, core_columns, quantile=0.95, seed=0, prior=None):
+    keep = usable_rows(X_hist, core_columns)
     Xh = X_hist[keep]
     diag = {"history_rows": int(len(X_hist)), "usable_history_rows": int(len(Xh)), "feature_dim_in": int(X_hist.shape[1])}
+    if len(Xh) and len(Xh) < len(X_hist):
+        diag["history_rows_without_core_signals"] = int(len(X_hist) - len(Xh))
     if len(Xh) < MIN_HISTORY_ROWS:
         if prior is not None:
             return _score_with_prior(prior, X_recent, diag)

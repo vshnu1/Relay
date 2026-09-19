@@ -83,9 +83,8 @@ def score_request(request, seed=None, artifact_dir=None):
     fs = build_features(grid, program)
     recent = grid.recent_mask()
     hist = ~recent
-    n_dev = len(program.metrics)
     prior = load_prior(program.key, artifact_dir)
-    model = fit_and_score(fs.X[hist], fs.X[recent], n_dev, quantile=program.validation_quantile, seed=seed, prior=prior)
+    model = fit_and_score(fs.X[hist], fs.X[recent], fs.core_columns, quantile=program.validation_quantile, seed=seed, prior=prior)
 
     signals = build_signals(grid, fs, program)
     attach_sources(signals, events)

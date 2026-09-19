@@ -30,6 +30,7 @@ class FeatureSet:
     tracks: dict  # metric -> BaselineTrack
     coverage: np.ndarray  # per window core coverage in [0, 1]
     n_fresh: np.ndarray
+    core_columns: list = None  # indices of the core metrics' deviation columns
 
 
 def build_features(grid, program):
@@ -68,4 +69,5 @@ def build_features(grid, program):
         mean_abs = np.where(any_core, np.nanmean(np.abs(np.clip(core_devs, -DEV_CLIP, DEV_CLIP)), axis=1), np.nan)
     X = np.column_stack(cols + [coverage, n_fresh, n_deviating, mean_abs])
     columns = [f"dev:{m}" for m in metrics] + ["coverage", "n_fresh", "n_deviating_core", "mean_abs_dev_core"]
-    return FeatureSet(columns, X, deviations, percents, tracks, coverage, n_fresh)
+    core_columns = [metrics.index(m) for m in core if m in metrics]
+    return FeatureSet(columns, X, deviations, percents, tracks, coverage, n_fresh, core_columns)

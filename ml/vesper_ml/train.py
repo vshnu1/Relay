@@ -32,7 +32,7 @@ def train_synthetic_prior(program_key="post_abdominal_surgery", n_patients=40, d
         fs = build_features(grid, program)
         hist = grid.history_mask()
         X = fs.X[hist]
-        X = X[usable_rows(X, len(program.metrics))]
+        X = X[usable_rows(X, fs.core_columns)]
         rows.append(X)
     n = len(rows)
     n_train, n_val = int(n * 0.6), int(n * 0.2)

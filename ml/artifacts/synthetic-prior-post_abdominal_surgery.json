@@ -10,18 +10,18 @@
     8
   ],
   "rows_train_val_test": [
-    2043,
-    680,
-    684
+    2012,
+    674,
+    671
   ],
   "feature_dim_in": 13,
-  "feature_dim_model": 21,
-  "threshold_raw": 0.0389,
-  "score_scale_raw": 0.0556,
-  "val_exceed_rate": 0.028,
-  "test_exceed_rate": 0.051,
+  "feature_dim_model": 20,
+  "threshold_raw": 0.0354,
+  "score_scale_raw": 0.0512,
+  "val_exceed_rate": 0.042,
+  "test_exceed_rate": 0.054,
   "quantile": 0.95,
   "n_estimators": 200,
   "seed": 0,
-  "train_seconds": 1.03
+  "train_seconds": 1.0
 }

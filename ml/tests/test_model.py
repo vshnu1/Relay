@@ -58,6 +58,8 @@ class ScoringTest(unittest.TestCase):
     def test_usable_rows(self):
         X = np.array([[np.nan, np.nan, 1.0], [1.0, np.nan, 1.0]])
         self.assertEqual(usable_rows(X, 2).tolist(), [False, True])
+        self.assertEqual(usable_rows(X, [1]).tolist(), [False, False])  # core column entirely missing
+        self.assertEqual(usable_rows(X, [2]).tolist(), [True, True])
 
     def test_pipeline_is_deterministic(self):
         X = np.random.default_rng(2).normal(size=(40, 3))
