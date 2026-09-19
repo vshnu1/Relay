@@ -71,21 +71,56 @@ function audit(action, patientId = null, detail = "") {
 const app = express();
 app.disable("x-powered-by");
 app.use(express.json({ limit: "3mb" }));
+// Role access codes. Two shared codes, not per-user accounts: a clinician and
+// a patient sign in with different codes and the server records which. That is
+// honest about what it is — production needs per-account identity, which
+// docs/PRIVACY.md states plainly. APP_ACCESS_TOKEN still works on its own and
+// grants the clinician role, so nothing that worked before stops working.
+const ROLE_CODES = () => {
+  const codes = [];
+  if (process.env.CLINICIAN_ACCESS_CODE)
+    codes.push(["clinician", process.env.CLINICIAN_ACCESS_CODE]);
+  if (process.env.PATIENT_ACCESS_CODE)
+    codes.push(["patient", process.env.PATIENT_ACCESS_CODE]);
+  if (process.env.APP_ACCESS_TOKEN)
+    codes.push(["clinician", process.env.APP_ACCESS_TOKEN]);
+  return codes;
+};
+
+// Constant-time compare, and it must not leak which code matched by timing out
+// early, so every candidate is checked.
+const matchRole = (provided) => {
+  const supplied = Buffer.from(provided || "");
+  let role = null;
+  for (const [name, code] of ROLE_CODES()) {
+    const expected = Buffer.from(code);
+    if (
+      supplied.length === expected.length &&
+      timingSafeEqual(supplied, expected)
+    )
+      role = role || name;
+  }
+  return role;
+};
+
 app.use("/api", (req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
-  const token = process.env.APP_ACCESS_TOKEN;
-  if (token) {
-    const provided = Buffer.from(
-      req.headers.authorization?.replace(/^Bearer /, "") || "",
-    );
-    const expected = Buffer.from(token);
-    if (
-      provided.length !== expected.length ||
-      !timingSafeEqual(provided, expected)
-    )
-      return res
-        .status(401)
-        .json({ error: "Enter the workspace access token." });
+  const configured = ROLE_CODES();
+  if (configured.length) {
+    // Only the code-for-role exchange is public; it cannot require a code to
+    // accept one. /status stays gated, which the API suite asserts. The login
+    // page does not need it open: a 401 from /status IS the signal that codes
+    // are required, so the closed door answers the question.
+    if (req.path !== "/session") {
+      const role = matchRole(
+        req.headers.authorization?.replace(/^Bearer /, ""),
+      );
+      if (!role)
+        return res.status(401).json({ error: "Enter your access code." });
+      req.role = role;
+    }
+  } else {
+    req.role = "clinician"; // local demo, no codes configured
   }
   if (
     req.method !== "GET" &&
@@ -97,26 +132,47 @@ app.use("/api", (req, res, next) => {
       .json({ error: "Cross-origin writes are not allowed." });
   next();
 });
+// Exchange an access code for a role. The client keeps the code and sends it
+// as a Bearer token; there is no session store, which is the honest limit of a
+// shared-code scheme.
+app.post("/api/session", (req, res) => {
+  const configured = ROLE_CODES();
+  if (!configured.length)
+    return res.json({ role: "clinician", mode: "local-demo" });
+  const role = matchRole(String(req.body?.code || ""));
+  if (!role) return res.status(401).json({ error: "That code was not recognised." });
+  res.json({ role, mode: "access-code" });
+});
+
 app.get("/api/status", (req, res) =>
   res.json({
     mode: "Synthetic demo",
-    auth: process.env.APP_ACCESS_TOKEN
-      ? "Shared access token"
+    auth: ROLE_CODES().length
+      ? "Role access codes"
       : "Local demo • no authentication",
+    roles: [...new Set(ROLE_CODES().map(([name]) => name))],
     render: !!(process.env.RENDER_API_KEY && process.env.RENDER_WORKFLOW_SLUG),
     voice: !!(
       process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_AGENT_ID
     ),
   }),
 );
-app.get("/api/patients", (req, res) =>
+// The cohort is the clinician's view of the ward. A patient code must not
+// return it. This is the one role rule a shared code can actually enforce:
+// it cannot tell WHICH patient is signed in, so it cannot scope to a single
+// record — see docs/PRIVACY.md.
+app.get("/api/patients", (req, res) => {
+  if (req.role === "patient")
+    return res
+      .status(403)
+      .json({ error: "The patient view cannot list other patients." });
   res.json(
     patients.map(({ events, ...p }) => ({
       ...p,
       measurementCount: events.length,
     })),
-  ),
-);
+  );
+});
 app.param("id", (req, res, next, id) => {
   req.patient = patients.find((p) => p.id === id);
   if (!req.patient)

@@ -31,6 +31,21 @@ test("statuses are derived from readings and check-ins, not stored", async () =>
       samuel: "monitoring",
       george: "monitoring",
       lena: "nodata",
+      // Six further conditions, two patients each: one whose signals have
+      // moved and one whose have not, so every profile is exercised in both
+      // directions and the quiet cases outnumber the loud ones.
+      marcus: "context",
+      nadia: "monitoring",
+      yusuf: "context",
+      ingrid: "nodata",
+      oliver: "context",
+      beatrice: "monitoring",
+      hassan: "context",
+      clara: "monitoring",
+      arthur: "context",
+      mei: "monitoring",
+      rosa: "context",
+      amara: "monitoring",
     },
   );
   assert.equal(v.maya.moved.length, 4);

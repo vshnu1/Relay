@@ -10,13 +10,37 @@ import { go } from "./useRecovery.js";
 
 const DEMO_EMAIL = "clinician@relay.demo";
 
-export default function Login() {
+export default function Login({ onSignedIn }) {
   const [email, setEmail] = useState(DEMO_EMAIL);
   const [password, setPassword] = useState("demo-only");
   const [error, setError] = useState("");
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
+    if (onSignedIn) {
+      setBusy(true);
+      setError("");
+      try {
+        const res = await fetch("/api/session", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ code: code.trim() }),
+        });
+        const body = await res.json();
+        if (!res.ok || body.role !== "clinician") {
+          setError("Enter a valid clinician access code.");
+          return;
+        }
+        onSignedIn(body.role, code.trim());
+      } catch {
+        setError("Could not reach the server. Please try again.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     if (!email.trim() || !password.trim()) {
       setError("Enter the demo email and password to continue.");
       return;
@@ -67,9 +91,15 @@ export default function Login() {
               <LockKeyhole size={22} aria-hidden="true" />
             </div>
             <p className="rx-auth-demo-note" id="rx-demo-access-note">
-              For doctors and nurses. Continue with the prefilled demo account.
+              {onSignedIn ? "For doctors and nurses. Enter your clinician access code." : "For doctors and nurses. Continue with the prefilled demo account."}
             </p>
             <form onSubmit={submit}>
+              {onSignedIn ? (
+                <label className="rx-auth-label" htmlFor="rx-clinician-code">
+                  Clinician access code
+                  <input id="rx-clinician-code" type="password" autoComplete="off" required value={code} onChange={(e) => setCode(e.target.value)} />
+                </label>
+              ) : <>
               <label className="rx-auth-label" htmlFor="rx-email">
                 Work email
                 <input
@@ -94,14 +124,14 @@ export default function Login() {
                   onChange={(event) => setPassword(event.target.value)}
                 />
               </label>
+              </>}
               {error && <p className="rx-auth-error" role="alert">{error}</p>}
-              <button className="rx-auth-submit" type="submit">
-                Continue to clinician workspace <ArrowRight size={17} />
+              <button className="rx-auth-submit" type="submit" disabled={busy}>
+                {busy ? "Checking…" : "Continue to clinician workspace"} <ArrowRight size={17} />
               </button>
             </form>
             <p className="rx-auth-legal">
-              Demo access only. Hospital sign-in is not connected yet. Real
-              patient data requires verified accounts and server-enforced access controls.
+              Shared-code demo access only. Individual hospital accounts are not connected yet. Every patient shown is synthetic.
             </p>
           </section>
         </div>
