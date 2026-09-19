@@ -48,9 +48,20 @@ check-in), `fixtures` (regenerate `ml/fixtures/synthetic/`), `train-synthetic`
 ```json
 {
   "events": [
-    { "metric": "rhr", "value": 64, "unit": "bpm", "timestamp": "2026-09-18T12:00:00Z", "source": "Simulated wearable" }
+    {
+      "metric": "rhr",
+      "value": 64,
+      "unit": "bpm",
+      "timestamp": "2026-09-18T12:00:00Z",
+      "source": "Simulated wearable"
+    }
   ],
-  "context": { "exercise": "No unusual activity", "fatigue": "Worsening", "medication": "No changes", "consent": true },
+  "context": {
+    "exercise": "No unusual activity",
+    "fatigue": "Worsening",
+    "medication": "No changes",
+    "consent": true
+  },
   "program": "post_abdominal_surgery",
   "analyzedThrough": "2026-09-18T12:00:00Z",
   "patient_id": "demo-01",
@@ -90,19 +101,19 @@ Signals also carry `robust_deviation`, `direction`, `persistence_windows`.
 
 Added fields:
 
-| Field | Meaning |
-| --- | --- |
-| `application_state` | `monitoring`, `context_needed`, `review_recommended`, `insufficient_data` |
-| `anomaly_score` | 0-1, logistic around the validation-calibrated threshold (0.5 = at threshold); `null` if the model was unavailable |
-| `is_anomalous` | model flag held for the last 3 six-hour windows and data quality not insufficient |
-| `rule_coordinated` | the deterministic rule alone (`coordinated` = rule OR model) |
-| `change_point` | start of the terminal anomalous run, or earliest flagged run |
-| `contributors[]` | largest robust deviations at the latest window: `metric`, `direction`, `robust_deviation`, `percent_delta`, `persistence_windows`, `flagged`, `supporting_ids`, `latest_observed_at` |
-| `missing_signals[]` | program metrics with `no_data`, `stale`, or `insufficient_baseline`, with `core` flag |
-| `data_quality` | `status` (`sufficient` / `partial` / `insufficient`), `coverage`, core readiness, cadence, window counts |
-| `protocol_notes[]` | illustrative program rules that fired on check-in answers |
-| `model` | `status` (`fitted` / `prior` / `unavailable`), window scores, feature columns, split sizes, threshold, exceed rates, timing |
-| `model_version`, `program`, `patient_id`, `window_start`, `window_end` | provenance |
+| Field                                                                  | Meaning                                                                                                                                                                              |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `application_state`                                                    | `monitoring`, `context_needed`, `review_recommended`, `insufficient_data`                                                                                                            |
+| `anomaly_score`                                                        | 0-1, logistic around the validation-calibrated threshold (0.5 = at threshold); `null` if the model was unavailable                                                                   |
+| `is_anomalous`                                                         | model flag held for the last 3 six-hour windows and data quality not insufficient                                                                                                    |
+| `rule_coordinated`                                                     | the deterministic rule alone (`coordinated` = rule OR model)                                                                                                                         |
+| `change_point`                                                         | start of the terminal anomalous run, or earliest flagged run                                                                                                                         |
+| `contributors[]`                                                       | largest robust deviations at the latest window: `metric`, `direction`, `robust_deviation`, `percent_delta`, `persistence_windows`, `flagged`, `supporting_ids`, `latest_observed_at` |
+| `missing_signals[]`                                                    | program metrics with `no_data`, `stale`, or `insufficient_baseline`, with `core` flag                                                                                                |
+| `data_quality`                                                         | `status` (`sufficient` / `partial` / `insufficient`), `coverage`, core readiness, cadence, window counts                                                                             |
+| `protocol_notes[]`                                                     | illustrative program rules that fired on check-in answers                                                                                                                            |
+| `model`                                                                | `status` (`fitted` / `prior` / `unavailable`), window scores, feature columns, split sizes, threshold, exceed rates, timing                                                          |
+| `model_version`, `program`, `patient_id`, `window_start`, `window_end` | provenance                                                                                                                                                                           |
 
 State mapping: `monitoring -> quiet`, `context_needed -> context`,
 `review_recommended -> review`, `insufficient_data -> context` with
@@ -116,7 +127,7 @@ an anomaly or coordinated rule, or an illustrative protocol rule.
 2. **Windows**: six-hour grid ending at `analyzedThrough`. Each window holds
    the mean of its own samples; an empty window borrows the mean of a trailing
    lookback of max(24h, 2 x that metric's cadence) and records how old the
-   newest reading is. Beyond the lookback the window is *stale*, never normal.
+   newest reading is. Beyond the lookback the window is _stale_, never normal.
 3. **Baselines**: per window and metric, median and MAD (scaled 1.4826) of the
    observed windows in the preceding 28 days, ending one recent-window length
    before the window under test. Sufficient only with >= 8 observed windows
@@ -239,26 +250,22 @@ After the rule: 52 monitoring, 0 context_needed, stable across model seeds
 0 to 2; 7 subjects' latest windows are recorded as explained by missingness.
 The synthetic drift and gait scenarios still detect at the same rates.
 
-## Integration for the workflow owner
+## Render Workflow integration
 
-The package is designed to slot behind one new task in `workflows/tasks.js`
-without touching `shared/engine.js`:
+`workflows/tasks.js` runs `scoreWithPythonModel` and the deterministic evidence
+chain as part of `monitoringPipeline`. Both the check-in score endpoint and the
+clinician analysis routes invoke that same Workflow with `{events, context,
+program, patientId}`. The response preserves the existing model evidence
+contract and adds the deterministic result, a metric/state comparison, and
+execution provenance (`execution.id`, source commit and branch).
 
-1. Add a Python runtime to the workflow service (Render lets a Node service
-   install Python; `numpy` and `scikit-learn` are the only packages).
-2. In a new task, spawn `python3 -m relay_ml score --compact` with
-   `PYTHONPATH=ml` and write the request JSON to stdin; parse stdout.
-3. The result already contains `signals` (the server's completeness check),
-   `state`, `summary`, `coordinated`, `context`, `rule`, so it can replace the
-   `compileReviewItem` output directly or be attached beside it.
-4. Pass the check-in answers as `context`; the second workflow run then moves
-   `context_needed` to `review_recommended` without rescoring differently.
-5. Choose `program` per patient (default `post_abdominal_surgery`).
-
-Expected failure modes: a non-zero exit with a `ContractError` message on
-stderr for malformed events; `model.status = "unavailable"` with the
-deterministic rule still applied when history is too short and no prior
-matches the program.
+The Render Workflow service needs Node plus Python dependencies installed from
+`requirements.txt` (`numpy` and the pinned scikit-learn version). Keep the model
+packaged in the task image: web and Workflow regions can differ, and tasks do
+not call back to the web service. Workflow failures are explicitly labelled in
+`execution` when the web-service Python scorer or deterministic rules are used
+as a fallback. The live ElevenLabs conversation stays direct; score once when a
+check-in starts and once after patient submission, not on each spoken turn.
 
 ## Known limits
 

@@ -79,10 +79,11 @@ Supported metrics/units: `rhr`/`bpm`, `hrv`/`ms`, `respiratory`/`/min`, `sleep`/
 
 ## Render Workflows
 
-1. Create a Workflow service from the `Vishnu` branch in this repository in Render: build `npm ci`, start `node workflows/tasks.js`.
+1. Create a Node Workflow service from the `main` branch in this repository in Render: build `npm ci && python3 -m pip install -r requirements.txt`, start `node workflows/tasks.js`. The Python scorer and its pinned model dependencies are packaged in the workflow task image.
 2. On the web/API service set `RENDER_API_KEY` and `RENDER_WORKFLOW_SLUG` (workflow name only, not the `/monitoringPipeline` suffix).
-3. The API calls `<slug>/monitoringPipeline`. Its chained tasks normalize, calculate baseline, detect deviation, request context, and compile a review item. Check-in submission reruns this chain with the confirmed context.
-4. Run a synthetic scenario and verify the returned Render execution ID in the API response and the actual task runs in the Render dashboard. This has not been live-tested without credentials. Local execution alone does not qualify for the Render prize.
+3. Both patient check-in scoring and clinician analysis call `<slug>/monitoringPipeline`. The Workflow runs the Python scorer alongside the deterministic evidence chain and returns both plus a comparison and its Render run ID. It runs at check-in start, on patient submission, and when a clinician explicitly analyzes or simulates; live ElevenLabs turns stay direct for responsiveness.
+4. If the Workflow is not configured or cannot run, the API labels a web-service Python or local-rules fallback in `execution`; a fallback is never represented as a Workflow result. Unsupported newer metrics are still sent to the Python model, and their coverage is explicit in the rule/model comparison.
+5. The web service and Workflow may run in different regions because the web service invokes Render's task API; the Workflow task packages its own Python scorer and does not call back into the web service over private networking. After deploy, verify a fresh run's `execution.id` and `execution.sourceCommit` against the deployed `main` SHA in the Render dashboard/API.
 
 References: https://render.com/docs/workflows-sdk-typescript and https://render.com/docs/workflows-defining.
 

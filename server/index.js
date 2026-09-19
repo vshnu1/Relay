@@ -28,7 +28,7 @@ import {
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyze, simulate, normalize, fhirBundle } from "../shared/engine.js";
-import { scoreWithRelay } from "./relayModel.js";
+import { createAnalysisRunner } from "./workflowAnalysis.js";
 import { guardEvidence } from "./languageGuard.js";
 try {
   process.loadEnvFile();
@@ -587,50 +587,17 @@ app.get("/api/patients/:id", (req, res) => {
   res.json(req.patient);
 });
 const pending = new Set();
+const runAnalysis = createAnalysisRunner();
 async function pipeline(events, patientContext, patient) {
-  if (process.env.RENDER_API_KEY && process.env.RENDER_WORKFLOW_SLUG) {
-    if (patient.dataType !== "synthetic")
-      throw new Error(
-        "Cloud workflows are restricted to synthetic records in this prototype.",
-      );
-    const { Render } = await import("@renderinc/sdk");
-    const result = await new Render().workflows.runTask(
-      `${process.env.RENDER_WORKFLOW_SLUG}/monitoringPipeline`,
-      [events, patientContext],
-      AbortSignal.timeout(300000),
-    );
-    if (result.status !== "completed" || !result.results?.[0]?.signals)
-      throw new Error("Render workflow did not return a completed analysis.");
-    return {
-      evidence: result.results[0],
-      execution: { mode: "Render Workflows", id: result.id },
-    };
-  }
-  if (process.env.RELAY_ML_ENABLED === "true") {
-    try {
-      const evidence = await scoreWithRelay({
-        events,
-        context: patientContext,
-        program:
-          patient.program ||
-          process.env.RELAY_PROGRAM ||
-          "post_abdominal_surgery",
-        patientId: patient.id,
-      });
-      return {
-        evidence,
-        execution: { mode: "Local Relay ML", id: randomUUID() },
-      };
-    } catch (error) {
-      console.warn(
-        `Relay ML unavailable; using deterministic engine: ${error.message}`,
-      );
-    }
-  }
-  return {
-    evidence: analyze(events, patientContext),
-    execution: { mode: "Local engine", id: randomUUID() },
-  };
+  return runAnalysis({
+    events,
+    context: patientContext,
+    program:
+      patient.program || process.env.RELAY_PROGRAM || "post_abdominal_surgery",
+    patientId: patient.id,
+    requireSynthetic: true,
+    dataType: patient.dataType,
+  });
 }
 async function updateAnalysis(req, res, events, patientContext, action) {
   const p = req.patient;
@@ -1027,30 +994,25 @@ app.post("/api/ml/score", async (req, res) => {
     return res
       .status(400)
       .json({ error: "Supply 1-10,000 measurement records." });
-  if (process.env.RELAY_ML_ENABLED !== "true")
-    return res.status(503).json({
-      // This reaches a clinician's screen, so it says what is true of the
-      // deployment rather than naming the switch that turns it on.
-      error:
-        "The model runs as a Python program, which this deployment does not have attached. Everything above comes from the rule and is unaffected.",
-      code: "ML_DISABLED",
-    });
   try {
-    const evidence = await scoreWithRelay({
+    const result = await runAnalysis({
       events,
       context,
-      program,
+      program: program || process.env.RELAY_PROGRAM || "post_abdominal_surgery",
       patientId,
     });
     audit(
-      "ml.scored",
+      "analysis.run",
       patientId || null,
-      `${events.length} events; ${evidence.application_state}`,
+      `${events.length} events; ${result.execution.mode}`,
     );
     // Every sentence the model wrote passes the clinical boundary before it
     // leaves the server. A tripped sentence is replaced, not the whole result,
     // and the redaction is its own audit event.
-    const guarded = guardEvidence(evidence);
+    const guarded = guardEvidence(result.evidence);
+    const guardedRules = result.deterministicEvidence
+      ? guardEvidence(result.deterministicEvidence)
+      : null;
     if (guarded.guard.withheld.length)
       audit(
         "ml.guard",
@@ -1060,6 +1022,9 @@ app.post("/api/ml/score", async (req, res) => {
     // The patient view needs the decision and its explanation, not every raw event.
     res.json({
       ...guarded,
+      ...(guardedRules ? { deterministicEvidence: guardedRules } : {}),
+      comparison: result.comparison,
+      execution: result.execution,
       signals: guarded.signals.map(({ recent, ...signal }) => ({
         ...signal,
         recentCount: recent?.length ?? 0,

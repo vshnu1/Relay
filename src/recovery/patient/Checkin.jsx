@@ -382,9 +382,11 @@ export default function Checkin({ patient: p }) {
       .join("\n\n")
       .slice(0, 3000);
     if (noteToShare) deliveries.push(actions.sendNote(p.id, noteToShare));
-    score(reviewDraft.answers);
     const results = await Promise.all(deliveries);
     if (results.every((result) => result?.delivered)) {
+      // Re-score only after the check-in has actually reached the shared log;
+      // include the confirmed answers so the clinician evidence is contextual.
+      await score(reviewDraft.answers);
       setAnswers(reviewDraft.answers);
       answersRef.current = reviewDraft.answers;
       setReviewDraft(null);
@@ -537,7 +539,15 @@ export default function Checkin({ patient: p }) {
                   checkinPlan.mode === "insufficient") && (
                   <small className="rx-p-fine">
                     {modelUsed
-                      ? "Questions are focused using the latest Relay score and your discharge plan."
+                      ? checkinPlan.analysis?.execution?.mode ===
+                          "Render Workflows" &&
+                        !checkinPlan.analysis?.execution?.modelFallback
+                        ? "Questions are focused using this check-in’s Render Workflow analysis and your discharge plan."
+                        : checkinPlan.analysis?.execution?.modelFallback
+                          ? "Workflow completed with its rules evidence because the Python model was unavailable. Questions follow that evidence and your discharge plan."
+                          : checkinPlan.analysis?.execution?.fallback
+                            ? "Workflow scoring is unavailable. Questions use the clearly labelled fallback analysis and your discharge plan."
+                            : "Questions are focused using the latest analysis and your discharge plan."
                       : scoreAttempted
                         ? "The scorer could not be reached, so questions use your discharge plan and recent reading changes."
                         : "There are not enough recent readings to compare yet. We’ll focus on how you feel and your discharge plan."}
@@ -832,7 +842,15 @@ export default function Checkin({ patient: p }) {
             )}
             <small>
               {modelUsed
-                ? "Relay score checked for this session."
+                ? checkinPlan.analysis?.execution?.mode ===
+                    "Render Workflows" &&
+                  !checkinPlan.analysis?.execution?.modelFallback
+                  ? "Render Workflow analysis completed for this session."
+                  : checkinPlan.analysis?.execution?.modelFallback
+                    ? "Workflow completed; deterministic rules were used because the Python model was unavailable."
+                    : checkinPlan.analysis?.execution?.fallback
+                      ? "Fallback analysis used; it was not a Render Workflow run."
+                      : "Analysis checked for this session."
                 : scoreAttempted
                   ? "Using recent readings and your discharge plan."
                   : "A fresh score is requested when you begin."}

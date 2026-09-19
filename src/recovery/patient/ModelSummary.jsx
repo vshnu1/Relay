@@ -32,6 +32,7 @@ function summary(p, a) {
 
 export default function ModelSummary({ patient: p, error }) {
   const a = p.analysis;
+  const execution = a?.execution;
   const state = a ? STATES[a.application_state] || STATES.monitoring : null;
   const score =
     a?.anomaly_score == null ? null : Math.round(a.anomaly_score * 100);
@@ -42,7 +43,17 @@ export default function ModelSummary({ patient: p, error }) {
           <Brain size={15} aria-hidden="true" />
         </span>
         <div>
-          <span className="rx-ph-kicker">Relay's model</span>
+          <span className="rx-ph-kicker">
+            {execution?.mode === "Render Workflows"
+              ? execution.modelFallback
+                ? "Workflow rules review"
+                : "Render Workflow analysis"
+              : execution?.fallback
+                ? execution.mode === "Web service Python fallback"
+                  ? "Python fallback analysis"
+                  : "Rules fallback analysis"
+                : "Relay's model"}
+          </span>
           <strong>
             {state ? state.label : "Not scored yet"}
             {score !== null && (
