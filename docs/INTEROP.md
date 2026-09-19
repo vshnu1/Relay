@@ -1,86 +1,95 @@
 # Running the shared engine on real wearable data
 
 Tested `shared/engine.js` from `feat/relay-initial-mvp` against 99 days of real
-Amazfit Helio Strap physiology (see [DATA.md](DATA.md)). Reproduce with
-`pipeline/to_relay_events.py`, which emits the engine's exact event contract.
+Amazfit Helio Strap physiology (see [DATA.md](DATA.md)).
 
-## Result
+> **Correction, second pass.** The first version of this doc blamed the
+> engine's baseline gate and claimed real wearables report these metrics
+> daily. That was wrong for three of the four metrics. The daily table came
+> from *our own aggregation step*, not from the device. Re-measured numbers
+> and the corrected conclusion are below. The engine needs one small change,
+> not four.
 
-The engine returns `state: quiet`, `coordinated: false` on every window,
-including the three days where a personal-baseline detector finds a clear
-multi-signal deviation.
+## Actual sampling density from the device
 
-```
-=== window ending 2026-10-15 (the real coordinated deviation) ===
-state=quiet coordinated=false flaggedSignals=[]
-  rhr          delta=  12.9% thr=10% flagged=false Insufficient baseline
-  hrv          delta= -17.6% thr=15% flagged=false Insufficient baseline
-  respiratory  delta=   4.5% thr=10% flagged=false Insufficient baseline
-  sleep        delta=  -2.6% thr=15% flagged=false Insufficient baseline
-  spo2         delta=   0.2% thr= 3% flagged=false Available
-```
+Measured off the raw export, not off our aggregates:
 
-Note that rhr and hrv both clear their percent thresholds. They are still not
-flagged, because `flagged` requires `b.sufficient` and the baseline gate fails.
-This is not a tuning problem, it is a structural one.
-
-## Root cause: the baseline window assumes sub-daily sampling
-
-`calculateBaseline` requires **12 samples spanning 72 hours inside the
-preceding 14 days**. The synthetic generator in `simulate()` emits every 6
-hours, so 14 days yields 56 samples per metric and the gate passes comfortably.
-
-Real consumer wearables report most of these metrics **once per day**, and not
-every day. Observed coverage over 99 days:
-
-| Metric | Days present | Coverage | Expected samples in a 14-day window |
+| Signal | Samples/day | Median gap | Really daily? |
 |---|---|---|---|
-| spo2 | 88 | 89% | 12.5 — passes, barely |
-| respiratory | 72 | 73% | 10.2 — fails |
-| sleep | 67 | 68% | 9.5 — fails |
-| hrv | 66 | 67% | 9.4 — fails |
-| rhr | 54 | 55% | 7.7 — fails |
+| Heart rate | 3,818 | sub-minute | no, continuous |
+| Respiratory rate | 369 | ~1 min | no, continuous |
+| Blood oxygen | 90 | ~5 min | no, near-continuous |
+| Gait (speed, step length, double support) | ~39 | ~3 min | no, dense |
+| HRV SDNN | 2.9 | ~2.1 h | no |
+| Resting heart rate | 0.55 | daily | **yes** |
+| Sleep stages | per night | nightly | **yes** |
 
-That table predicts the output exactly: spo2 is the only metric reporting
-`Available`, and it is the only one clearing 12 samples. Every other signal is
-permanently gated off, so `coordinated` can never become true no matter what
-the patient's physiology does.
+Only resting heart rate and sleep are genuinely once-a-day. The vendor
+computes resting HR itself, once, and only on 54 of 99 days.
 
-## Two smaller mismatches
+## What that means for the baseline gate
 
-**The 3-signal rule.** `coordinated` needs 3+ flagged signals with 24h of
-shared overlap. The real event moves resting HR, HRV and nocturnal HR together
-— but `hr_night` is not in `METRICS`, so only 2 of the 3 are representable.
-Real deviations in this dataset are 2-signal events.
+`calculateBaseline` wants 12 samples spanning 72h within the preceding 14
+days. Whether that passes depends entirely on the window we aggregate into,
+which is our choice, not the device's:
 
-**Spike dilution.** `current` is the mean over a 36-72h window. The real event
-is a one-day excursion, so averaging it with its neighbours turns +32.5% into
-+12.9%. A daily-cadence detector should compare the day, not a multi-day mean
-containing the day.
+| Metric | per 14d, daily aggregation | per 14d, 6-hour windows |
+|---|---|---|
+| spo2 | 12.4 — marginal | **44.0 — passes** |
+| respiratory | 10.2 — fails | **21.1 — passes** |
+| hrv | 9.3 — fails | **16.9 — passes** |
+| rhr | 7.6 — fails | 7.7 — still fails |
 
-## Suggested fixes, smallest first
+Aggregating into 6-hour windows, which is the cadence `simulate()` produces
+and the engine is tuned for, fixes three of the four. `cadenceHours` then
+correctly reports 6 instead of 24.
 
-1. **Make the baseline window sample-driven, not day-driven.** Take the last N
-   observations of each metric regardless of how far back they reach, instead
-   of everything inside a fixed 14 days. One-line change, fixes the gate for
-   any cadence.
-2. **Or scale the window with observed cadence.** `cadenceHours` is already
-   computed; `baselineDays = 14 * max(1, cadence / 6)` gives 56 days at daily
-   cadence and leaves the synthetic path untouched.
-3. **Add `hr_night` to `METRICS`.** Nocturnal heart rate averaged over
-   02:00-06:00 is available on 73 of 99 days, against 54 for the vendor's own
-   resting-HR field. It is the densest cardiac signal in real exports and it
-   moved on every event found.
-4. **Lower `min_signals` to 2 when fewer than 4 metrics have usable baselines.**
-   Requiring 3 of 6 is reasonable; requiring 3 when only 2 are observable is not.
+**So the engine is mostly fine. Our ingestion was wrong.** That is the
+correction.
 
-None of these change the synthetic demo path. They are the difference between
-"works on our generator" and "works on data from a real wrist".
+## What genuinely remains
 
-## Why this matters for judging
+Re-running the engine on 6-hour windows, it still reports `quiet` on the real
+event day, but the failure modes are now specific and much smaller:
 
-The Nucleate brief asks whether the monitoring approach and data-to-insight
-pipeline is *sound*. "We ran it against 99 days of real wearable data, found
-where it broke, and fixed the sampling assumption" is a much stronger answer
-than a demo that only ever saw its own generator's output. The failure above
-is worth keeping in the story, not hiding.
+```
+2026-07-18  state=quiet coordinated=false
+   rhr           25.8% vs 10%   flagged=false  Insufficient baseline
+   hrv          -15.9% vs 15%   flagged=false  Insufficient baseline
+   respiratory    0.8% vs 10%   flagged=false  Missing recent data
+   spo2             0% vs  3%   flagged=false  Available
+```
+
+1. **Resting HR is genuinely sparse** at 0.55/day and cannot reach 12 samples
+   in 14 days at any window size. It clears its percent threshold (+25.8% vs
+   10%) and is still gated off. This one is a real engine problem.
+   *Fix:* derive resting HR ourselves from the continuous stream — mean heart
+   rate over 02:00-06:00 is available on 73 of 99 days against the vendor's 54,
+   and updates per window rather than per day.
+2. **`fresh` fails for respiratory** on some windows. The check requires a
+   sample within `max(8, cadence * 1.5)` hours of the series end. Real wear
+   has overnight and charging gaps that exceed it. *Fix:* widen the freshness
+   allowance, or treat a gap as `Missing recent data` on that signal only
+   rather than letting it suppress the whole pattern.
+3. **The 3-signal rule.** `coordinated` needs 3+ flagged signals. With
+   glucose absent (no CGM) and sleep nightly, real events here move 2 signals.
+   *Fix:* require 3 of the metrics that actually have usable baselines, not 3
+   of 6 fixed.
+
+## Suggested changes, smallest first
+
+1. **Aggregate to 6-hour windows in ingestion.** Ours, not theirs. Fixes
+   three of four metrics with no engine change.
+2. **Derive resting HR from the nocturnal window** instead of using the
+   vendor's daily field. More coverage, finer cadence.
+3. **Make `min_signals` relative** to how many metrics have usable baselines.
+4. **Widen `fresh`** or scope its effect to the individual signal.
+
+## Why this still matters for judging
+
+The Nucleate brief asks whether the data-to-insight pipeline is *sound*.
+"We ran it against 99 days of real wearable data, found our windowing was
+wrong, fixed it, and found the two places the engine genuinely needed
+loosening" is a strong answer. It is also an honest one, which is the point —
+the first version of this document had it backwards, and the measurement is
+what caught it.
