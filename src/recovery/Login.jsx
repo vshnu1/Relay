@@ -7,6 +7,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { go } from "./useRecovery.js";
+import { LANDING_URL } from "./landingUrl.js";
 
 const DEMO_EMAIL = "clinician@relay.demo";
 
@@ -56,12 +57,16 @@ export default function Login({ onSignedIn }) {
       <div className="rx-auth-shell">
         <div className="rx-auth-grid">
           <section className="rx-auth-intro">
-            <span className="rx-brand rx-auth-brand">
+            <a
+              className="rx-brand rx-auth-brand"
+              href={LANDING_URL}
+              aria-label="Relay home page"
+            >
               <span className="rx-brand-mark">
                 <Activity size={19} strokeWidth={2.4} />
               </span>
               Relay
-            </span>
+            </a>
             <span className="rx-eyebrow">
               <ShieldCheck size={14} /> Clinician workspace
             </span>

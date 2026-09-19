@@ -4271,6 +4271,7 @@ p.rx-row-summary {
   box-shadow: 0 24px 70px rgba(31, 47, 42, 0.09);
 }
 .rx-landing-inner .rx-brand {
+  width: fit-content;
   margin: 0 0 34px;
   padding: 0;
 }

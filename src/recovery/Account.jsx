@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowRight, Stethoscope, User } from "lucide-react";
 import { go } from "./useRecovery.js";
 import { signIn as openPatientProfile } from "./patient/session.js";
+import { LANDING_URL } from "./landingUrl.js";
 
 // Signing in as a person, where the product used to sign you in as a role.
 //
@@ -137,10 +138,14 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
       <div className="rx-auth-shell">
         <div className="rx-auth-grid">
           <section className="rx-auth-intro">
-            <span className="rx-brand rx-auth-brand">
+            <a
+              className="rx-brand rx-auth-brand"
+              href={LANDING_URL}
+              aria-label="Relay home page"
+            >
               <span className="rx-brand-mark" aria-hidden="true" />
               <span className="rx-brand-word">Relay</span>
-            </span>
+            </a>
             <span className="rx-home-kicker">RELAY · SECURE ACCESS</span>
             <h1>Welcome to Relay.</h1>
             <p className="rx-auth-lede">

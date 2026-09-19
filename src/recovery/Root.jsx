@@ -17,6 +17,7 @@ import Login from "./Login.jsx";
 import Account from "./Account.jsx";
 import RoleSignIn from "./SignIn.jsx";
 import { useIdleSignOut } from "./idleSignOut.jsx";
+import { LANDING_URL } from "./landingUrl.js";
 import "./recovery.css";
 
 const CODE_KEY = "rx-code";
@@ -142,6 +143,14 @@ export default function Root() {
         </button>
       </div>
     );
+  // Nobody signed in and no destination asked for: the front door is the public landing
+  // page, not a sign-in form. Any hash is a deliberate destination (the landing page's
+  // own buttons come back through #/patient and #/login), so it falls through to the
+  // gate below. The open local demo has no sign-in, so its bare address stays the ward.
+  if (gate.required && !gate.role && !section && location.pathname === "/") {
+    location.replace(LANDING_URL);
+    return null;
+  }
   // Role gate first (shared code per role, verified by the server); the patient
   // then opens their own profile with the discharge code in PatientRoot.
   // With accounts required, both roles go through the same screen; it asks for
@@ -189,19 +198,24 @@ export default function Root() {
   return (
     <>
       {section === "patient" ? (
-        <PatientRoot route={route} />
+        <PatientRoot
+          route={route}
+          onFullSignOut={gate.accounts && gate.role ? signOutFully : null}
+        />
       ) : (
         <DoctorRoot
           route={route}
           canSignOut={gate.required && !!gate.role}
-          onSignOut={signOutClinician}
+          onSignOut={signOutFully}
         />
       )}
     </>
   );
 }
 
-function signOutClinician() {
+// Ends the account's session on the server and in this tab, for either role. The bare
+// address it reloads to is the landing page once nobody is signed in.
+function signOutFully() {
   endServerSession();
   sessionStorage.removeItem(SIGNED_ROLE_KEY);
   sessionStorage.removeItem(CODE_KEY);
@@ -230,7 +244,7 @@ function DoctorRoot({ route, canSignOut, onSignOut }) {
   );
 }
 
-function PatientRoot({ route }) {
+function PatientRoot({ route, onFullSignOut }) {
   // The patient side is gated by the discharge code: one profile per sign-in, and
   // the app never derives or holds another patient's record. The roster carries
   // identities and codes only, for the sign-in screen.
@@ -244,6 +258,10 @@ function PatientRoot({ route }) {
     go("/patient");
   };
   const leave = () => {
+    // With accounts, signing out means the account, not only this profile: otherwise
+    // the session stays open behind the discharge-code screen. A shared role code and
+    // the open local demo have no account, so there it closes the profile as before.
+    if (onFullSignOut) return onFullSignOut();
     signOut();
     setSignedIn(null);
     go("/patient");
