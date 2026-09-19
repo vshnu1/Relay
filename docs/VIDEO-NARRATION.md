@@ -150,8 +150,8 @@ first load after that is slow.
 
 - **A disk, not a database.** A Render persistent disk holding encrypted JSON.
   No database is declared in the blueprint.
-- The safeguard table now reads **eleven built, one partial**. All ten technical
-  safeguards are built; the partial is minimum necessary.
+- The safeguard table reads **10 built, 0 partial, 0 not met**. Verified on the
+  deployed site. Say "all ten built" and do not add a partial.
 - The standalone "what software cannot fix" table was removed. That content now
   lives in **Before clinical use** at the bottom of the same page.
 - Never call the labelled fallback a Render Workflow run, and never say a
