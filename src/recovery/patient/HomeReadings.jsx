@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Activity, ChevronRight } from "lucide-react";
-import { describeAnalysis } from "../model/mlClient.js";
 import { useAnalysis } from "./useAnalysis.js";
 import Sparkline from "./Sparkline.jsx";
+import ModelSummary from "./ModelSummary.jsx";
 
 // The readings lane: one tile per counted signal, then the model's line.
 export default function HomeReadings({ patient: p }) {
@@ -60,7 +60,9 @@ export default function HomeReadings({ patient: p }) {
                 </span>
               </div>
               <div className="rx-ph-tile-value">
-                <strong>{s.today === null ? "Not available" : s.fmt(s.today)}</strong>
+                <strong>
+                  {s.today === null ? "Not available" : s.fmt(s.today)}
+                </strong>
                 <span>{s.unit}</span>
                 {s.usual !== null && <em>usual {s.fmt(s.usual)}</em>}
               </div>
@@ -68,31 +70,7 @@ export default function HomeReadings({ patient: p }) {
             </div>
           );
         })}
-        <div className="rx-ph-tile model">
-          <div>
-            <span className="rx-ph-kicker">Relay's model</span>
-            <strong>
-              {busy && !p.analysis
-                ? "Comparing your recent readings with your usual…"
-                : p.analysis
-                  ? describeAnalysis(p.analysis, p.profile)
-                  : "Not scored yet. Scoring compares your recent readings with your own usual."}
-            </strong>
-          </div>
-          <button
-            type="button"
-            className="rx-ph-btn outline small"
-            disabled={busy}
-            onClick={() => run(p.answered ? p.answered.answers : null)}
-          >
-            {busy ? "Scoring…" : p.analysis ? "Score again" : "Score"}
-          </button>
-          {error && (
-            <p className="rx-p-error" role="alert">
-              {error}
-            </p>
-          )}
-        </div>
+        <ModelSummary patient={p} run={run} busy={busy} error={error} />
       </div>
 
       <a className="rx-ph-lane-foot" href="#/patient/readings">
