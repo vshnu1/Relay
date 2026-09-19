@@ -4,6 +4,7 @@
     python -m vesper_ml synthetic --scenario ambiguous [--context]
     python -m vesper_ml validate-export [--export PATH]   (reads HEALTH_EXPORT_XML)
     python -m vesper_ml train-synthetic
+    python -m vesper_ml fixtures
 
 `score` reads one JSON document on stdin and writes one on stdout. It never
 touches the filesystem, so a workflow task can shell out to it safely.
@@ -54,6 +55,15 @@ def cmd_validate_export(args):
     return run(export_path=args.export, program=args.program, report=args.report)
 
 
+def cmd_fixtures(args):
+    from .fixtures import write_fixtures
+
+    written = write_fixtures(out_dir=args.out_dir)
+    for path in written:
+        print(path)
+    return 0
+
+
 def cmd_train_synthetic(args):
     from .train import train_synthetic_prior
 
@@ -83,6 +93,10 @@ def build_parser():
     s.add_argument("--program", default="post_abdominal_surgery", choices=sorted(PROGRAMS))
     s.add_argument("--report", default=None, help="where to write the aggregate JSON report")
     s.set_defaults(func=cmd_validate_export)
+
+    s = sub.add_parser("fixtures", help="write every synthetic scenario request and its expected outcome under ml/fixtures/synthetic")
+    s.add_argument("--out-dir", default=None)
+    s.set_defaults(func=cmd_fixtures)
 
     s = sub.add_parser("train-synthetic", help="train and save the synthetic-only prior model")
     s.add_argument("--out-dir", default=None)

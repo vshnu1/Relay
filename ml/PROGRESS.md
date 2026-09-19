@@ -9,7 +9,7 @@ Branch: `Pranav`. Owner: Pranav (ML and synthetic). Scope: `ml/**`, `docs/ML.md`
 - [x] parse health export — streaming Apple Health reader behind `HEALTH_EXPORT_XML`, generic source categories, six-hour aggregation, aggregate-only logging
 - [x] build baseline features — six-hour windows, cadence-aware staleness, median/MAD baselines, robust deviations, missingness and coverage features
 - [x] train anomaly model — SimpleImputer(add_indicator) + RobustScaler + IsolationForest, chronological split, validation-calibrated threshold, persistence, synthetic-only prior artifact
-- [ ] add synthetic scenarios — postoperative drift, missing sensor, gait decline; fixtures under `ml/fixtures/synthetic/`
+- [x] add synthetic scenarios — postoperative drift, missing sensor, gait decline; fixtures under `ml/fixtures/synthetic/`
 - [ ] test ml pipeline — end-to-end CLI tests and scenario outcome tests
 - [ ] private local validation — read-only run on the export, aggregate report in `ml/reports/`
 - [ ] document ml handoff — `docs/ML.md`
@@ -32,3 +32,19 @@ Branch: `Pranav`. Owner: Pranav (ML and synthetic). Scope: `ml/**`, `docs/ML.md`
 - Single-signal `flagged` requires >= 3 consecutive deviated windows, >= 2 supporting observations, and duration (analysis end - first deviated observation) >= program minimum hours. The deterministic coordinated rule needs `min_coordinated` flagged signals with overlapping runs.
 - Synthetic prior: `ml/artifacts/synthetic-prior-post_abdominal_surgery.{joblib,json}`, trained on 40 synthetic patients (2,085 / 694 / 696 rows), 13 input features, 21 after indicators, validation exceed rate 0.028, test 0.051, about 1 s to train. Used only when a patient has fewer than 16 usable history windows; the result is labelled `model.status = "prior"` and `training_data = "synthetic"`.
 - Stability: the seed-0 fixtures give the same application state for model seeds 0-7 in every scenario. Scoring one request takes about 0.1 s.
+
+## Scenario outcomes (add synthetic scenarios)
+
+Fixtures: `python -m vesper_ml fixtures` writes one request per scenario plus `expected.json` under `ml/fixtures/synthetic/` (anchor 2026-09-18T12:00Z, generator seed 0). All synthetic.
+
+| Scenario | Program | Without context | With context |
+| --- | --- | --- | --- |
+| ambiguous | post_abdominal_surgery | context_needed (rule + model, 5 signals flagged) | n/a |
+| explained | post_abdominal_surgery | monitoring | monitoring |
+| review | post_abdominal_surgery | context_needed | review_recommended |
+| postoperative_drift | post_abdominal_surgery | context_needed (model; rhr flagged) | review_recommended |
+| missing_sensor | post_abdominal_surgery | insufficient_data (legacy `context`, data_quality insufficient) | n/a |
+| gait_decline | stroke_rehabilitation | context_needed (model) | review_recommended |
+
+- Realistic-cadence scenarios sample like the real export: resting HR about 60% of days, HRV about 3/day on 70% of days, SpO2 four a day, sleep nightly, phone gait near-daily.
+- Robustness across generator seeds (model seed 0): gait_decline 6/8 context_needed; postoperative_drift about half. Misses coincide with days where the synthetic resting-HR or HRV reading is absent, so the model does not invent a deviation from stale data. Seed 0 is the committed fixture and is stable across model seeds.
