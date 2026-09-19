@@ -387,7 +387,8 @@ function describe(s, p, homeFrom) {
   const missing = s.home.slice(homeFrom).filter((d) => d.v === null).length;
   const parts = [];
   if (s.usual === null) parts.push("No pre-admission baseline is available.");
-  else if (s.today === null) parts.push(`Usual: ${s.fmt(s.usual)} ${unitWord(s)}. No reading today.`);
+  else if (s.today === null)
+    parts.push(`Usual: ${s.fmt(s.usual)} ${unitWord(s)}. No reading today.`);
   else if (s.counted && s.threshold !== null)
     parts.push(
       `Usual ${s.fmt(s.usual)} · trigger ${s.fmt(s.threshold)} · today ${s.fmt(s.today)} ${unitWord(s)}.`,
@@ -400,7 +401,9 @@ function describe(s, p, homeFrom) {
       `Usual ${s.fmt(s.usual)} · today ${s.fmt(s.today)} ${unitWord(s)}. Recorded for context only.`,
     );
   if (missing > 0)
-    parts.push(`${missing} of ${shownDays} home days ${missing === 1 ? "is" : "are"} missing.`);
+    parts.push(
+      `${missing} of ${shownDays} home days ${missing === 1 ? "is" : "are"} missing.`,
+    );
   return parts.join(" ");
 }
 
@@ -475,7 +478,15 @@ function SignalPanel({
         {s.counted
           ? `Counted for ${p.profile.after}. Watching for ${dirWord(s)} than usual.`
           : `Recorded only. Not counted for ${p.profile.after}.`}{" "}
-        Source: {s.device === "whoop" ? "WHOOP" : "watch"}.
+        Source:{" "}
+        {s.device === "whoop"
+          ? "WHOOP"
+          : s.device === "phone"
+            ? "phone"
+            : s.device === "manual"
+              ? "entered by hand"
+              : "watch"}
+        .
       </p>
       <div ref={ref} className="rx-signal-plot">
         {width > 0 && (
@@ -679,15 +690,19 @@ export default function Readings({ patient: p }) {
             <nav className="rx-picker" aria-label="Patient readings">
               <span className="rx-picker-group">Needs attention</span>
               <div className="rx-picker-list">
-                {(attention.length ? attention : counted.slice(0, 1)).map((s) => (
-                  <SignalButton signal={s} key={s.id} />
-                ))}
+                {(attention.length ? attention : counted.slice(0, 1)).map(
+                  (s) => (
+                    <SignalButton signal={s} key={s.id} />
+                  ),
+                )}
               </div>
               {stable.length > 0 && (
                 <details className="rx-picker-more">
                   <summary>{stable.length} other watched readings</summary>
                   <div className="rx-picker-list">
-                    {stable.map((s) => <SignalButton signal={s} key={s.id} />)}
+                    {stable.map((s) => (
+                      <SignalButton signal={s} key={s.id} />
+                    ))}
                   </div>
                 </details>
               )}
@@ -695,7 +710,9 @@ export default function Readings({ patient: p }) {
                 <details className="rx-picker-more">
                   <summary>{recorded.length} additional readings</summary>
                   <div className="rx-picker-list">
-                    {recorded.map((s) => <SignalButton signal={s} key={s.id} />)}
+                    {recorded.map((s) => (
+                      <SignalButton signal={s} key={s.id} />
+                    ))}
                   </div>
                 </details>
               )}
@@ -717,27 +734,27 @@ export default function Readings({ patient: p }) {
           <details className="rx-legend-details">
             <summary>How to read this chart</summary>
             <ul className="rx-chart-legend" aria-label="How to read the chart">
-            <li>
-              <i className="band" /> Usual range before admission
-            </li>
-            <li>
-              <i className="threshold" /> Where a change starts to count
-            </li>
-            <li>
-              <i /> Readings at home
-            </li>
-            <li>
-              <i className="before" /> Readings before admission
-            </li>
-            <li>
-              <i className="run" /> Past the threshold, still going
-            </li>
-            <li>
-              <i className="gap" /> Hospital stay
-            </li>
-            <li>
-              <i className="tick" /> Day with no reading
-            </li>
+              <li>
+                <i className="band" /> Usual range before admission
+              </li>
+              <li>
+                <i className="threshold" /> Where a change starts to count
+              </li>
+              <li>
+                <i /> Readings at home
+              </li>
+              <li>
+                <i className="before" /> Readings before admission
+              </li>
+              <li>
+                <i className="run" /> Past the threshold, still going
+              </li>
+              <li>
+                <i className="gap" /> Hospital stay
+              </li>
+              <li>
+                <i className="tick" /> Day with no reading
+              </li>
             </ul>
           </details>
         </>
