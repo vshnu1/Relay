@@ -12,7 +12,8 @@ thirty days after a discharge are when a patient is most likely to come back,
 and when the line to their care team goes quiet. They do not know what is
 worth a phone call.
 
-_[Click "I have a discharge code". Bayfront Health, BAY-2741. Patient home.]_
+_[Switch to the iPhone. Tap "Start with your discharge code", then "Look
+around as a demo patient". Two taps, no typing. You land on Maya's home.]_
 
 Relay turns that stream into something you can act on. Every signal is cut
 into six-hour windows and compared with that patient's own median and median
@@ -20,7 +21,8 @@ absolute deviation, so the threshold is theirs, not a population's. Three of
 four signals must stay past it for twenty-four hours before Relay says
 anything.
 
-_[Point at the "What you can do today" card. Let the list of actions read.]_
+_[On the phone, scroll to the "What you can do today" card. Let the list read.
+Scroll slowly, it is the best-looking screen in the product.]_
 
 And the patient is not left holding a number. They get a list of things they
 can actually do today, written from their own readings and their own discharge
@@ -29,15 +31,16 @@ medicines they were prescribed and nothing extra, add a temperature reading. A
 hundred and seventy-three of these sentences across the whole ward, and not
 one says what is wrong, because every one passes the same clinical guard.
 
-_[Go to Check-in. Start the voice check-in, answer one question, point at the
-draft it writes.]_
+_[On the phone, tap Check-in in the tab bar. Start the voice check-in, answer
+one question, then show the draft it writes.]_
 
 The check-in is an ElevenLabs conversational agent, and the questions come
 from the discharge plan: pneumonia asks about breathing and fever, sleep
 apnoea about nights without the CPAP machine. Nothing reaches the care team
 until the patient approves it.
 
-_[Clinician tab. Ward list. Point at the four state cards.]_
+_[Cut to the laptop. Clinician workspace, ward list. Point at the four state
+cards.]_
 
 On the other side, twenty-eight patients, and today two need a clinician. Not
 twenty-eight charts, two. Medicare penalises six conditions on a thirty-day
@@ -110,6 +113,22 @@ Three numbers come from the clock. Check them on screen.
 3. The model score, **above** its nought-point-five line. If below that day:
    _"it scored below its own line, so the model stayed quiet, and it still shows
    you every gate it checked."_
+
+## The phone
+
+It is the web app in mobile Safari on an iPhone simulator, and it looks like an
+app because the layout is built for a phone. **Do not call it a native app.**
+If anyone asks, it is a responsive web application and there is no App Store
+build.
+
+The patient login is two taps and no typing: **Start with your discharge code**,
+then **Look around as a demo patient**. That issues a demo identity to that
+browser and hands it one synthetic record, Maya Okafor, discharge code
+BAY-2741. Signing in with an email and password instead needs an account, and
+creating one needs the patient access code from the Render dashboard.
+
+Wake the site on the phone before you record. The free instance sleeps, and the
+first load after that is slow.
 
 ## Say these accurately
 
