@@ -6949,3 +6949,143 @@ p.rx-row-summary {
 .rx-assurance-dl dd strong {
   color: var(--ink);
 }
+
+/* Signing in as a person. Reuses the existing auth shell, grid, card, labels
+   and submit button; only the pieces that did not exist before are here. */
+.rx-auth-lede {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.55;
+  max-width: 46ch;
+}
+.rx-auth-points {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.rx-auth-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.rx-auth-points li > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--pine);
+}
+.rx-auth-note {
+  margin-top: 20px;
+  color: var(--faint);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.rx-auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: rgba(31, 47, 42, 0.035);
+}
+.rx-auth-tabs button {
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rx-auth-tabs button.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(31, 47, 42, 0.12);
+}
+.rx-auth-label small {
+  font-weight: 500;
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.rx-optional {
+  font-weight: 500;
+  color: var(--faint);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.rx-auth-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 14px;
+  color: var(--faint);
+  font-size: 12px;
+}
+.rx-auth-or::before,
+.rx-auth-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.rx-auth-demo {
+  width: 100%;
+  height: 44px;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rx-auth-demo:hover:not(:disabled) {
+  border-color: var(--pine);
+  color: var(--pine);
+}
+.rx-auth-demo:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* The security page now says what each row used to be, what it still is not,
+   and what this process is actually doing. Three different kinds of sentence,
+   so three different weights. */
+.rx-safeguard-live {
+  margin-top: 6px;
+  color: var(--pine);
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+.rx-safeguard-was,
+.rx-safeguard-caveat {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--faint);
+}
+.rx-safeguard-was strong,
+.rx-safeguard-caveat strong {
+  color: var(--muted);
+  font-weight: 700;
+}
+.rx-assurance-live {
+  color: var(--muted);
+  font-weight: 500;
+}
+.rx-breakglass {
+  border-color: #c77b57;
+  background: rgba(199, 123, 87, 0.06);
+}

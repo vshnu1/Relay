@@ -256,14 +256,18 @@ does not survive the first question.
 **"What about security and HIPAA?"**
 
 Open the **Security** tab in the clinician view. It renders the HIPAA Security
-Rule's technical safeguards cite by cite: four built, one partial, **five not
-met**, with the failures named — unique user identification, emergency access,
-encryption at rest, stored-data authentication, person authentication. Beside
-it is the audit trail, live, showing the acting role on every access.
+Rule's technical safeguards cite by cite, **all ten built**, each one carrying
+what it used to be and what it still is not — no multi-factor authentication, no
+identity proofing. Two of them are checked against the running process rather
+than asserted: the encryption mode, and whether the audit chain verifies. Beside
+it is the audit trail, live, naming the person on every access.
 
-Then say the thing that is not on the screen: this is not a compliant system
-and cannot be, because compliance is agreements, risk analyses and trained
-staff. `docs/COMPLIANCE.md` also answers which law would even apply, which
+Then scroll to the second table, which is the one that matters: business
+associate agreements, risk analysis, workforce training, breach procedures,
+review board approval, FDA clearance. All not met, none of them fixable by
+writing more software. That is the thing to say out loud — this is not a
+compliant system and cannot be, because compliance is a state an organisation is
+in. `docs/COMPLIANCE.md` also answers which law would even apply, which
 changes with the business model — a hospital contract makes this a HIPAA
 business associate, selling to patients directly makes it an FTC Health Breach
 Notification Rule vendor instead, and Washington's My Health My Data Act
@@ -306,6 +310,64 @@ Explainability is the product. A clinician needs to see that respiratory rate
 was 12% above baseline for two nights. A model score that cannot be traced to
 a measurement would fail the one job the output has. The detection rule is
 deterministic and printed in the interface.
+
+**"You are handling health data. What have you actually done about it?"**
+
+All ten technical safeguards in the HIPAA Security Rule, 45 CFR 164.312, and
+there is a page in the product listing each one with its citation. This morning
+five of them were unmet and the page said so. Four were closed today; the fifth
+was Partial and is now Built.
+
+Three decisions inside that are worth defending out loud, because each was a
+choice between looking better and being better.
+
+**Identity was built, not bought.** Two shared codes meant the audit log could
+record that a clinician opened a record and never which clinician, so a breach
+investigation starting from it could not answer the only question it exists to
+answer. The obvious fix is a hosted identity provider, and we did not take it.
+Every such provider serves its script from its own origin, and our content
+security policy is `script-src 'self'` with no third party listed at all.
+Transmission security is built on that: the argument is that not even a font
+request tells anyone who opened a record, which is why the typefaces are
+self-hosted. Putting someone else's JavaScript on the authentication path of a
+health application would trade a safeguard we hold for two we could reach
+another way. And on a free tier it buys identity without a business associate
+agreement, so the compliance position would not move at all; only the vendor
+list would grow. An identity provider under a BAA is the right production
+answer, and the page says so.
+
+**Encryption at rest reports what it is doing, not what it should be doing.**
+With a key, the state file, the account store and every audit line are
+AES-256-GCM. With no key the server writes what it always wrote and the page
+says _unencrypted_, live, read from the running process. A deployment that lost
+its key would otherwise go on claiming encryption on the strength of a constant
+in the source.
+
+**The audit log is a hash chain.** It was append-only by convention, which is a
+promise rather than a property, and nothing stopped anyone editing it
+afterwards. Each line now commits to the line before it, and the verifier
+reports the line number where the history stops adding up. The digest covers the
+bytes as written, so someone holding the file and no key can still check it.
+
+_The part to say last._ Ten out of ten is the smaller half, and the page carries
+a second table underneath: business associate agreements, risk analysis,
+workforce training, breach procedures, review board approval, FDA clearance.
+None of those can be closed by writing more software. A page showing only the
+green table would be exactly the kind of document this project was built to
+avoid.
+
+**"What stops the documentation drifting from the code?"**
+
+Tests, and they run in seconds. `npm test` is 64 checks over the detection rule,
+the derived sentences, the patient store, the at-rest encryption, the account
+store and the Render task chain. `PYTHONPATH=ml python3 -m unittest discover -s
+ml/tests` is 60 over the model's contracts, features, scoring and scenarios. One
+of them runs the Python language guard and its Node port over the same corpus
+and fails if they disagree phrase for phrase, because a boundary enforced in one
+language and not the other is not enforced. `node tests/api.integration.js` runs
+the same checks against a live server.
+
+_Offer this when the demo ends rather than waiting to be asked._
 
 **"Did you validate on real patients?"**
 

@@ -49,6 +49,21 @@ services:
       # environment those dependencies were installed into.
       - key: RELAY_ML_ENABLED
         value: "true"
+      # Encryption at rest, 164.312(a)(2)(iv). Render generates a value and
+      # keeps it, so the disk stays readable across deploys. If this is ever
+      # lost the files written under it are unrecoverable, which is the point of
+      # it; with no key at all the server writes plaintext and the security page
+      # says so rather than claiming otherwise.
+      - key: RELAY_DATA_KEY
+        generateValue: true
+      # Accounts, 164.312(a)(2)(i) and (d), both required and not addressable.
+      # With this on, the shared codes below stop being credentials and become
+      # invitations: a code decides which role an account is created with and
+      # reaches no record by itself. The sign-in screen offers a one-click demo
+      # identity, distinct per browser and named in the audit trail, so nobody
+      # judging this has to create an account to look around.
+      - key: RELAY_REQUIRE_ACCOUNTS
+        value: "true"
       - key: RENDER_API_KEY
         sync: false
       - key: RENDER_WORKFLOW_SLUG

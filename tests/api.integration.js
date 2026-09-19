@@ -14,6 +14,12 @@ const server = spawn(process.execPath, ["server/index.js"], {
     DATA_DIR: dir,
     APP_ACCESS_TOKEN: token,
     PATIENT_ACCESS_CODE: "patient-test-only",
+    // Pinned, not inherited. This suite exercises the shared-code path, so an
+    // ambient RELAY_REQUIRE_ACCOUNTS in the shell that ran it would silently
+    // change what is being tested rather than fail honestly. The account path
+    // has its own coverage in tests/accounts.test.js and tests/vault.test.js.
+    RELAY_REQUIRE_ACCOUNTS: "false",
+    RELAY_DATA_KEY: "",
     RENDER_API_KEY: "",
     RENDER_WORKFLOW_SLUG: "",
     ELEVENLABS_API_KEY: "",

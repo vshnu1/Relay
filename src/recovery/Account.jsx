@@ -1,0 +1,233 @@
+import { useState } from "react";
+import { ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
+
+// Signing in as a person, where the product used to sign you in as a role.
+//
+// Two shared codes meant the audit log could say a clinician opened a record
+// and never which clinician, which is why 164.312(a)(2)(i) and (d) were both
+// marked not met, and both are required rather than addressable. The code is
+// still here; it has become the invitation rather than the key.
+//
+// The demo button is not a way round that. It mints a distinct principal per
+// browser, so two people looking at the deployed demo at the same time are two
+// actors in the log rather than one anonymous clinician, and every action they
+// take is attributable afterwards.
+
+const post = async (path, body) => {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error || "That did not work.");
+  return payload;
+};
+
+export default function Account({ onSignedIn, wanted = "clinician" }) {
+  const [mode, setMode] = useState("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [invite, setInvite] = useState("");
+  const [careTeam, setCareTeam] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const done = (payload) => {
+    onSignedIn(payload.user.role, payload.token, payload.user);
+  };
+
+  async function submit(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      done(
+        mode === "signin"
+          ? await post("/api/auth/login", { email, password })
+          : await post("/api/auth/register", {
+              email,
+              password,
+              invite,
+              careTeam,
+            }),
+      );
+    } catch (problem) {
+      setError(problem.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function demo() {
+    setBusy(true);
+    setError("");
+    try {
+      done(await post("/api/auth/demo", { role: wanted }));
+    } catch (problem) {
+      setError(problem.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <main className="rx-auth-page">
+      <div className="rx-auth-shell">
+        <div className="rx-auth-grid">
+          <section className="rx-auth-intro">
+            <span className="rx-brand rx-auth-brand">
+              <span className="rx-brand-mark" aria-hidden="true" />
+              <span className="rx-brand-word">Relay</span>
+            </span>
+            <span className="rx-home-kicker">
+              {wanted === "patient" ? "Patient access" : "Clinician access"}
+            </span>
+            <h1>Sign in as yourself.</h1>
+            <p className="rx-auth-lede">
+              Relay used to take one shared code per role. It could record that
+              a clinician opened a record and never which clinician, so a breach
+              investigation starting from the log could not answer the only
+              question that matters.
+            </p>
+            <ul className="rx-auth-points">
+              <li>
+                <ShieldCheck size={16} aria-hidden="true" />
+                Your password is stretched with scrypt and never stored.
+              </li>
+              <li>
+                <LockKeyhole size={16} aria-hidden="true" />
+                Sessions are held on the server, so signing out ends them
+                everywhere rather than clearing this tab.
+              </li>
+            </ul>
+            <p className="rx-auth-note">
+              Every patient in this workspace is synthetic. Do not enter real
+              credentials or real patient information.
+            </p>
+          </section>
+
+          <section className="rx-auth-card">
+            <div className="rx-auth-tabs" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "signin"}
+                className={mode === "signin" ? "active" : ""}
+                onClick={() => {
+                  setMode("signin");
+                  setError("");
+                }}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "register"}
+                className={mode === "register" ? "active" : ""}
+                onClick={() => {
+                  setMode("register");
+                  setError("");
+                }}
+              >
+                Create an account
+              </button>
+            </div>
+
+            <form onSubmit={submit}>
+              <label className="rx-auth-label" htmlFor="rx-acct-email">
+                Work email
+                <input
+                  id="rx-acct-email"
+                  type="email"
+                  autoComplete="username"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </label>
+              <label className="rx-auth-label" htmlFor="rx-acct-password">
+                Password
+                <input
+                  id="rx-acct-password"
+                  type="password"
+                  autoComplete={
+                    mode === "signin" ? "current-password" : "new-password"
+                  }
+                  required
+                  minLength={mode === "register" ? 10 : undefined}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                {mode === "register" && <small>At least ten characters.</small>}
+              </label>
+
+              {mode === "register" && (
+                <>
+                  <label className="rx-auth-label" htmlFor="rx-acct-invite">
+                    Access code from your care team
+                    <input
+                      id="rx-acct-invite"
+                      type="password"
+                      autoComplete="off"
+                      required
+                      value={invite}
+                      onChange={(e) => setInvite(e.target.value)}
+                    />
+                    <small>
+                      The code decides which view your account gets. It does not
+                      open a record on its own.
+                    </small>
+                  </label>
+                  <label className="rx-auth-label" htmlFor="rx-acct-team">
+                    Care team <span className="rx-optional">optional</span>
+                    <input
+                      id="rx-acct-team"
+                      type="text"
+                      autoComplete="organization"
+                      value={careTeam}
+                      onChange={(e) => setCareTeam(e.target.value)}
+                    />
+                  </label>
+                </>
+              )}
+
+              {error && (
+                <p className="rx-auth-error" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <button className="rx-auth-submit" type="submit" disabled={busy}>
+                {busy
+                  ? "Checking…"
+                  : mode === "signin"
+                    ? "Sign in"
+                    : "Create account"}{" "}
+                <ArrowRight size={17} aria-hidden="true" />
+              </button>
+            </form>
+
+            <div className="rx-auth-or">
+              <span>or</span>
+            </div>
+            <button
+              type="button"
+              className="rx-auth-demo"
+              disabled={busy}
+              onClick={demo}
+            >
+              Look around as a demo {wanted}
+            </button>
+            <p className="rx-auth-legal">
+              A demo identity is issued to this browser alone and named in the
+              audit trail, so what it does stays attributable. It reaches
+              synthetic records only.
+            </p>
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}

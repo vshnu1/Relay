@@ -14,68 +14,119 @@ const BUILT = "built";
 const PARTIAL = "partial";
 const NOT_MET = "not-met";
 
+// Each row says what is true of this running process. Four of these were unmet
+// this morning; the ones that changed carry what was wrong, because a row that
+// simply reads "built" teaches a reader nothing about whether to believe the
+// others.
 const SAFEGUARDS = [
   {
     cite: "164.312(a)(1)",
     name: "Access control",
     state: BUILT,
-    note: "Role gate with an allow-list of the five routes the patient view uses, constant-time code comparison, deny by default. A patient is scoped server-side to the one record their discharge code opens.",
+    note: "Role gate with an allow-list of the routes the patient view uses, constant-time code comparison, deny by default. A patient is scoped server-side to the one record their discharge code opens.",
   },
   {
     cite: "164.312(a)(2)(i)",
     name: "Unique user identification",
-    state: NOT_MET,
-    required: true,
-    note: "Two shared codes, not accounts. The audit log can name a role and a record, never a person.",
+    state: BUILT,
+    was: "Two shared codes, not accounts. The log could name a role and a record, never a person.",
+    note: "Named accounts with scrypt-hashed passwords. Every audit line carries the acting person, not only their role. The access code is now an invitation that decides which role an account is created with; it opens no record by itself.",
+    caveat:
+      "No multi-factor authentication, and nobody checks that a new account belongs to the clinician it names.",
   },
   {
     cite: "164.312(a)(2)(ii)",
     name: "Emergency access procedure",
-    state: NOT_MET,
-    required: true,
-    note: "No break-glass path exists.",
+    state: BUILT,
+    was: "No break-glass path existed at all.",
+    note: "A clinician may take emergency access to a record outside their care team. It requires a reason in a sentence, lasts fifteen minutes, is recorded with that reason, and is shown on this page for as long as it is open.",
   },
   {
     cite: "164.312(a)(2)(iii)",
     name: "Automatic logoff",
     state: BUILT,
-    note: "Fifteen minutes, warned at fourteen. Activity is measured from real user events, so a polling timer or a streaming reading cannot hold a session open. Client-side only: the bearer code stays valid because there is no session store to revoke.",
+    was: "The browser signed you out. The credential stayed valid, because there was no session store to revoke.",
+    note: "Fifteen minutes idle, warned at fourteen, measured from real user events so a polling timer cannot hold a session open. Sessions now live on the server with a twelve-hour ceiling, so signing out ends the session rather than clearing the tab.",
   },
   {
     cite: "164.312(a)(2)(iv)",
     name: "Encryption at rest",
-    state: NOT_MET,
-    note: "State, audit log and event log are plaintext JSON at mode 0600 on a mounted disk.",
+    state: BUILT,
+    was: "State, audit log and event log were plaintext JSON at mode 0600.",
+    note: "AES-256-GCM over the state file, the account store and every audit line, under a key this process reads from its environment. The live mode is reported below rather than asserted here.",
+    live: "encryption",
   },
   {
     cite: "164.312(b)",
     name: "Audit controls",
     state: BUILT,
-    note: "Every access recorded with the acting role — record views, roster views, recovery-log reads, consent changes, acknowledgements, exports, imports. Shown below, live.",
+    note: "Every access recorded with the acting person and role: record views, roster views, recovery-log reads, consent changes, acknowledgements, exports, imports, sign-ins and emergency access. Shown below, live.",
   },
   {
     cite: "164.312(c)(1)",
     name: "Integrity",
-    state: PARTIAL,
-    note: "Atomic write via temp-and-rename, append-only audit log. Nothing prevents editing that log after the fact.",
+    state: BUILT,
+    was: "Append-only by convention. Nothing prevented editing the log afterwards.",
+    note: "Atomic write via temp-and-rename, and the audit log is a hash chain: each line commits to the one before it, so an edited or deleted line breaks every digest after it.",
+    live: "chain",
   },
   {
     cite: "164.312(c)(2)",
     name: "Authenticate stored data",
-    state: NOT_MET,
-    note: "No checksums, no hash chain.",
+    state: BUILT,
+    was: "No checksums, no hash chain.",
+    note: "The chain is verified on demand and the check reports the line number where the history stops adding up. The digest covers the bytes as written, so it is checkable by someone holding the file and no key.",
+    live: "chain",
   },
   {
     cite: "164.312(d)",
     name: "Person or entity authentication",
-    state: NOT_MET,
-    note: "The discharge code authenticates which record, server-side, but not which person: it is shared with whoever the patient shows it to and never expires.",
+    state: BUILT,
+    was: "The discharge code authenticated which record, never which person.",
+    note: "A password nobody else holds, checked in constant time against a stretched hash, exchanged for a revocable server-side session.",
+    caveat:
+      "This authenticates an account, not a human being. Identity proofing and a second factor are what a hospital deployment would add.",
   },
   {
     cite: "164.312(e)(1)",
     name: "Transmission security",
     state: BUILT,
-    note: "TLS at the edge, HSTS in production, content security policy, no-referrer, frame denial, a same-origin check on writes, and typefaces served from this origin so no font request tells a third party who opened a record.",
+    note: "TLS at the edge, HSTS in production, a content security policy with no third-party script origin, no-referrer, frame denial, a same-origin check on writes, and typefaces served from this origin so no font request tells a third party who opened a record.",
+  },
+];
+
+// The other half, and the reason this page is worth reading. Software closed
+// the rows above; nothing in this list can be closed by writing more of it.
+const BEYOND_SOFTWARE = [
+  {
+    name: "Business associate agreements",
+    cite: "164.502(e)",
+    note: "Needed with every processor that touches health data. Two are checkable and both fail: Render signs one on Scale or Enterprise and this runs on a starter plan; ElevenLabs signs one on Enterprise with zero retention.",
+  },
+  {
+    name: "Risk analysis and workforce training",
+    cite: "164.308",
+    note: "An administrative safeguard performed by an organisation, reviewed and repeated. There is no organisation here.",
+  },
+  {
+    name: "Breach notification procedure",
+    cite: "164.400–414",
+    note: "Individuals without unreasonable delay and within 60 days, and the Secretary within 60 days at 500 or more affected. A procedure, not a feature.",
+  },
+  {
+    name: "Right of access, and deletion",
+    cite: "164.524 · RCW 19.373",
+    note: "A patient may have their record in the form they ask for within 30 days, and Washington law gives a right to delete that reaches processors. Neither exists here. Both are feasible and simply not built.",
+  },
+  {
+    name: "Clinical validation",
+    cite: "45 CFR 46",
+    note: "Any clinical claim would need review board approval, a prospective cohort, and reporting against TRIPOD+AI or DECIDE-AI. None of that has happened.",
+  },
+  {
+    name: "FDA clearance",
+    cite: "21 CFR 820",
+    note: "On our own reading this is most likely device software, and it is not cleared. The regulatory position below sets out why.",
   },
 ];
 
@@ -110,6 +161,31 @@ const ACTION = {
   "simulation.run": "Ran a simulation",
   "clinician.voice_summary.generated": "Spoke a clinician summary",
 };
+
+// What this process is doing, as opposed to what this file says it does. A
+// deployment missing its key, or still accepting a shared code, would otherwise
+// have gone on claiming otherwise on the strength of a constant in the source.
+function useSafeguards() {
+  const [live, setLive] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    const headers = {};
+    try {
+      const code = sessionStorage.getItem("rx-code");
+      if (code) headers.authorization = `Bearer ${code}`;
+    } catch {
+      // no session storage
+    }
+    fetch("/api/safeguards", { headers })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+      .then((body) => alive && setLive(body))
+      .catch(() => alive && setLive(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return live;
+}
 
 function AuditTrail() {
   const [rows, setRows] = useState(null);
@@ -156,6 +232,7 @@ function AuditTrail() {
 }
 
 export default function Assurance() {
+  const live = useSafeguards();
   const counts = SAFEGUARDS.reduce((acc, s) => {
     acc[s.state] = (acc[s.state] || 0) + 1;
     return acc;
@@ -167,10 +244,11 @@ export default function Assurance() {
           <span className="rx-home-kicker">Security and compliance</span>
           <h1>What is true about how this handles health data</h1>
           <p className="rx-assurance-sub">
-            Every patient here is synthetic, and this is not a compliant system
-            — compliance is agreements, risk analyses and trained staff, which
-            software cannot supply on its own. What follows is the part that is
-            technical, with the gaps named rather than left out.
+            Every patient here is synthetic, and this is not a compliant system.
+            The technical safeguards below are now all in place; the second
+            table is the reason that is not the same thing, and it is the one
+            worth reading. Compliance is a state an organisation is in, and
+            software cannot put it there.
           </p>
         </div>
       </header>
@@ -182,7 +260,15 @@ export default function Assurance() {
         </h2>
         <p className="rx-assurance-count">
           {counts[BUILT]} built · {counts[PARTIAL] || 0} partial ·{" "}
-          <strong>{counts[NOT_MET]} not met</strong>
+          {counts[NOT_MET] || 0} not met
+          {live && live.identity && (
+            <span className="rx-assurance-live">
+              {" · "}
+              {live.identity.accountsRequired
+                ? `${live.identity.accounts} ${live.identity.accounts === 1 ? "account" : "accounts"}, ${live.identity.openSessions} open ${live.identity.openSessions === 1 ? "session" : "sessions"}`
+                : "this deployment still accepts the shared demo codes"}
+            </span>
+          )}
         </p>
         <ul className="rx-safeguards">
           {SAFEGUARDS.map((s) => {
@@ -202,6 +288,32 @@ export default function Assurance() {
                     )}
                   </p>
                   <p className="rx-safeguard-note">{s.note}</p>
+                  {s.live === "encryption" && live && (
+                    <p className="rx-safeguard-live">
+                      Live:{" "}
+                      {live.encryptionAtRest.mode === "none"
+                        ? "no key is set on this deployment, so these files are written unencrypted."
+                        : `${live.encryptionAtRest.mode}, key present.`}
+                    </p>
+                  )}
+                  {s.live === "chain" && live && (
+                    <p className="rx-safeguard-live">
+                      Live: {live.auditChain.lines} lines,{" "}
+                      {live.auditChain.intact
+                        ? "chain intact."
+                        : `chain breaks at line ${live.auditChain.brokenAt} (${live.auditChain.reason}).`}
+                    </p>
+                  )}
+                  {s.was && (
+                    <p className="rx-safeguard-was">
+                      <strong>Was:</strong> {s.was}
+                    </p>
+                  )}
+                  {s.caveat && (
+                    <p className="rx-safeguard-caveat">
+                      <strong>Still not:</strong> {s.caveat}
+                    </p>
+                  )}
                 </div>
                 <code>{s.cite}</code>
               </li>
@@ -209,6 +321,48 @@ export default function Assurance() {
           })}
         </ul>
       </section>
+
+      <section className="rx-card" aria-label="What software cannot fix">
+        <h2>What is still not true, and no amount of code would fix</h2>
+        <p className="rx-assurance-sub">
+          The table above went green this morning. That is the smaller half. A
+          system can hold every technical safeguard in the Security Rule and
+          still not be compliant, because compliance is a state an organisation
+          is in, not a property a program has.
+        </p>
+        <ul className="rx-safeguards">
+          {BEYOND_SOFTWARE.map((item) => (
+            <li key={item.name} className="not-met">
+              <span className="rx-safeguard-mark" title="Not met">
+                <X size={14} aria-hidden="true" />
+                <span className="rx-visually-hidden">Not met</span>
+              </span>
+              <div>
+                <p className="rx-safeguard-name">{item.name}</p>
+                <p className="rx-safeguard-note">{item.note}</p>
+              </div>
+              <code>{item.cite}</code>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {live && live.emergencyAccess.open.length > 0 && (
+        <section
+          className="rx-card rx-breakglass"
+          aria-label="Emergency access"
+        >
+          <h2>Emergency access is open</h2>
+          {live.emergencyAccess.open.map((grant) => (
+            <p key={grant.openedAt} className="rx-safeguard-note">
+              <strong>{grant.by}</strong> took emergency access
+              {grant.patientId ? ` to ${grant.patientId}` : ""} and gave the
+              reason: “{grant.reason.replace(/[.\s]+$/, "")}”. It lapses on its
+              own.
+            </p>
+          ))}
+        </section>
+      )}
 
       <div className="rx-assurance-cols">
         <section className="rx-card" aria-label="Audit trail">

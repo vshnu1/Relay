@@ -94,13 +94,21 @@ papers._
 ### Three lines to say out loud, and where
 
 **On the security page.** "This is the HIPAA Security Rule's technical
-safeguards, cite by cite. Four built, one partial, five not met — and the five
-are on the screen. Unique user identification, emergency access, encryption at
-rest, stored-data authentication, person authentication. We would rather show
-you the gaps than have you find them."
+safeguards, cite by cite, all ten built. Each one says what it used to be, so
+you can see which were unmet this morning, and what it still is not — there is
+no second factor and nobody checks that an account belongs to the clinician it
+names. Two of these are read from the running process rather than asserted: the
+encryption mode, and whether the audit chain still verifies."
 
-_Nothing else on this list is more likely to land. It is the artefact a
-security reviewer's whole argument says healthcare AI ships without._
+Then scroll, and say the line that does the work: **"The table underneath is the
+one that matters."** Business associate agreements, risk analysis, workforce
+training, breach procedures, review board approval, FDA clearance. All not met,
+and none of them fixable by writing more software.
+
+_Nothing else on this list is more likely to land. Ten out of ten on its own
+would read as marketing; it is the second table that makes the first believable,
+and it is the artefact a security reviewer's whole argument says healthcare AI
+ships without._
 
 **On the import beat.** "That is a 284 MB Apple Health export. It inflates and
 parses in the browser. Nothing is uploaded, and no third-party model sees it —

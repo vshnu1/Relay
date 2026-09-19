@@ -14,11 +14,30 @@ import Landing, { ROLE_KEY } from "./Landing.jsx";
 import SignIn from "./patient/SignIn.jsx";
 import { currentPatientId, signIn, signOut } from "./patient/session.js";
 import Login from "./Login.jsx";
+import Account from "./Account.jsx";
 import RoleSignIn from "./SignIn.jsx";
 import { useIdleSignOut, IdleWarning, IDLE_MINUTES } from "./idleSignOut.jsx";
 import "./recovery.css";
 
 const CODE_KEY = "rx-code";
+
+// Ending a session has to reach the server, or automatic logoff is a claim
+// about this tab rather than about the session. Fire-and-forget on purpose:
+// the local state is cleared either way, so a failed request cannot strand
+// somebody signed in on a screen that says they are not.
+function endServerSession() {
+  try {
+    const held = sessionStorage.getItem(CODE_KEY);
+    if (!held) return;
+    fetch("/api/auth/logout", {
+      method: "POST",
+      headers: { authorization: `Bearer ${held}` },
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    // no session storage
+  }
+}
 const SIGNED_ROLE_KEY = "rx-signed-role";
 const TIMED_OUT_KEY = "rx-timed-out";
 
@@ -33,6 +52,9 @@ export default function Root() {
   const [gate, setGate] = useState(() => ({
     checked: false,
     required: false,
+    // Whether this deployment wants an account or still takes a shared code.
+    // The closed door answers it: a 401 carrying ACCOUNT_REQUIRED says which.
+    accounts: false,
     role: sessionStorage.getItem(SIGNED_ROLE_KEY),
   }));
   useEffect(() => {
@@ -43,18 +65,33 @@ export default function Root() {
         if (!response.ok && response.status !== 401)
           throw new Error("unavailable");
         const required = response.status === 401;
+        const refusal = required && (await response.json().catch(() => ({})));
+        const accounts = refusal?.code === "ACCOUNT_REQUIRED";
         let role = null;
-        const code = sessionStorage.getItem(CODE_KEY);
-        if (required && code) {
-          const verified = await fetch("/api/session", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ code }),
+        const held = sessionStorage.getItem(CODE_KEY);
+        if (required && held) {
+          // The same header carries either kind of credential, so try the one
+          // that names a person first. A session token is not a role code and
+          // /api/session would only ever refuse it.
+          const me = await fetch("/api/auth/me", {
+            headers: { authorization: `Bearer ${held}` },
           });
-          if (verified.ok) {
-            const body = await verified.json();
-            if (["clinician", "patient"].includes(body.role)) role = body.role;
-          } else if (verified.status !== 401) throw new Error("unavailable");
+          if (me.ok) {
+            const body = await me.json();
+            if (["clinician", "patient"].includes(body.user?.role))
+              role = body.user.role;
+          } else if (!accounts) {
+            const verified = await fetch("/api/session", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ code: held }),
+            });
+            if (verified.ok) {
+              const body = await verified.json();
+              if (["clinician", "patient"].includes(body.role))
+                role = body.role;
+            } else if (verified.status !== 401) throw new Error("unavailable");
+          }
         }
         if (!live) return;
         if (role) sessionStorage.setItem(SIGNED_ROLE_KEY, role);
@@ -63,7 +100,7 @@ export default function Root() {
           sessionStorage.removeItem(CODE_KEY);
           signOut();
         }
-        setGate({ checked: true, required, role });
+        setGate({ checked: true, required, accounts, role });
       } catch {
         if (live)
           setGate({ checked: true, required: true, role: null, error: true });
@@ -78,6 +115,7 @@ export default function Root() {
   // holding health records. Only armed once a session exists, so the sign-in
   // screen is not a thing that expires.
   const idleLeft = useIdleSignOut(!!gate.role, () => {
+    endServerSession();
     sessionStorage.removeItem(SIGNED_ROLE_KEY);
     sessionStorage.removeItem(CODE_KEY);
     signOut();
@@ -99,7 +137,13 @@ export default function Root() {
     );
   // Role gate first (shared code per role, verified by the server); the patient
   // then opens their own profile with the discharge code in PatientRoot.
-  const AccessScreen = section === "patient" ? RoleSignIn : Login;
+  // With accounts required, both roles go through the same screen; it asks for
+  // the role's access code only when creating an account.
+  const AccessScreen = gate.accounts
+    ? Account
+    : section === "patient"
+      ? RoleSignIn
+      : Login;
   if (gate.required && !gate.role) {
     const timedOut = sessionStorage.getItem(TIMED_OUT_KEY) === "1";
     return (
@@ -111,6 +155,7 @@ export default function Root() {
           </p>
         )}
         <AccessScreen
+          wanted={section === "patient" ? "patient" : "clinician"}
           onSignedIn={(role, code) => {
             sessionStorage.setItem(SIGNED_ROLE_KEY, role);
             sessionStorage.setItem(CODE_KEY, code);
@@ -173,6 +218,7 @@ function DemoBar({ isPatient, roster, actingId, onSelect }) {
   // route components; the bar is the only thing that needs them.
   const gated = !!sessionStorage.getItem(SIGNED_ROLE_KEY);
   const onSignOut = () => {
+    endServerSession();
     sessionStorage.removeItem(SIGNED_ROLE_KEY);
     sessionStorage.removeItem(CODE_KEY);
     sessionStorage.removeItem(ROLE_KEY);
