@@ -45,6 +45,17 @@ Three notes on delivery:
   fortnight the rule fires for most healthy subjects eventually; what the
   measurement shows is that a real change is seen sooner, and a thirty-day
   readmission window is a race, not a coin toss.
+- **If a judge asks whether personal baselines are established practice**, the
+  answer is yes, and it helps rather than hurts. A 2024 review in the Journal
+  of Personalized Medicine found 78.5% of wearable-ML studies already
+  personalise to the individual, and Jeppesen et al. measured a **31%
+  reduction in false alarms** from a patient-adaptive model on wearable ECG.
+  Relay is not claiming the idea. It is claiming the idea applied to the
+  thirty days after a discharge, which that review does not cover anywhere in
+  its 21 pages. Related work is in [DATA.md](DATA.md). Do not quote their
+  accuracy figures beside ours: theirs are classification accuracies on
+  curated sets, ours is a false-alarm rate per subject-day and a detection
+  lag, and the two answer different questions.
 - **End on the boundary.** In a health pitch it reads as judgement, not as a
   limitation, and it is the line that most reliably earns the next two minutes.
 
