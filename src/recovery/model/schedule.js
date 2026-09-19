@@ -297,8 +297,8 @@ export function notifications(p, now = Date.now()) {
         kind: "alert",
         title: "We recommend sending a report to your care team",
         body: i.body,
-        href: "#/patient/insight",
-        cta: "See why",
+        href: "#/patient/care",
+        cta: "Message your care team",
       });
   }
   for (const a of p.appointments || [])

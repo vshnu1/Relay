@@ -2,6 +2,7 @@
 // become the event contract the model validates, and the model's evidence object
 // comes back with the application state, the anomaly score and the contributors.
 // The model never runs in the browser; the API spawns it.
+import { authHeaders } from "./authHeaders.js";
 import { PROFILES, SIGNALS, toModelContext } from "./profiles.js";
 
 // app signal -> [model metric, unit]. Signals with no model counterpart are left out.
@@ -101,17 +102,6 @@ export function buildRequest(patient, answers = null) {
       ? toModelContext(patient.profileId ?? patient.profile, answers)
       : null,
   };
-}
-
-function authHeaders() {
-  const headers = { "content-type": "application/json" };
-  try {
-    const code = sessionStorage.getItem("rx-code");
-    if (code) headers.authorization = `Bearer ${code}`;
-  } catch {
-    // no session storage: local demo without codes
-  }
-  return headers;
 }
 
 // Resolves to the evidence object, or throws with a message the screen can show.

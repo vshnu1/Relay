@@ -618,6 +618,33 @@ const rank = (a, b) =>
   Math.abs(b.todayLevel ?? 0) - Math.abs(a.todayLevel ?? 0) ||
   b.towardDays - a.towardDays;
 
+// At module scope on purpose. Declared inside Readings this was a new component type on
+// every render, so React remounted the buttons on each stream tick (every 3 seconds)
+// and whoever was tabbing through them lost keyboard focus.
+const dot = (s) => (s.moved ? "moved" : s.towardDays > 0 ? "drifting" : "");
+function SignalButton({ signal: s, current, onPick }) {
+  return (
+    <button
+      type="button"
+      aria-current={current ? "true" : undefined}
+      className={dot(s)}
+      onClick={() => onPick(s.id)}
+    >
+      <i aria-hidden="true" />
+      <span>
+        <strong>{s.name}</strong>
+        <small>
+          {s.moved
+            ? `Changed ${s.change}`
+            : s.towardDays > 0
+              ? "Moving from usual"
+              : "Within usual range"}
+        </small>
+      </span>
+    </button>
+  );
+}
+
 export default function Readings({ patient: p }) {
   const [mode, setMode] = useState("charts");
   const homeFrom = Math.max(0, p.dayHome + 1 - HOME_DAYS);
@@ -633,33 +660,11 @@ export default function Readings({ patient: p }) {
   const step = (by) =>
     setOpenId(order[(index + by + order.length) % order.length].id);
   const shownDays = Math.min(HOME_DAYS, p.dayHome + 1);
-  const dot = (s) => (s.moved ? "moved" : s.towardDays > 0 ? "drifting" : "");
   const attention = counted.filter(
     (s) => s.moved || Math.abs(s.todayLevel ?? 0) >= 1,
   );
   const stable = counted.filter(
     (s) => !s.moved && Math.abs(s.todayLevel ?? 0) < 1,
-  );
-  const SignalButton = ({ signal: s }) => (
-    <button
-      key={s.id}
-      type="button"
-      aria-current={s.id === open?.id ? "true" : undefined}
-      className={dot(s)}
-      onClick={() => setOpenId(s.id)}
-    >
-      <i aria-hidden="true" />
-      <span>
-        <strong>{s.name}</strong>
-        <small>
-          {s.moved
-            ? `Changed ${s.change}`
-            : s.towardDays > 0
-              ? "Moving from usual"
-              : "Within usual range"}
-        </small>
-      </span>
-    </button>
   );
   return (
     <section
@@ -708,7 +713,12 @@ export default function Readings({ patient: p }) {
               <div className="rx-picker-list">
                 {(attention.length ? attention : counted.slice(0, 1)).map(
                   (s) => (
-                    <SignalButton signal={s} key={s.id} />
+                    <SignalButton
+                      signal={s}
+                      key={s.id}
+                      current={s.id === open?.id}
+                      onPick={setOpenId}
+                    />
                   ),
                 )}
               </div>
@@ -717,7 +727,12 @@ export default function Readings({ patient: p }) {
                   <summary>{stable.length} other watched readings</summary>
                   <div className="rx-picker-list">
                     {stable.map((s) => (
-                      <SignalButton signal={s} key={s.id} />
+                      <SignalButton
+                        signal={s}
+                        key={s.id}
+                        current={s.id === open?.id}
+                        onPick={setOpenId}
+                      />
                     ))}
                   </div>
                 </details>
@@ -727,7 +742,12 @@ export default function Readings({ patient: p }) {
                   <summary>{recorded.length} additional readings</summary>
                   <div className="rx-picker-list">
                     {recorded.map((s) => (
-                      <SignalButton signal={s} key={s.id} />
+                      <SignalButton
+                        signal={s}
+                        key={s.id}
+                        current={s.id === open?.id}
+                        onPick={setOpenId}
+                      />
                     ))}
                   </div>
                 </details>

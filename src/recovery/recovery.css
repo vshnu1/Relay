@@ -93,10 +93,6 @@ body {
 .rx-demobar {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 16px 9px;
-  background: #16241f;
-  color: #d7e0d9;
   font-size: 13px;
 }
 .rx-demobar-main {
@@ -104,23 +100,13 @@ body {
   align-items: center;
   gap: 16px;
 }
-.rx-demobar-note {
-  font-size: 12px;
-  color: #9db0a6;
-}
-.rx-demobar-note::before {
-  content: "▸ ";
-  color: #6fcf9f;
-}
 .rx-demobar-label {
   font-weight: 600;
   letter-spacing: 0.01em;
 }
 .rx-switch {
   display: flex;
-  padding: 3px;
   border-radius: 9px;
-  background: #2a3a34;
   margin: 0 auto;
 }
 .rx-switch a {
@@ -129,14 +115,11 @@ body {
   height: 34px;
   padding: 0 16px;
   border-radius: 7px;
-  color: #d7e0d9;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
 }
 .rx-switch a[aria-current] {
-  background: #ffffff;
-  color: var(--ink);
   font-weight: 600;
 }
 .rx-demobar-right {
@@ -156,8 +139,6 @@ body {
   padding: 0 8px;
   border: 1px solid #44544d;
   border-radius: 7px;
-  background: #22312b;
-  color: #ffffff;
   font-size: 13px;
 }
 .rx-live {
@@ -191,7 +172,6 @@ body {
   min-width: 0;
 }
 .rx-side {
-  width: 232px;
   flex-shrink: 0;
   padding: 28px 18px 20px;
   display: flex;
@@ -227,7 +207,6 @@ body {
 .rx-navlink {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   min-height: 48px;
   padding: 0 13px;
   border-radius: 10px;
@@ -275,7 +254,6 @@ body {
   min-width: 0;
 }
 .rx-page {
-  max-width: 1260px;
   padding: 32px 40px 48px;
   display: flex;
   flex-direction: column;
@@ -283,7 +261,6 @@ body {
 }
 .rx-pagehead {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 24px;
 }
@@ -485,8 +462,6 @@ p.rx-row-summary {
 .rx-patienthead {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-bottom: 20px;
   border-bottom: 1px solid #dfe4dd;
 }
 .rx-patienthead > div {
@@ -505,16 +480,13 @@ p.rx-row-summary {
   text-decoration: none;
 }
 .rx-overview {
-  display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
   gap: 24px;
   align-items: start;
 }
 .rx-shows {
-  padding: 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 .rx-kicker {
   margin-bottom: 10px !important;
@@ -666,21 +638,16 @@ p.rx-row-summary {
 
 /* Readings: squares and charts share one column geometry, computed in Readings.jsx. */
 .rx-readings {
-  padding: 24px 24px 18px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
   scroll-margin-top: 16px;
 }
 .rx-readings-head {
   display: flex;
-  align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding-bottom: 10px;
 }
 .rx-readings-head h2 {
-  font-size: 17px;
   font-weight: 600;
 }
 .rx-readings-head p {
@@ -905,9 +872,6 @@ p.rx-row-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-.rx-p-top .rx-brand {
-  padding: 0;
 }
 .rx-p-help {
   display: flex;
@@ -1328,17 +1292,11 @@ p.rx-row-summary {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #69826d;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 .rx-p-card > .rx-p-eyebrow {
   margin-bottom: -5px;
 }
 .rx-p-insight {
-  gap: 13px;
   padding: 20px 22px;
 }
 .rx-p-sectionhead {
@@ -2057,8 +2015,6 @@ p.rx-row-summary {
    patient view: a labelled grid of the discharge and monitoring context. */
 .rx-context {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 12px 24px;
   margin-top: 4px;
   padding-top: 16px;
   border-top: 1px solid var(--line-soft);
@@ -2069,14 +2025,11 @@ p.rx-row-summary {
   gap: 2px;
 }
 .rx-context dt {
-  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--faint);
 }
 .rx-context dd {
-  font-size: 14.5px;
   color: var(--ink-2);
   line-height: 1.4;
 }
@@ -2137,8 +2090,6 @@ p.rx-row-summary {
 .rx-picker {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin: 4px 0 8px;
 }
 .rx-picker-row {
   display: flex;
@@ -2147,13 +2098,8 @@ p.rx-row-summary {
   gap: 6px;
 }
 .rx-picker-group {
-  min-width: 96px;
-}
-.rx-picker-group {
   margin-right: 2px;
-  font-size: 12.5px;
   font-weight: 600;
-  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -2204,8 +2150,6 @@ p.rx-row-summary {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  max-width: 880px;
-  padding: 14px 18px 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
@@ -2371,7 +2315,6 @@ p.rx-row-summary {
 .rx-signal-desc {
   padding-top: 8px;
   border-top: 1px solid var(--line-soft);
-  font-size: 13.5px;
   line-height: 1.45;
   color: var(--muted);
   text-wrap: pretty;
@@ -2988,9 +2931,6 @@ p.rx-row-summary {
   color: var(--pine);
   font-weight: 600;
 }
-.rx-p-stephead .rx-p-iconbtn {
-  margin-left: auto;
-}
 
 .rx-p-stephead > div > span {
   margin-left: 14px;
@@ -3007,20 +2947,9 @@ p.rx-row-summary {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 48px 24px;
 }
 .rx-p-auth .rx-p-screen {
   width: 100%;
-  max-width: 560px;
-  padding: 36px 40px;
-  font-size: 16px;
-  gap: 18px;
-}
-.rx-pweb .rx-p-screen {
-  max-width: 1040px;
-  padding: 32px 40px 48px;
-  gap: 20px;
-  font-size: 16px;
 }
 .rx-pweb .rx-side-foot button {
   align-self: flex-start;
@@ -3034,30 +2963,8 @@ p.rx-row-summary {
 .rx-pweb .rx-p-title {
   font-size: 28px;
 }
-.rx-pweb .rx-p-title.small {
-  font-size: 24px;
-}
-.rx-pweb .rx-p-lead {
-  font-size: 16.5px;
-  max-width: 720px;
-}
 .rx-pweb .rx-p-question {
-  font-size: 26px;
   max-width: 720px;
-}
-.rx-pweb .rx-p-card {
-  padding: 20px 22px;
-  gap: 12px;
-  border-radius: 14px;
-}
-.rx-pweb .rx-p-card h2 {
-  font-size: 17px;
-}
-.rx-pweb .rx-p-btn,
-.rx-p-auth .rx-p-btn {
-  min-height: 48px;
-  font-size: 16px;
-  border-radius: 10px;
 }
 .rx-pweb .rx-p-btn.primary,
 .rx-p-auth .rx-p-btn.primary {
@@ -3071,27 +2978,6 @@ p.rx-row-summary {
   font-size: 17px;
   border-radius: 12px;
 }
-.rx-pweb .rx-p-status strong,
-.rx-pweb .rx-p-device strong,
-.rx-pweb .rx-p-signal strong,
-.rx-pweb .rx-p-answer strong {
-  font-size: 16px;
-}
-.rx-pweb .rx-p-status span,
-.rx-pweb .rx-p-device span,
-.rx-pweb .rx-p-answer span,
-.rx-pweb .rx-p-fine,
-.rx-pweb .rx-p-field label,
-.rx-pweb .rx-p-consent span {
-  font-size: 14.5px;
-}
-.rx-pweb .rx-p-status {
-  min-height: 56px;
-}
-.rx-pweb .rx-p-rowlink {
-  min-height: 48px;
-  font-size: 15px;
-}
 .rx-pweb .rx-p-signal p,
 .rx-pweb .rx-p-notif p,
 .rx-pweb .rx-p-plain,
@@ -3101,24 +2987,11 @@ p.rx-row-summary {
 .rx-pweb .rx-p-notes {
   font-size: 15.5px;
 }
-.rx-pweb .rx-p-notif strong {
-  font-size: 16px;
-}
-.rx-pweb .rx-p-notif {
-  padding: 14px 18px;
-  border-radius: 12px;
-}
-.rx-pweb .rx-p-chip {
-  font-size: 13px;
-  padding: 4px 10px;
-}
 .rx-pweb .rx-p-help {
   display: none;
 }
 .rx-pweb .rx-p-home {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: 24px;
   align-items: start;
 }
 .rx-p-col {
@@ -3145,33 +3018,18 @@ p.rx-row-summary {
 .rx-pweb .rx-p-chat {
   max-height: 460px;
 }
-.rx-pweb .rx-p-now strong {
-  font-size: 32px;
-}
 .rx-pweb .rx-p-screen > .bottom {
   margin-top: 8px;
-}
-.rx-pweb .rx-p-stack.bottom {
-  max-width: 560px;
 }
 .rx-pweb .rx-p-sheet,
 .rx-p-auth .rx-p-sheet {
   align-items: center;
-}
-.rx-pweb .rx-p-sheet-body {
-  max-width: 480px;
-  border-radius: 20px;
-  padding: 28px;
-  font-size: 16px;
 }
 .rx-pweb .rx-p-report {
   max-width: 760px;
 }
 .rx-pweb .rx-p-entry > div {
   max-width: 360px;
-}
-.rx-pweb .rx-p-kv > div {
-  grid-template-columns: 180px minmax(0, 1fr);
 }
 @media (max-width: 860px) {
   .rx-pweb {
@@ -3203,9 +3061,6 @@ p.rx-row-summary {
     flex-direction: row;
     align-items: center;
     gap: 14px;
-  }
-  .rx-pweb .rx-p-screen {
-    padding: 20px 16px 40px;
   }
   .rx-pweb .rx-p-home {
     grid-template-columns: minmax(0, 1fr);
@@ -3252,7 +3107,6 @@ p.rx-row-summary {
 }
 .rx-auth-brand {
   display: inline-flex;
-  margin-bottom: 70px;
   font-size: 23px;
 }
 .rx-auth-intro .rx-eyebrow {
@@ -3261,10 +3115,7 @@ p.rx-row-summary {
 }
 .rx-auth-intro h1 {
   max-width: 520px;
-  font-size: clamp(42px, 5vw, 68px);
   font-weight: 600;
-  letter-spacing: -0.065em;
-  line-height: 0.99;
 }
 .rx-auth-intro > p {
   max-width: 475px;
@@ -3405,13 +3256,10 @@ p.rx-row-summary {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
   border: 0;
   border-radius: 10px;
   background: var(--pine);
-  color: #fff;
   font-size: 15px;
-  font-weight: 600;
 }
 .rx .rx-auth-submit:hover {
   background: #1d3d33;
@@ -3994,7 +3842,6 @@ p.rx-row-summary {
   .rx-side {
     position: relative;
     top: auto;
-    width: 100%;
     height: auto;
     flex-direction: row;
     align-items: center;
@@ -4897,13 +4744,11 @@ p.rx-row-summary {
 }
 .rx-pweb .rx-p-screen {
   width: 100%;
-  max-width: 1500px;
   margin-inline: auto;
   padding-inline: clamp(24px, 3vw, 52px);
 }
 .rx-pweb .rx-p-home {
   grid-template-columns: minmax(360px, 1fr) minmax(400px, 0.9fr);
-  gap: clamp(20px, 2.4vw, 38px);
 }
 .rx-pweb .rx-p-col,
 .rx-pweb .rx-p-card,
@@ -4921,7 +4766,6 @@ p.rx-row-summary {
     width: 100%;
   }
   .rx-pweb .rx-p-col:last-child {
-    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
   }
@@ -5216,8 +5060,6 @@ p.rx-row-summary {
   font-size: 13.5px;
 }
 .rx-model-list li {
-  display: flex;
-  justify-content: space-between;
   gap: 12px;
   padding: 6px 0;
   border-top: 1px solid var(--line);
@@ -5231,7 +5073,6 @@ p.rx-row-summary {
 }
 .rx-cohort li span:last-child {
   color: var(--muted);
-  text-align: right;
 }
 .rx-model-fine {
   margin: 8px 0 0;
@@ -5247,7 +5088,6 @@ p.rx-row-summary {
 }
 .rx-ledger li {
   display: grid;
-  grid-template-columns: 1fr auto;
   gap: 2px 12px;
   padding: 7px 0 7px 12px;
   border-top: 1px solid var(--line);
@@ -5593,23 +5433,12 @@ p.rx-row-summary {
   background: var(--sage);
   color: var(--pine);
 }
-.rx-pweb .rx-p-callcard .rx-p-stack {
-  gap: 8px;
-  max-width: 320px;
-}
 .rx-pweb .rx-p-transcript {
   max-width: 680px;
-  max-height: 300px;
-  min-height: 0;
   gap: 8px;
 }
 .rx-pweb .rx-p-bubble {
-  max-width: 85%;
-  padding: 14px 16px;
   border-radius: 8px;
-  font-size: 14px;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
 }
 .rx-pweb .rx-p-answers {
   display: flex;
@@ -5668,11 +5497,9 @@ p.rx-row-summary {
 .rx-pweb .rx-p-transcript {
   min-width: 0;
   width: 100%;
-  padding: 16px;
 }
 .rx-pweb .rx-p-bubble {
   min-width: 0;
-  overflow-wrap: anywhere;
 }
 .rx-p-delivery {
   border-left: 3px solid var(--pine);

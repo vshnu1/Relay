@@ -1,3 +1,4 @@
+import { MODEL_STATE } from "./watchStatus.js";
 import { useState } from "react";
 import {
   BookOpen,
@@ -18,13 +19,6 @@ const DAY = 86400000;
 
 // The same words the model card uses, so one page does not name a state two
 // ways, and the same two decimals, so it does not round it two ways either.
-const STATE_WORDS = {
-  monitoring: "nothing unusual",
-  context_needed: "unusual, context needed",
-  review_recommended: "unusual, ready for review",
-  insufficient_data: "cannot see enough",
-};
-
 function build(p) {
   const items = [];
   for (const c of p.checkins)
@@ -81,7 +75,7 @@ function build(p) {
       t: p.analysis.at,
       kind: "model",
       icon: Brain,
-      title: `Model scored: ${STATE_WORDS[p.analysis.application_state] || p.analysis.application_state.replace(/_/g, " ")}`,
+      title: `Model scored: ${MODEL_STATE[p.analysis.application_state]?.toLowerCase() || p.analysis.application_state.replace(/_/g, " ")}`,
       text: `Anomaly score ${typeof p.analysis.anomaly_score === "number" ? p.analysis.anomaly_score.toFixed(2) : "not available"}, ${p.analysis.withContext ? "with the patient's answers" : "readings only"}.`,
     });
   return items.sort((a, b) => b.t - a.t);

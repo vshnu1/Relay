@@ -23,3 +23,12 @@ export const DETAIL = {
   monitoring: "No new persistent pattern to review",
   nodata: "Too few readings to compare with their usual",
 };
+
+// What the model's four states are called on the clinician side. The patient side words
+// them differently on purpose (patient/ModelSummary.jsx).
+export const MODEL_STATE = {
+  monitoring: "Nothing unusual",
+  context_needed: "Unusual, context needed",
+  review_recommended: "Unusual, ready for review",
+  insufficient_data: "Cannot see enough",
+};
