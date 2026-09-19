@@ -84,15 +84,17 @@ export default function DoctorApp({
           </span>
         </a>
         {canSignOut && (
-          <button
-            type="button"
-            className="rx-navlink rx-signout-link"
-            onClick={onSignOut}
-          >
-            <span className="rx-navlink-label">
-              <LogOut size={16} aria-hidden="true" /> Sign out
-            </span>
-          </button>
+          <div className="rx-side-foot">
+            <button
+              type="button"
+              className="rx-navlink rx-signout-link"
+              onClick={onSignOut}
+            >
+              <span className="rx-navlink-label">
+                <LogOut size={16} aria-hidden="true" /> Sign out
+              </span>
+            </button>
+          </div>
         )}
       </nav>
       <main className="rx-main" id="rx-main" tabIndex={-1}>

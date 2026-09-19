@@ -1,12 +1,6 @@
 import { rememberUser } from "./model/currentUser.js";
 import { useState } from "react";
-import {
-  ArrowRight,
-  LockKeyhole,
-  ShieldCheck,
-  Stethoscope,
-  User,
-} from "lucide-react";
+import { ArrowRight, Stethoscope, User } from "lucide-react";
 import { go } from "./useRecovery.js";
 import { signIn as openPatientProfile } from "./patient/session.js";
 
@@ -75,7 +69,9 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [invite, setInvite] = useState("");
+  const [dischargeCode, setDischargeCode] = useState("");
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -104,7 +100,13 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
           ? await post("/api/auth/login", { email, password }, setStatus)
           : await post(
               "/api/auth/register",
-              { email, password, invite },
+              {
+                email,
+                password,
+                invite,
+                name,
+                ...(audience === "patient" ? { dischargeCode } : {}),
+              },
               setStatus,
             ),
       );
@@ -139,9 +141,11 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
               <span className="rx-brand-mark" aria-hidden="true" />
               <span className="rx-brand-word">Relay</span>
             </span>
-            <span className="rx-home-kicker">
-              {audience === "patient" ? "Patient access" : "Clinician access"}
-            </span>
+            <span className="rx-home-kicker">RELAY · SECURE ACCESS</span>
+            <h1>Welcome to Relay.</h1>
+            <p className="rx-auth-lede">
+              Choose your workspace, then sign in or explore a demo.
+            </p>
             {/* Relay is two applications that never open together, and until
                 now the patient one was reachable only by typing its URL. Both
                 doors are on the screen, and choosing changes the route, so the
@@ -159,9 +163,7 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
               >
                 <Stethoscope size={18} aria-hidden="true" />
                 <strong>I am on the care team</strong>
-                <span>
-                  The ward list, the readings, and the evidence packet
-                </span>
+                <span>Patient list, readings, and review tools</span>
               </button>
               <button
                 type="button"
@@ -171,52 +173,26 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
               >
                 <User size={18} aria-hidden="true" />
                 <strong>I am the patient</strong>
-                <span>
-                  Your own readings, your check-in, and what you share
-                </span>
+                <span>Your readings, recovery check-in, and care team</span>
               </button>
             </div>
-            <h1>Sign in as yourself.</h1>
-            <p className="rx-auth-lede">
-              <strong>Just looking?</strong> Use the demo button under the form.
-              It takes one click, needs nothing from you, and opens the full
-              workspace.
-            </p>
-            <p className="rx-auth-lede">
-              <strong>Have an account?</strong> Sign in with your email and
-              password. <strong>Creating one</strong> needs the access code your
-              care team issued; the code decides whether you get the clinician
-              or the patient view, and opens no record by itself.
-            </p>
-            <p className="rx-auth-why">
-              Relay used to take one shared code per role. It could record that
-              a clinician opened a record and never which clinician, so a breach
-              investigation starting from the log could not answer the only
-              question it exists to answer.
-            </p>
-            <ul className="rx-auth-points">
-              <li>
-                <ShieldCheck size={16} aria-hidden="true" />
-                Your password is stretched with scrypt and never stored.
-              </li>
-              <li>
-                <LockKeyhole size={16} aria-hidden="true" />
-                Sessions are held on the server, so signing out ends them
-                everywhere rather than clearing this tab.
-              </li>
-            </ul>
             <p className="rx-auth-note">
-              Every patient in this workspace is synthetic. Do not enter real
-              credentials or real patient information.
+              Demo access uses synthetic patient information. Do not enter real
+              patient details.
             </p>
           </section>
 
           <section className="rx-auth-card">
-            <div className="rx-auth-tabs" role="tablist">
+            <span className="rx-auth-kicker">Relay account</span>
+            <h2 className="rx-auth-card-title">Access your workspace</h2>
+            <div
+              className="rx-auth-tabs"
+              role="group"
+              aria-label="Account access"
+            >
               <button
                 type="button"
-                role="tab"
-                aria-selected={mode === "signin"}
+                aria-pressed={mode === "signin"}
                 className={mode === "signin" ? "active" : ""}
                 onClick={() => {
                   setMode("signin");
@@ -227,8 +203,7 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
               </button>
               <button
                 type="button"
-                role="tab"
-                aria-selected={mode === "register"}
+                aria-pressed={mode === "register"}
                 className={mode === "register" ? "active" : ""}
                 onClick={() => {
                   setMode("register");
@@ -238,6 +213,12 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
                 Create an account
               </button>
             </div>
+
+            <p className="rx-auth-card-intro">
+              {mode === "signin"
+                ? "Sign in with your email and password."
+                : "Create an account with the invitation code from your care team."}
+            </p>
 
             <form onSubmit={submit}>
               <label className="rx-auth-label" htmlFor="rx-acct-email">
@@ -251,6 +232,20 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </label>
+              {mode === "register" && (
+                <label className="rx-auth-label" htmlFor="rx-acct-name">
+                  Your name
+                  <input
+                    id="rx-acct-name"
+                    type="text"
+                    autoComplete="name"
+                    required
+                    maxLength={80}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </label>
+              )}
               <label className="rx-auth-label" htmlFor="rx-acct-password">
                 Password
                 <input
@@ -288,6 +283,23 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
                 </>
               )}
 
+              {mode === "register" && audience === "patient" && (
+                <label className="rx-auth-label" htmlFor="rx-acct-discharge">
+                  Discharge code
+                  <input
+                    id="rx-acct-discharge"
+                    type="text"
+                    autoComplete="off"
+                    required
+                    value={dischargeCode}
+                    onChange={(e) => setDischargeCode(e.target.value)}
+                  />
+                  <small>
+                    This links your account to your own recovery record.
+                  </small>
+                </label>
+              )}
+
               {error && (
                 <p className="rx-auth-error" role="alert">
                   {error}
@@ -318,9 +330,7 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
                 : `Look around as a demo ${audience}`}
             </button>
             <p className="rx-auth-legal">
-              A demo identity is issued to this browser alone and named in the
-              audit trail, so what it does stays attributable. It reaches
-              synthetic records only.
+              Demo access is limited to synthetic patient records.
             </p>
           </section>
         </div>

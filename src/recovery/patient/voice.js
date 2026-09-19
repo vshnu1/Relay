@@ -9,6 +9,7 @@ import { authHeaders } from "../model/authHeaders.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { describeAnalysis } from "../model/mlClient.js";
 import { checkinWhy } from "../model/schedule.js";
+import { matchOption } from "./answerText.js";
 
 export async function voiceStatus(fetchFn = fetch) {
   try {
@@ -94,43 +95,55 @@ export function recoveryStatus(
   };
 }
 
-// Match what the agent says an answer was to one of the allowed options.
-function pickOption(value, options) {
-  if (typeof value !== "string") return null;
-  const v = value.trim().toLowerCase();
-  const direct =
-    options.find((o) => o.toLowerCase() === v) ||
-    options.find((o) => v.includes(o.toLowerCase())) ||
-    null;
-  if (direct) return direct;
-  if (
-    options.includes("A lot") &&
-    /\b(much|a lot|very|severe|significantly|far more)\b/.test(v)
-  )
-    return "A lot";
-  if (
-    options.includes("A little") &&
-    /\b(a little|slightly|a bit|somewhat|mildly)\b/.test(v)
-  )
-    return "A little";
-  if (
-    options.includes("Not sure") &&
-    /\b(not sure|unsure|don't know|do not know|uncertain|maybe)\b/.test(v)
-  )
-    return "Not sure";
-  if (
-    options.includes("Yes") &&
-    /\b(yes|yeah|yep|i did|i have|i am|i was)\b/.test(v)
-  )
-    return "Yes";
-  if (
-    options.includes("No") &&
-    /\b(no|nope|not really|unchanged|the same|haven't|have not|didn't|did not)\b/.test(
-      v,
-    )
-  )
-    return "No";
-  return null;
+// Use the same cautious, whole-phrase answer mapping as the text check-in.
+const pickOption = (value, options) => matchOption(value, options);
+
+// Adapt the next spoken turn to the current discharge-specific question and
+// the patient's answer. One brief follow-up for the whole check-in is enough to
+// clarify a change; the agent otherwise acknowledges and moves on.
+export function adaptiveTurnGuidance(
+  questionId,
+  utterance,
+  followUpUsed = false,
+) {
+  const question = QUESTIONS[questionId];
+  if (!question)
+    return {
+      message: "Continue briefly with the next selected question.",
+      asksFollowUp: false,
+    };
+  const answer = matchOption(utterance, question.options);
+  const unchanged = ["No", "Same", "Usual"].includes(answer);
+  if (followUpUsed) {
+    return {
+      message: `The patient has already used the check-in's one clarification. Their current answer most closely matches ${answer || "an unclear response"} for “${question.short}.” Do not ask another follow-up. If the category is clear, record it; otherwise use “Not sure” if available. Acknowledge briefly and continue to the next selected question.`,
+      asksFollowUp: false,
+    };
+  }
+  if (unchanged) {
+    return {
+      message: `The patient answered “${question.short}” with ${answer}. Treat that as their answer, do not probe, acknowledge in a few words, and continue to the next selected question.`,
+      asksFollowUp: false,
+    };
+  }
+  const followUp =
+    questionId === "mealPlan"
+      ? "Can you tell me what you ate or drank, and which discharge instruction it differed from?"
+      : questionId === "medicine"
+        ? "Which medicine changed, and when did that happen?"
+        : questionId === "activity"
+          ? "What activity were you doing, and when?"
+          : "When did you first notice it, or how often has it happened?";
+  if (!answer) {
+    return {
+      message: `The answer to “${question.short}” is unclear. Ask one brief, neutral clarification: “Could you say a little more about ${question.short.toLowerCase()}?” Then continue. Do not suggest an answer.`,
+      asksFollowUp: true,
+    };
+  }
+  return {
+    message: `The patient reports ${answer} for “${question.short}.” Ask one brief, neutral follow-up: “${followUp}” Then acknowledge and continue to the next selected question. Do not infer a cause.`,
+    asksFollowUp: true,
+  };
 }
 
 export function openingMessage(
@@ -202,7 +215,8 @@ export async function startPatientVoiceSession({
     focusSummary: findingSummary,
   });
   const why = checkinWhy({ ...p, analysis });
-  return Conversation.startSession({
+  let activeSession = null;
+  activeSession = await Conversation.startSession({
     signedUrl: body.signed_url,
     connectionType: "websocket",
     // Render's strict CSP blocks generated blob/data worklet modules. Serve
@@ -246,7 +260,10 @@ export async function startPatientVoiceSession({
     onMessage: (m) => {
       if (!m?.message) return;
       if (m.source === "ai") onAgentSaid?.(m.message);
-      else if (m.source === "user") onPatientSaid?.(m.message);
+      else if (m.source === "user")
+        onPatientSaid?.(m.message, (context) =>
+          activeSession?.sendContextualUpdate?.(context),
+        );
     },
     onError: (e) => onError?.(e),
     clientTools: {
@@ -280,4 +297,5 @@ export async function startPatientVoiceSession({
       },
     },
   });
+  return activeSession;
 }

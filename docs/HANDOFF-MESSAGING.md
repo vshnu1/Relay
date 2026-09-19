@@ -157,10 +157,9 @@ Ordered by what I would do first.
 
 1. **Care-team scoping.** Any clinician can open any patient's thread. This is item 3
    in Anson's list and the same fix closes both.
-2. **The sign-up form** does not ask for a name or a discharge code yet. The server
-   accepts both. Until the form does, a self-registered account is shown by the first
-   part of its email and a self-registered patient still proves their record with the
-   header.
+2. **The sign-up form** now asks for a name and, for a patient, a discharge code.
+   The server binds that patient account to the matching synthetic record so their
+   messages and check-ins stay attached to the right person.
 3. **Standing accounts share one identity across visitors.** Anson made demo
    identities per browser so two judges are two actors in the audit log. The standing
    accounts are the opposite trade: one name for good, so a conversation has two ends.

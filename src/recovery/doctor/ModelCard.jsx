@@ -1,6 +1,5 @@
 import { MODEL_STATE } from "./watchStatus.js";
 import { useEffect } from "react";
-import { RefreshCw } from "lucide-react";
 import { useAnalysis } from "../patient/useAnalysis.js";
 
 // The model, shown to the person the product is decision support for. Until now
@@ -130,15 +129,6 @@ export default function ModelCard({ patient: p }) {
             recovery-watch status.
           </p>
         </div>
-        <button
-          type="button"
-          className="rx-model-run"
-          onClick={() => run(p.answered ? p.answered.answers : null)}
-          disabled={busy}
-        >
-          <RefreshCw size={14} aria-hidden="true" />
-          {busy ? "Scoring…" : a ? "Run ML again" : "Try ML scoring"}
-        </button>
       </div>
 
       {!a && (

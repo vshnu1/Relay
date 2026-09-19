@@ -93,7 +93,7 @@ Ordered by what I would do first. None of it blocks the demo.
    has no route and no button. Maybe an hour, mostly yours.
 2. **Session expiry has no UX.** When the 12-hour ceiling passes mid-use, the
    next call 401s and the app drops to the sign-in screen with no explanation.
-   The idle path has a proper warning; this one does not.
+   The 15-minute idle expiry is silent as well.
 3. **Care-team scoping.** This is the interesting one. `careTeam` was collected
    on the form, restricted nothing, and I removed the field. That also means
    **break-glass currently grants nothing**, because clinician access is not

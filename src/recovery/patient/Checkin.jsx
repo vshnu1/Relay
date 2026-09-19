@@ -11,7 +11,11 @@ import { actions, useSyncStatus } from "../useRecovery.js";
 import { QUESTIONS, SIGNALS } from "../model/profiles.js";
 import { checkinDue, checkinTriggerKey } from "../model/schedule.js";
 import { useAnalysis } from "./useAnalysis.js";
-import { startPatientVoiceSession, voiceStatus } from "./voice.js";
+import {
+  adaptiveTurnGuidance,
+  startPatientVoiceSession,
+  voiceStatus,
+} from "./voice.js";
 import { buildCheckinPlan } from "./checkinPlan.js";
 import { matchOption } from "./answerText.js";
 
@@ -61,6 +65,9 @@ export default function Checkin({ patient: p }) {
   const completedDraftRef = useRef(null);
   const endingByPatientRef = useRef(false);
   const voiceTranscriptRef = useRef([]);
+  const voiceQuestionIndexRef = useRef(0);
+  const voiceFollowUpUsedRef = useRef(false);
+  const voiceAwaitingFollowUpRef = useRef(false);
 
   const noteWithVoiceTranscript = (note) => {
     const transcript = voiceTranscriptRef.current
@@ -113,6 +120,9 @@ export default function Checkin({ patient: p }) {
   const startAgent = async (plan) => {
     if (!voiceConsent) return;
     voiceTranscriptRef.current = [];
+    voiceQuestionIndexRef.current = 0;
+    voiceFollowUpUsedRef.current = false;
+    voiceAwaitingFollowUpRef.current = false;
     completedDraftRef.current = null;
     endingByPatientRef.current = false;
     setEngine("elevenlabs");
@@ -130,9 +140,32 @@ export default function Checkin({ patient: p }) {
         consent: voiceConsent,
         onStatus: (st) => setVoice((v) => ({ ...v, status: st })),
         onAgentSaid: (text) => say("relay", text),
-        onPatientSaid: (text) => {
+        onPatientSaid: (text, sendContextualUpdate) => {
           voiceTranscriptRef.current.push(text);
           say("you", text);
+          const questionId = plan.questions[voiceQuestionIndexRef.current];
+          if (!questionId) {
+            sendContextualUpdate?.(
+              "The selected check-in questions are complete. Invite the patient to add optional context in their own words, or say no. Do not ask another symptom question or probe for a cause.",
+            );
+            return;
+          }
+          const wasFollowUp = voiceAwaitingFollowUpRef.current;
+          const guidance = adaptiveTurnGuidance(
+            questionId,
+            text,
+            voiceFollowUpUsedRef.current,
+          );
+          sendContextualUpdate?.(guidance.message);
+          if (wasFollowUp) {
+            voiceAwaitingFollowUpRef.current = false;
+            voiceQuestionIndexRef.current += 1;
+          } else if (guidance.asksFollowUp) {
+            voiceFollowUpUsedRef.current = true;
+            voiceAwaitingFollowUpRef.current = true;
+          } else {
+            voiceQuestionIndexRef.current += 1;
+          }
         },
         onAnswers: (a, note) => {
           const merged = { ...answersRef.current, ...a };

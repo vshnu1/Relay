@@ -4,7 +4,10 @@ import { createStore } from "../src/recovery/model/store.js";
 import { createSimulatedSource } from "../src/recovery/model/simulatedSource.js";
 import { derive } from "../src/recovery/model/derive.js";
 import { buildCheckinPlan } from "../src/recovery/patient/checkinPlan.js";
-import { openingMessage } from "../src/recovery/patient/voice.js";
+import {
+  adaptiveTurnGuidance,
+  openingMessage,
+} from "../src/recovery/patient/voice.js";
 import { QUESTIONS } from "../src/recovery/model/profiles.js";
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -221,6 +224,27 @@ test("focused voice check-in orders model-linked symptoms before a plan question
     "question order follows the model's contributor priority, not just profile order",
   );
   store.destroy();
+});
+
+test("voice check-in adapts one brief follow-up to the patient's answer", () => {
+  const unchanged = adaptiveTurnGuidance("breathing", "No, about the same");
+  assert.equal(unchanged.asksFollowUp, false);
+  assert.match(unchanged.message, /do not probe/i);
+  assert.match(unchanged.message, /next selected question/i);
+
+  const changed = adaptiveTurnGuidance("breathing", "Yes, it is harder");
+  assert.equal(changed.asksFollowUp, true);
+  assert.match(changed.message, /when did you first notice/i);
+  assert.match(changed.message, /do not infer a cause/i);
+
+  const diet = adaptiveTurnGuidance("mealPlan", "Yes, I had pizza");
+  assert.equal(diet.asksFollowUp, true);
+  assert.match(diet.message, /what you ate or drank/i);
+  assert.match(diet.message, /discharge instruction/i);
+
+  const spent = adaptiveTurnGuidance("medicine", "I stopped it", true);
+  assert.equal(spent.asksFollowUp, false);
+  assert.match(spent.message, /do not ask another follow-up/i);
 });
 
 test("stroke check-in includes a discharge-specific eating and drinking question for model context", async () => {

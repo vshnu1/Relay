@@ -16,7 +16,7 @@ import { currentPatientId, signIn, signOut } from "./patient/session.js";
 import Login from "./Login.jsx";
 import Account from "./Account.jsx";
 import RoleSignIn from "./SignIn.jsx";
-import { useIdleSignOut, IdleWarning, IDLE_MINUTES } from "./idleSignOut.jsx";
+import { useIdleSignOut } from "./idleSignOut.jsx";
 import "./recovery.css";
 
 const CODE_KEY = "rx-code";
@@ -40,7 +40,6 @@ function endServerSession() {
 }
 const SIGNED_ROLE_KEY = "rx-signed-role";
 const OPEN_DEMO_KEY = "rx-open-demo";
-const TIMED_OUT_KEY = "rx-timed-out";
 
 export default function Root() {
   const route = useRoute();
@@ -122,13 +121,12 @@ export default function Root() {
   // Automatic logoff, which the HIPAA Security Rule requires of a system
   // holding health records. Only armed once a session exists, so the sign-in
   // screen is not a thing that expires.
-  const idleLeft = useIdleSignOut(!!gate.role, () => {
+  useIdleSignOut(!!gate.role, () => {
     endServerSession();
     sessionStorage.removeItem(SIGNED_ROLE_KEY);
     sessionStorage.removeItem(CODE_KEY);
     forgetUser();
     signOut();
-    sessionStorage.setItem(TIMED_OUT_KEY, "1");
     location.hash = "";
     location.reload();
   });
@@ -154,22 +152,14 @@ export default function Root() {
       ? RoleSignIn
       : Login;
   if (gate.required && !gate.role) {
-    const timedOut = sessionStorage.getItem(TIMED_OUT_KEY) === "1";
     return (
       <div className="rx">
-        {timedOut && (
-          <p className="rx-timed-out-note" role="status">
-            You were signed out after {IDLE_MINUTES} minutes without activity.
-            Sign in again to continue.
-          </p>
-        )}
         <AccessScreen
           audience={section === "patient" ? "patient" : "clinician"}
           onSignedIn={(role, code) => {
             sessionStorage.setItem(SIGNED_ROLE_KEY, role);
             sessionStorage.setItem(CODE_KEY, code);
             // The code decides the view. A patient code cannot reach the ward.
-            sessionStorage.removeItem(TIMED_OUT_KEY);
             go(role === "patient" ? "/patient" : "/doctor");
             setGate((g) => ({ ...g, role }));
           }}
@@ -198,7 +188,6 @@ export default function Root() {
 
   return (
     <>
-      <IdleWarning msLeft={idleLeft} />
       {section === "patient" ? (
         <PatientRoot route={route} />
       ) : (
