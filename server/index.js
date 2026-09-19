@@ -508,8 +508,10 @@ app.post("/api/ml/score", async (req, res) => {
       .json({ error: "Supply 1-10,000 measurement records." });
   if (process.env.VESPER_ML_ENABLED !== "true")
     return res.status(503).json({
+      // This reaches a clinician's screen, so it says what is true of the
+      // deployment rather than naming the switch that turns it on.
       error:
-        "The model is not enabled on this server. Set VESPER_ML_ENABLED=true.",
+        "The model runs as a Python program, which this deployment does not have attached. Everything above comes from the rule and is unaffected.",
       code: "ML_DISABLED",
     });
   try {

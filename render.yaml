@@ -17,8 +17,21 @@ services:
         value: 24.11.1
       - key: DATA_DIR
         value: /var/data/relay
+      # Required in production: the server refuses to boot without it, and on
+      # its own it opens the clinician view. The two codes below give each
+      # role its own door, which is what the sign-in screens expect; set both
+      # in the dashboard, or the patient view cannot be signed into at all.
       - key: APP_ACCESS_TOKEN
         generateValue: true
+      - key: CLINICIAN_ACCESS_CODE
+        sync: false
+      - key: PATIENT_ACCESS_CODE
+        sync: false
+      # The model is a Python program and this service runs the Node runtime,
+      # so it stays off here. Flip it in the dashboard only if the build has
+      # installed requirements.txt and PYTHON_BIN points at that interpreter.
+      - key: VESPER_ML_ENABLED
+        value: "false"
       - key: RENDER_API_KEY
         sync: false
       - key: RENDER_WORKFLOW_SLUG
