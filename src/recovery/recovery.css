@@ -6603,3 +6603,70 @@ p.rx-row-summary {
 .rx-side {
   overflow-y: auto;
 }
+
+/* Model view: agreement with the recovery watch, stated as three short rows
+   rather than a table. There is no column of numbers here, so a table was
+   structure without information. */
+.rx-agree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13.5px;
+}
+.rx-agree li {
+  display: grid;
+  grid-template-columns: minmax(0, 11ch) minmax(0, 1fr);
+  gap: 16px;
+  padding: 7px 0 7px 11px;
+  border-left: 3px solid transparent;
+  max-width: 62ch;
+}
+.rx-agree li + li {
+  border-top: 1px solid var(--line);
+}
+.rx-agree .both {
+  border-left-color: var(--pine);
+}
+.rx-agree .model,
+.rx-agree .rule {
+  border-left-color: #d9c38a;
+}
+.rx-agree-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5a6862;
+  padding-top: 2px;
+}
+
+/* The cohort comparison is one fact per patient, so it reads as a sentence
+   rather than five columns most of which were the same word. */
+.rx-cohort-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13.5px;
+  max-width: 62ch;
+}
+.rx-cohort-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+}
+.rx-cohort-list li:first-child {
+  border-top: 0;
+}
+.rx-cohort-name {
+  font-weight: 500;
+}
+.rx-cohort-fact {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.rx-cohort-fact strong {
+  color: var(--ink);
+}

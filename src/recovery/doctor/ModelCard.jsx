@@ -44,6 +44,44 @@ function readingsRundown(patient) {
   };
 }
 
+// The model's contributors against the rule's flags. Moved here from the
+// activity panel: it is a statement about the model, and it belongs beside the
+// model's own verdict rather than under a list of what the patient has done.
+const MODEL_TO_SIGNAL = {
+  rhr: "restingHr",
+  hrv: "hrv",
+  respiratory: "breathing",
+  spo2: "oxygen",
+  sleep: "sleep",
+  heart_rate: "avgHr",
+  weight: "weight",
+  temperature: "temperature",
+  skin_temperature: "skinTemp",
+};
+const matches = (signal, contributor) =>
+  MODEL_TO_SIGNAL[contributor.metric] === signal.id ||
+  (contributor.label || "").toLowerCase() === signal.name.toLowerCase();
+
+function crossCheck(p) {
+  const a = p.analysis;
+  if (!a) return null;
+  const labelOf = (c) => (c.label || c.metric).toLowerCase();
+  const contributors = a.contributors || [];
+  const both = contributors.filter((c) => p.moved.some((s) => matches(s, c)));
+  return {
+    both: both.map(labelOf),
+    modelOnly: contributors.filter((c) => !both.includes(c)).map(labelOf),
+    ruleOnly: p.moved
+      .filter((s) => !contributors.some((c) => matches(s, c)))
+      .map((s) => s.name.toLowerCase()),
+  };
+}
+
+const list = (items) =>
+  items.length < 2
+    ? items[0] || ""
+    : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+
 export default function ModelCard({ patient: p }) {
   const { run, busy, error } = useAnalysis(p);
   useEffect(() => {
@@ -58,6 +96,7 @@ export default function ModelCard({ patient: p }) {
   // program never watches come back with an empty baseline and rendered as
   // "usual Not available". A row with no baseline of its own has nothing to
   // say about where this patient sits, so it is not a row.
+  const check = crossCheck(p);
   const cohortRows = (a?.signals || []).filter(
     (s) => s.cohort && s.baseline && typeof s.baseline.median === "number",
   );
@@ -132,94 +171,65 @@ export default function ModelCard({ patient: p }) {
             )}
           </div>
 
-          <div className="rx-model-tables">
-            {a.contributors?.length > 0 && (
-              <div className="rx-model-block">
-                <h3>What moved most</h3>
-                <table className="rx-mtable">
-                  <thead>
-                    <tr>
-                      <th scope="col">Signal</th>
-                      <th scope="col">Against their own usual</th>
-                      <th scope="col" className="num">
-                        Spreads
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {a.contributors.slice(0, 4).map((c) => (
-                      <tr key={c.metric}>
-                        <th scope="row">{c.label}</th>
-                        <td>
-                          {c.direction === "above_baseline" ? "above" : "below"}{" "}
-                          usual
-                        </td>
-                        <td className="num">
-                          {typeof c.robust_deviation === "number"
-                            ? `${c.robust_deviation > 0 ? "+" : "−"}${Math.abs(c.robust_deviation).toFixed(1)}`
-                            : "—"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <p className="rx-model-fine">
-                  One spread is how far this patient usually varies from day to
-                  day, so +4 means four of their own normal days&apos; worth of
-                  change, not four of anyone else&apos;s.
-                </p>
-              </div>
-            )}
+          {/* What the model adds that the page has not already said. Which
+              signals moved is stated by the summary above, by the readings
+              table, and by the chart; repeating it here in standard deviations
+              made a fourth telling. What only the model can say is whether it
+              agrees with the rule, and where it does not. */}
+          {check && (
+            <div className="rx-model-block">
+              <h3>Against the recovery watch</h3>
+              <ul className="rx-agree">
+                <li className="both">
+                  <span className="rx-agree-label">Both flag</span>
+                  <span>
+                    {check.both.length ? list(check.both) : "nothing in common"}
+                  </span>
+                </li>
+                {check.modelOnly.length > 0 && (
+                  <li className="model">
+                    <span className="rx-agree-label">Model only</span>
+                    <span>{list(check.modelOnly)}</span>
+                  </li>
+                )}
+                {check.ruleOnly.length > 0 && (
+                  <li className="rule">
+                    <span className="rx-agree-label">Watch only</span>
+                    <span>{list(check.ruleOnly)}</span>
+                  </li>
+                )}
+              </ul>
+              <p className="rx-model-fine">
+                {check.modelOnly.length || check.ruleOnly.length
+                  ? "Where they differ, the rule decides what is surfaced. The model never adds a signal that was not recorded."
+                  : "The two agree on every signal. Each contributor is a measured deviation from this patient\u2019s own baseline."}
+              </p>
+            </div>
+          )}
 
-            {cohortRows.length > 0 && (
-              <div className="rx-model-block">
-                <h3>This patient among others</h3>
-                <table className="rx-mtable">
-                  <thead>
-                    <tr>
-                      <th scope="col">Signal</th>
-                      <th scope="col" className="num">
-                        Their usual
-                      </th>
-                      <th scope="col" className="num">
-                        Range across others
-                      </th>
-                      <th scope="col" className="num">
-                        Others
-                      </th>
-                      <th scope="col" className="num">
-                        Percentile
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cohortRows.slice(0, 4).map((s) => (
-                      <tr key={s.metric}>
-                        <th scope="row">{s.label}</th>
-                        <td className="num strong">
-                          {s.baseline.median} {s.unit}
-                        </td>
-                        <td className="num">
-                          {s.cohort.lowest_baseline}–{s.cohort.highest_baseline}
-                        </td>
-                        <td className="num">{s.cohort.subjects}</td>
-                        <td className="num">
-                          {s.cohort.patient_percentile === null
-                            ? "—"
-                            : `${s.cohort.patient_percentile}th`}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <p className="rx-model-fine">
-                  Where people differ from each other more than they vary day to
-                  day, one shared threshold cannot serve them all. That is why
-                  the baseline is this patient&apos;s own.
-                </p>
-              </div>
-            )}
-          </div>
+          {cohortRows.length > 0 && (
+            <div className="rx-model-block">
+              <h3>This patient among others</h3>
+              <ul className="rx-cohort-list">
+                {cohortRows.slice(0, 4).map((s) => (
+                  <li key={s.metric}>
+                    <span className="rx-cohort-name">{s.label}</span>
+                    <span className="rx-cohort-fact">
+                      usually <strong>{s.baseline.median}</strong> {s.unit}
+                      {s.cohort.patient_percentile === null
+                        ? ""
+                        : `, ${s.cohort.patient_percentile}th percentile among ${s.cohort.subjects} others`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="rx-model-fine">
+                Where people differ from each other more than they vary day to
+                day, one shared threshold cannot serve them all. That is why the
+                baseline is this patient&apos;s own.
+              </p>
+            </div>
+          )}
 
           {a.restraint && (
             <>
