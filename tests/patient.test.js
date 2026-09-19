@@ -75,6 +75,10 @@ test("every question maps onto a field the ML model scores", () => {
   });
   assert.equal(hf.diuretic_adherence, "Missed or changed");
   assert.equal(hf.swelling, "Worsening");
+  const stroke = toModelContext("strokeRehabilitation", {
+    mealPlan: "Yes",
+  });
+  assert.equal(stroke.diet_change, "Change reported");
 });
 
 test("check-ins are daily for the first week, then every other day", () => {

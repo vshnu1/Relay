@@ -432,6 +432,19 @@ export const QUESTIONS = {
     ml: "falls",
     toModel: yes,
   },
+  mealPlan: {
+    text: "Since your last check-in, have you eaten or drunk anything outside your discharge instructions, including any texture or swallowing guidance?",
+    short: "Eating or drinking changes",
+    options: NYS,
+    reports: "a change to eating or drinking",
+    ml: "diet_change",
+    toModel: (a) =>
+      a === "Yes"
+        ? "Change reported"
+        : a === "No"
+          ? "No change reported"
+          : "Unsure",
+  },
   mouthSores: {
     text: "Are mouth sores or a sore throat worse than yesterday?",
     short: "Mouth sores worse",
@@ -528,6 +541,7 @@ export const QUESTION_SIGNAL_MAP = {
     fatigue: ["steps", "walkingSpeed"],
     medicine: [],
     activity: ["steps", "walkingSpeed"],
+    mealPlan: [],
   },
   cardiacRecovery: {
     chest: ["restingHr", "avgHr"],
@@ -836,7 +850,14 @@ export const PROFILES = {
       counted("steps"),
     ],
     recorded: ["steadiness", "restingHr", "sleep"],
-    questions: ["falls", "dizziness", "fatigue", "medicine", "activity"],
+    questions: [
+      "falls",
+      "dizziness",
+      "fatigue",
+      "medicine",
+      "activity",
+      "mealPlan",
+    ],
     caution:
       "Tracks how walking is recovering. It does not detect or rule out a new stroke; new symptoms follow the discharge letter's instructions.",
   },

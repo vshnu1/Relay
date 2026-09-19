@@ -5,6 +5,7 @@ import { createSimulatedSource } from "../src/recovery/model/simulatedSource.js"
 import { derive } from "../src/recovery/model/derive.js";
 import { buildCheckinPlan } from "../src/recovery/patient/checkinPlan.js";
 import { openingMessage } from "../src/recovery/patient/voice.js";
+import { QUESTIONS } from "../src/recovery/model/profiles.js";
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 async function cohort() {
@@ -88,6 +89,9 @@ test("statuses are derived from readings and check-ins, not stored", async () =>
 test("a patient's answers move them from waiting to review, and a note attaches to them", async () => {
   const { store, views } = await cohort();
   assert.equal(views().priya.status, "context");
+  const initialReviewCount = Object.values(views()).filter(
+    (patient) => patient.group === "review",
+  ).length;
   store.actions.submitCheckin("priya", {
     pain: "A little",
     fever: "No",
@@ -98,11 +102,23 @@ test("a patient's answers move them from waiting to review, and a note attaches 
   await flush();
   const priya = views().priya;
   assert.equal(priya.status, "review");
+  assert.equal(
+    Object.values(views()).filter((patient) => patient.group === "review")
+      .length,
+    initialReviewCount + 1,
+    "a completed check-in for a patient with a persistent pattern increments the live review count",
+  );
   assert.equal(priya.answered.note, "The wound feels warm.");
   assert.match(priya.line, /Reports worse wound pain/);
   store.actions.acknowledge("priya");
   await flush();
   assert.equal(views().priya.group, "monitoring");
+  assert.equal(
+    Object.values(views()).filter((patient) => patient.group === "review")
+      .length,
+    initialReviewCount,
+    "acknowledging the review removes it from the open review count",
+  );
   store.actions.requestCheckin("priya");
   await flush();
   assert.equal(views().priya.status, "context");
@@ -183,6 +199,33 @@ test("focused voice check-in orders model-linked symptoms before a plan question
     ["fatigue", "chest", "medicine"],
     "question order follows the model's contributor priority, not just profile order",
   );
+  store.destroy();
+});
+
+test("stroke check-in includes a discharge-specific eating and drinking question for model context", async () => {
+  const { store, views } = await cohort();
+  const strokePatient = Object.values(views()).find(
+    (patient) => patient.profileId === "strokeRehabilitation",
+  );
+  assert.ok(
+    strokePatient,
+    "the demo cohort includes a stroke recovery patient",
+  );
+  const plan = buildCheckinPlan(strokePatient, {
+    application_state: "context_needed",
+    contributors: [
+      {
+        metric: "walking_speed",
+        label: "Walking speed",
+        direction: "below_baseline",
+      },
+      { metric: "steps", label: "Daily steps", direction: "below_baseline" },
+    ],
+  });
+  assert.ok(plan.questions.includes("mealPlan"));
+  assert.match(QUESTIONS["mealPlan"].text, /discharge instructions/i);
+  assert.match(plan.contextPrompt, /rehabilitation routine/i);
+  assert.equal(QUESTIONS["mealPlan"].ml, "diet_change");
   store.destroy();
 });
 
