@@ -213,6 +213,7 @@ export default function Connect({ patient: p }) {
       <div className="rx-p-card list">
         {devices.map(([id, d]) => {
           const w = WEARABLES.find((x) => x.id === id);
+          const used = p.signals.some((s) => s.device === id);
           return (
             <div className="rx-p-device" key={id}>
               <div>
@@ -224,9 +225,17 @@ export default function Connect({ patient: p }) {
                       ? "Connected, sharing paused"
                       : `Connected, synced ${ago(Date.now() - d.lastSync)}`}
                 </span>
-                {w && <small>{w.blurb}</small>}
+                {w && (
+                  <small>
+                    {used
+                      ? w.blurb
+                      : `Nothing it records is watched after ${p.profile.after}.`}
+                  </small>
+                )}
               </div>
-              {d.connected === false ? (
+              {!used ? (
+                <span className="rx-p-chip">Not used</span>
+              ) : d.connected === false ? (
                 <button
                   type="button"
                   className="rx-p-btn small primary"
