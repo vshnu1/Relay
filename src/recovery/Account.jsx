@@ -1,7 +1,6 @@
 import { rememberUser } from "./model/currentUser.js";
 import { useState } from "react";
-import { ArrowRight, Stethoscope, User } from "lucide-react";
-import { go } from "./useRecovery.js";
+import { ArrowRight } from "lucide-react";
 import { signIn as openPatientProfile } from "./patient/session.js";
 import { LANDING_URL } from "./landingUrl.js";
 
@@ -66,7 +65,31 @@ const post = async (path, body, onProgress) => {
   }
 };
 
+// One screen, two doors, and no way to switch between them here. The public landing
+// page sends patients to #/patient from every main button and the care team to
+// #/login from one line in its footer, so each door says only what its own reader
+// needs. The logo goes back to the landing page, which is where the other door is.
+const DOORS = {
+  patient: {
+    kicker: "RELAY · PATIENT SIGN-IN",
+    title: "Welcome to Relay.",
+    lede: "Sign in to see your readings, your check-in and messages from your care team.",
+    cardKicker: "Patient account",
+    cardTitle: "Open your recovery profile",
+    email: "Email",
+  },
+  clinician: {
+    kicker: "RELAY · CARE TEAM SIGN-IN",
+    title: "Welcome back, care team.",
+    lede: "Sign in to review your patients' readings, check-ins and messages.",
+    cardKicker: "Care team account",
+    cardTitle: "Access your workspace",
+    email: "Work email",
+  },
+};
+
 export default function Account({ onSignedIn, audience = "clinician" }) {
+  const door = DOORS[audience] || DOORS.clinician;
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -146,41 +169,9 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
               <span className="rx-brand-mark" aria-hidden="true" />
               <span className="rx-brand-word">Relay</span>
             </a>
-            <span className="rx-home-kicker">RELAY · SECURE ACCESS</span>
-            <h1>Welcome to Relay.</h1>
-            <p className="rx-auth-lede">
-              Choose your workspace, then sign in or explore a demo.
-            </p>
-            {/* Relay is two applications that never open together, and until
-                now the patient one was reachable only by typing its URL. Both
-                doors are on the screen, and choosing changes the route, so the
-                address bar says which side you are looking at. */}
-            <div
-              className="rx-role-switch"
-              role="group"
-              aria-label="Who are you signing in as?"
-            >
-              <button
-                type="button"
-                className={audience === "clinician" ? "active" : ""}
-                aria-pressed={audience === "clinician"}
-                onClick={() => go("/doctor")}
-              >
-                <Stethoscope size={18} aria-hidden="true" />
-                <strong>I am on the care team</strong>
-                <span>Patient list, readings, and review tools</span>
-              </button>
-              <button
-                type="button"
-                className={audience === "patient" ? "active" : ""}
-                aria-pressed={audience === "patient"}
-                onClick={() => go("/patient")}
-              >
-                <User size={18} aria-hidden="true" />
-                <strong>I am the patient</strong>
-                <span>Your readings, recovery check-in, and care team</span>
-              </button>
-            </div>
+            <span className="rx-home-kicker">{door.kicker}</span>
+            <h1>{door.title}</h1>
+            <p className="rx-auth-lede">{door.lede}</p>
             <p className="rx-auth-note">
               Demo access uses synthetic patient information. Do not enter real
               patient details.
@@ -188,8 +179,8 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
           </section>
 
           <section className="rx-auth-card">
-            <span className="rx-auth-kicker">Relay account</span>
-            <h2 className="rx-auth-card-title">Access your workspace</h2>
+            <span className="rx-auth-kicker">{door.cardKicker}</span>
+            <h2 className="rx-auth-card-title">{door.cardTitle}</h2>
             <div
               className="rx-auth-tabs"
               role="group"
@@ -227,7 +218,7 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
 
             <form onSubmit={submit}>
               <label className="rx-auth-label" htmlFor="rx-acct-email">
-                Work email
+                {door.email}
                 <input
                   id="rx-acct-email"
                   type="email"
