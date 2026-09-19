@@ -1,12 +1,19 @@
 """Feature matrix: robust deviations plus missingness and coverage.
 
 One row per six-hour window. Columns are the robust deviation of every
-program metric (nan when stale or without a sufficient baseline) followed by
-two coverage features: the fraction of core metrics that are fresh with a
-sufficient baseline, and the count of fresh program metrics. Missingness
+program metric (nan when stale or without a sufficient baseline, winsorized
+at +/- DEV_CLIP so one wild reading cannot dominate), followed by four
+transparent summaries: the fraction of core metrics that are fresh with a
+sufficient baseline, the count of fresh program metrics, the count of core
+metrics beyond the program's deviation threshold, and the mean absolute
+deviation across core metrics. The last two let the forest see coordination
+across signals rather than only single-column extremes. Missingness
 indicators are added downstream by `SimpleImputer(add_indicator=True)`.
 """
 
+DEV_CLIP = 5.0
+
+import warnings
 from dataclasses import dataclass
 
 import numpy as np
@@ -41,7 +48,7 @@ def build_features(grid, program):
             tracks[metric] = track
             deviations[metric] = robust_deviation(s, track)
             percents[metric] = percent_delta(s, track)
-        cols.append(deviations[metric])
+        cols.append(np.clip(deviations[metric], -DEV_CLIP, DEV_CLIP))
 
     core = [m for m in program.core]
     core_ok = np.zeros(n)
@@ -53,6 +60,12 @@ def build_features(grid, program):
         s = grid.series.get(metric)
         if s is not None:
             n_fresh += s.fresh
-    X = np.column_stack(cols + [coverage, n_fresh]) if cols else np.column_stack([coverage, n_fresh])
-    columns = [f"dev:{m}" for m in metrics] + ["coverage", "n_fresh"]
+    core_devs = np.column_stack([deviations[m] for m in core]) if core else np.full((n, 1), np.nan)
+    with np.errstate(invalid="ignore"), warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        n_deviating = np.nansum(np.abs(core_devs) >= program.deviation_threshold, axis=1).astype(float)
+        any_core = np.any(~np.isnan(core_devs), axis=1)
+        mean_abs = np.where(any_core, np.nanmean(np.abs(np.clip(core_devs, -DEV_CLIP, DEV_CLIP)), axis=1), np.nan)
+    X = np.column_stack(cols + [coverage, n_fresh, n_deviating, mean_abs])
+    columns = [f"dev:{m}" for m in metrics] + ["coverage", "n_fresh", "n_deviating_core", "mean_abs_dev_core"]
     return FeatureSet(columns, X, deviations, percents, tracks, coverage, n_fresh)

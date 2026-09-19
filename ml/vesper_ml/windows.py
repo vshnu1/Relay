@@ -8,8 +8,8 @@ mostly empty for them. Each window therefore carries two views of a metric:
   never an increment, so cumulative quantities such as steps must already be
   totals per reading when they enter the contract.
 * `filled`: `observed` when the window has samples, otherwise the mean of
-  samples in a trailing lookback of max(6h, 1.5 x that metric's own cadence)
-  ending at the window end, plus the age of the newest sample. Deviations are
+  samples in a trailing lookback of max(24h, 2 x that metric's own cadence)
+  ending at the window end (a reading from the last day is current), plus the age of the newest sample. Deviations are
   computed from these, and a window whose newest sample is older than the
   lookback is *stale*, never "normal".
 """
@@ -23,6 +23,7 @@ import numpy as np
 HOUR_MS = 3_600_000
 WINDOW_MS = 6 * HOUR_MS
 MAX_GAP_HOURS = 48  # gaps longer than this do not inform cadence (engine parity)
+MIN_LOOKBACK_HOURS = 24.0
 
 
 @dataclass
@@ -73,8 +74,13 @@ def _median_or(values, default):
     return float(np.median(values)) if len(values) else default
 
 
-def build_grid(events, analyzed_through_ms=None, max_windows=20_000):
-    """`events` are normalized records (with `_ms`)."""
+def build_grid(events, analyzed_through_ms=None, max_windows=20_000, core_metrics=None):
+    """`events` are normalized records (with `_ms`).
+
+    The recent-window length follows the cadence of `core_metrics` (median of
+    each core metric's own median gap), so four-a-day step counts cannot
+    shrink the window below what a once-a-day gait or resting-heart-rate
+    reading needs. Without `core_metrics` every metric present counts."""
     if not events:
         raise ValueError("no events")
     last_ms = max(e["_ms"] for e in events)
@@ -90,19 +96,18 @@ def build_grid(events, analyzed_through_ms=None, max_windows=20_000):
     for e in events:
         by_metric.setdefault(e["metric"], []).append(e)
 
-    pooled = []
     series = {}
     for metric, evs in by_metric.items():
         evs.sort(key=lambda r: r["_ms"])
         t = np.array([r["_ms"] for r in evs], dtype=np.int64)
         v = np.array([r["value"] for r in evs], dtype=float)
         gaps = _gaps_hours(t)
-        pooled.extend(gaps.tolist())
-        cadence = _median_or(gaps, 6.0)
-        lookback = max(6.0, 1.5 * cadence)
+        cadence = _median_or(gaps, 6.0) if len(gaps) else 6.0
+        lookback = max(MIN_LOOKBACK_HOURS, 2.0 * cadence)
         series[metric] = _aggregate(metric, t, v, [r["id"] for r in evs], ends, cadence, lookback)
-    pooled_cadence = _median_or(np.array(pooled), 6.0)
-    window_hours = max(36.0, 3.0 * pooled_cadence)
+    core = [m for m in (core_metrics or []) if m in series] or list(series)
+    pooled_cadence = _median_or(np.array([series[m].cadence_hours for m in core]), 6.0)
+    window_hours = max(36.0, math.ceil(3.0 * pooled_cadence / 6.0) * 6.0)  # whole six-hour blocks
     return WindowGrid(ends, series, pooled_cadence, window_hours, end)
 
 

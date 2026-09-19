@@ -1,0 +1,27 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "program": "post_abdominal_surgery",
+  "training_data": "synthetic",
+  "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+  "n_patients": 40,
+  "patients_train_val_test": [
+    24,
+    8,
+    8
+  ],
+  "rows_train_val_test": [
+    2043,
+    680,
+    684
+  ],
+  "feature_dim_in": 13,
+  "feature_dim_model": 21,
+  "threshold_raw": 0.0389,
+  "score_scale_raw": 0.0556,
+  "val_exceed_rate": 0.028,
+  "test_exceed_rate": 0.051,
+  "quantile": 0.95,
+  "n_estimators": 200,
+  "seed": 0,
+  "train_seconds": 1.03
+}

@@ -37,7 +37,7 @@ class GridTest(unittest.TestCase):
         grid = build_grid(normalize(daily_events(30)))
         s = grid.series["rhr"]
         self.assertEqual(s.cadence_hours, 24.0)
-        self.assertEqual(s.lookback_hours, 36.0)
+        self.assertEqual(s.lookback_hours, 48.0)
         self.assertEqual(grid.window_hours, 72.0)
         # three of every four windows have no direct observation, yet every window is fresh
         self.assertLess(np.count_nonzero(~np.isnan(s.observed)), len(s.observed) / 2)
@@ -87,7 +87,7 @@ class BaselineTest(unittest.TestCase):
     def test_feature_matrix_shape(self):
         grid = build_grid(normalize(simulate("ambiguous", ANCHOR)))
         fs = build_features(grid, PROGRAM)
-        self.assertEqual(fs.X.shape, (63, len(PROGRAM.metrics) + 2))
+        self.assertEqual(fs.X.shape, (63, len(PROGRAM.metrics) + 4))
         self.assertEqual(fs.coverage[-1], 1.0)
 
 
