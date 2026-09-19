@@ -1,5 +1,12 @@
 # Feature drafts: verified against the code
 
+_Re-verified against the code on 19 September 2026. The tables below were
+written against a five-condition, eight-question version of `profiles.js`; there
+are now 15 recovery pathways and 23 questions, and the counted and recorded
+lists had each gained signals. A document titled "verified against the code" is
+worse than no document when it stops being true, so the numbers here are read
+out of `profiles.js` rather than remembered._
+
 Each item checked against what is actually built. Four of nine already exist
 in full, which changes what the remaining hours should go to.
 
@@ -16,13 +23,13 @@ testing, not just typing.
 Exactly this exists. `src/recovery/model/profiles.js` splits every condition's
 signals into `counted` and `recorded`:
 
-| Condition | Counted | Recorded but not counted |
-|---|---|---|
-| Pneumonia | breathing, resting HR, skin temp, oxygen | hrv, sleep, deep sleep, walking HR |
-| Heart failure | resting HR, hrv, breathing, walking HR, sleep | oxygen, deep sleep |
-| Abdominal surgery | resting HR, hrv, breathing, skin temp | sleep, oxygen, walking HR |
-| COPD flare-up | breathing, oxygen, walking HR, sleep | resting HR, hrv |
-| Atrial fibrillation | resting HR, hrv, average HR | sleep, breathing |
+| Condition           | Counted                                               | Recorded but not counted                        |
+| ------------------- | ----------------------------------------------------- | ----------------------------------------------- |
+| Pneumonia           | breathing, resting HR, skin temp, oxygen              | hrv, sleep, deep sleep, walking HR, temperature |
+| Heart failure       | resting HR, hrv, breathing, walking HR, sleep, weight | oxygen, deep sleep                              |
+| Abdominal surgery   | resting HR, hrv, breathing, skin temp                 | sleep, oxygen, walking HR, temperature, pain    |
+| COPD flare-up       | breathing, oxygen, walking HR, sleep                  | resting HR, hrv, temperature                    |
+| Atrial fibrillation | resting HR, hrv, average HR                           | sleep, breathing, weight                        |
 
 Your example is literally right: **COPD counts sleep, pneumonia does not.**
 And the UI already says so out loud — "Sleep is 5.9 hours against a usual
@@ -30,7 +37,7 @@ And the UI already says so out loud — "Sleep is 5.9 hours against a usual
 counted for pneumonia."
 
 The ML layer has the same split independently in `ml/relay_ml/programs.py`
-(`metrics` vs `core`) across six programs.
+(`metrics` vs `core`) across 14 programs.
 
 **Do nothing. Demo it instead** — it is one of the strongest things you have
 and nobody currently points at it.
@@ -39,15 +46,17 @@ and nobody currently points at it.
 
 > "Personalized questions per check-in for the condition on the patient-side view."
 
-`PROFILES[condition].questions` selects from eight defined question types:
+`PROFILES[condition].questions` selects from 23 defined question types:
 
-| Condition | Asks |
-|---|---|
-| Pneumonia | breathing, fever, medicine, activity |
-| Heart failure | breathing, **swelling**, medicine, activity |
-| Abdominal surgery | **pain**, fever, medicine, activity |
-| COPD | breathing, **cough**, medicine, activity |
-| Atrial fibrillation | **racing heart**, breathing, medicine, activity |
+| Condition           | Asks                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| Pneumonia           | breathing, cough, fever, hydration, fatigue, medicine, activity                       |
+| Heart failure       | breathing, **swelling**, fatigue, dizziness, medicine, activity                       |
+| Abdominal surgery   | **pain**, **wound**, nausea, breathing, fever, fatigue, medicine, activity            |
+| COPD                | breathing, **cough**, **mucus**, **inhaler**, **oxygen**, fatigue, medicine, activity |
+| Atrial fibrillation | **racing heart**, **chest pain**, dizziness, breathing, fatigue, medicine, activity   |
+| Sleep apnoea        | sleepiness, breathing, **nights without the CPAP machine**, activity                  |
+| After chemotherapy  | fever, **mouth sores**, nausea, fatigue, medicine                                     |
 
 Heart failure asks about swelling; abdominal surgery asks about pain; AF asks
 about a racing heart. `ml/relay_ml/programs.py` carries the same idea as

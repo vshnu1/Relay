@@ -75,7 +75,7 @@ patients. This becomes the one program the real data can drive end to end.
 
 _Speaks to:_ Gajjar (HRRP), Merchant (differentiation). _Effort:_ ~2 h.
 
-### 3. Oncology — post-chemotherapy neutropenic-fever watch
+### 3. Oncology — post-chemotherapy neutropenic-fever watch — BUILT
 
 Febrile neutropenia is a serious complication of anticancer therapy that
 needs same-day assessment; the REMEDY pilot and the THERMAL wearable study both use
@@ -83,11 +83,13 @@ needs same-day assessment; the REMEDY pilot and the THERMAL wearable study both 
 study predicting events up to 18 hours ahead. Manual temperature entry is
 already wired in the patient app.
 
-Build: a `postChemotherapy` profile counting temperature, resting HR, HRV and
-breathing; questions for fever, mouth sores (new), nausea, fatigue, medicine;
-a mirrored ML program; two patients.
+Built. `postChemotherapy` counts temperature, resting HR, HRV and breathing,
+asks about fever, mouth sores, nausea, fatigue and medicines, has a mirrored ML
+program, and has two patients: Grace Adebayo (`MOF-2201`) and Victor Lindqvist
+(`MOF-7735`), both discharged from Moffitt, Malignant Hematology. The pitch and
+the runbook both point a judge at Grace.
 
-_Speaks to:_ Bonilla directly — Moffitt is a cancer centre. _Effort:_ ~1 h.
+_Speaks to:_ Bonilla directly — Moffitt is a cancer centre.
 
 ### 4. Promote weight to counted for heart failure
 
@@ -106,8 +108,11 @@ _Effort:_ ~45 min.
 
 HF: 30–50% non-adherent; poor adherence drives **55% of decompensations** and
 a 70% higher rehospitalisation rate. COPD: 51% non-adherent by electronic
-monitoring. The `adherence` field is declared on all eleven profiles and
-**consumed by nothing.**
+monitoring. The `adherence` field is declared on 12 of the 15 profiles, and all it does is
+relabel the medicine answer for the model's context. **Nothing treats it as a
+signal.** Sleep apnoea is the one pathway that now asks its own adherence
+question, about nights without the CPAP machine, rather than inheriting the
+medicines one.
 
 Build: a daily "took my medicines" tap on the patient home screen, stored as
 a signal with a streak; a missed-dose run becomes a counted deviation; the
@@ -133,7 +138,7 @@ different and read identically today. _Effort:_ ~1 h.
 
 One panel: three programs are CMS HRRP conditions, the window is HRRP's
 window, 75% of hospitals pay, median 0.69%, max 3%. Then the operational
-line: _20 patients, 2 need review today — against 20 manual chart checks._
+line: _28 patients, 2 need review today — against 28 manual chart checks._
 Not a risk prediction; a description of the work.
 
 _Speaks to:_ Gajjar, Merchant, Bonilla. _Effort:_ ~45 min, mostly copy.
