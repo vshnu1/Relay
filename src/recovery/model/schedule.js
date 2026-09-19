@@ -32,6 +32,10 @@ export const readingsAsk = (p) =>
 
 // Keep a patient from receiving the same priority prompt over and over while a
 // persistent pattern is being reviewed. A new change point opens a new prompt.
+// The model's change point is a timestamp that shifts by seconds each time the
+// readings are re-scored, so the key uses its calendar day: the same change
+// stays the same prompt; a change on a later day opens a new one.
+const dayOf = (iso) => (typeof iso === "string" ? iso.slice(0, 10) : iso);
 export function checkinTriggerKey(p) {
   if (!readingsAsk(p)) return null;
   const a = p.analysis;
@@ -41,8 +45,7 @@ export function checkinTriggerKey(p) {
     .join(",");
   return [
     a?.program || p.profileId || p.profile || "recovery",
-    a?.change_point ||
-      a?.window_start ||
+    dayOf(a?.change_point || a?.window_start) ||
       contributors ||
       (p.moved || []).map((signal) => signal.signal || signal.id).join(",") ||
       "persistent-change",
@@ -55,8 +58,17 @@ export function checkinDue(p, now = Date.now()) {
   );
   if (p.pending) return { due: true, reason: "asked" };
   const triggerKey = checkinTriggerKey(p);
+  // A priority check-in answered in the last 18 hours covers this change even
+  // if the key has moved; otherwise the same change keeps asking.
+  const priorityAnsweredRecently = p.checkins.some(
+    (c) =>
+      c.answeredAt &&
+      c.kind === "priority" &&
+      now - c.answeredAt < RECENT_ANSWER,
+  );
   if (
     triggerKey &&
+    !priorityAnsweredRecently &&
     !p.checkins.some((c) => c.answeredAt && c.triggerKey === triggerKey)
   )
     return { due: true, reason: "readings" };
