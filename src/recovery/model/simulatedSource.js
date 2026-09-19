@@ -720,6 +720,13 @@ const DISCHARGE = {
   },
 };
 
+// A clinic appointment at a real clock time, on the day the timestamp falls on.
+const onTheHour = (t, hour) => {
+  const d = new Date(t);
+  d.setHours(hour, 0, 0, 0);
+  return d.getTime();
+};
+
 function build(def, now, index) {
   const rand = seeded(index * 7919 + 17);
   // Every patient was discharged at exactly the same time of day, so every
@@ -790,7 +797,13 @@ function build(def, now, index) {
     appointments: discharge
       ? [
           {
-            t: dischargedAt + discharge.followUpDay * DAY - 5 * HOUR,
+            // Clinics book on the clock. Deriving this from the discharge
+            // timestamp carried the current minute and second through, so the
+            // patient's next appointment read "Wed, Sep 23, 4:59 PM".
+            t: onTheHour(
+              dischargedAt + discharge.followUpDay * DAY,
+              9 + (index % 8),
+            ),
             with: def.clinician,
             where: `${discharge.where}, ${def.hospital}`,
           },

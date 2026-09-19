@@ -17,6 +17,21 @@ const STATE = {
   insufficient_data: "Cannot see enough",
 };
 
+// Whole numbers for units a clinician reads whole, one decimal for the rest.
+// Raw, this printed "usually 62.19 bpm" beside a table showing "62".
+const WHOLE_UNITS = new Set(["bpm", "steps", "ms"]);
+const roundMedian = (value, unit) =>
+  typeof value !== "number"
+    ? value
+    : WHOLE_UNITS.has(unit)
+      ? Math.round(value)
+      : Math.round(value * 10) / 10;
+
+// The gates arrive as raw floats. Printed as they come, the score gate read
+// "0.442 / 0.5" four lines under a header reading "score 0.44 of 0.50".
+const gateValue = (v) =>
+  typeof v === "number" && !Number.isInteger(v) ? v.toFixed(2) : String(v);
+
 const GATE = {
   coordinated_signals: "Signals moving together",
   persistence: "Persisted across windows",
@@ -173,8 +188,8 @@ export default function ModelCard({ patient: p }) {
             </span>
             {a.anomaly_score !== null && a.anomaly_score !== undefined && (
               <span className="rx-model-score">
-                score {a.anomaly_score.toFixed(2)}
-                <small> · 0.50 is the line</small>
+                score {a.anomaly_score.toFixed(2)} of 0.50
+                <small> · one of the four gates below</small>
               </span>
             )}
           </div>
@@ -223,7 +238,9 @@ export default function ModelCard({ patient: p }) {
                   <li key={s.metric}>
                     <span className="rx-cohort-name">{s.label}</span>
                     <span className="rx-cohort-fact">
-                      usually <strong>{s.baseline.median}</strong> {s.unit}
+                      usually{" "}
+                      <strong>{roundMedian(s.baseline.median, s.unit)}</strong>{" "}
+                      {s.unit}
                       {s.cohort.patient_percentile === null
                         ? ""
                         : `, ${ordinal(s.cohort.patient_percentile)} percentile among ${s.cohort.subjects} others`}
@@ -256,7 +273,7 @@ export default function ModelCard({ patient: p }) {
                       {GATE[c.gate] || c.gate}
                     </span>
                     <span className="rx-ledger-val">
-                      {String(c.observed)} / {String(c.required)}
+                      {gateValue(c.observed)} / {gateValue(c.required)}
                     </span>
                     <span className="rx-ledger-detail">{c.detail}</span>
                   </li>

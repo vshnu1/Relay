@@ -96,7 +96,7 @@ const ago = (iso) => {
 const ACTION = {
   "record.view": "Opened a patient record",
   "roster.view": "Listed the ward",
-  "recovery.read": "Read a patient's own record",
+  "recovery.read": "Read a recovery log",
   "recovery.events": "Wrote to a record",
   "consent.changed": "Consent changed",
   "review.acknowledged": "Acknowledged a review",

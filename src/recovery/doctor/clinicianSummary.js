@@ -1,3 +1,4 @@
+import { plainMetric } from "../model/mlClient.js";
 const WATCHED_SIGNAL_LIMIT = 4;
 
 const STATUS_COPY = {
@@ -23,6 +24,7 @@ const SYMPTOMS = {
   hydration: "hydration",
   racing: "racing or irregular heartbeat",
   chest: "chest pain or pressure",
+  device: "nights without the CPAP machine",
 };
 
 function spokenUnit(unit) {
@@ -114,7 +116,7 @@ export function buildClinicianSummary(patient, analysis = patient.analysis) {
   } else if (modelFlagsReview || modelRequestsContext) {
     const contributors = (analysis.contributors || [])
       .slice(0, 2)
-      .map((item) => item.label || item.metric)
+      .map((item) => plainMetric(item))
       .filter(Boolean);
     parts.push(
       contributors.length

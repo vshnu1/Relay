@@ -109,7 +109,7 @@ export default function PatientActivity({ patient: p }) {
         </div>
         <span className="rx-activity-stats">
           {answered} check-in{answered === 1 ? "" : "s"} · {reports} report
-          {reports === 1 ? "" : "s"} · {week} this week
+          {reports === 1 ? "" : "s"} · {week} in the last seven days
         </span>
       </div>
       {items.length > 0 && (
