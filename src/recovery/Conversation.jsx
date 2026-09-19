@@ -35,8 +35,8 @@ export default function Conversation({ patient: p, side }) {
   const inputId = `rx-convo-input-${p.id}`;
 
   // Seeing a message is reading it; nobody should have to press a button per message.
-  // Only while the thread is actually on screen: the clinician's copy sits inside a
-  // collapsed panel until it is opened.
+  // Only while the thread is actually on screen, so a copy mounted somewhere hidden
+  // never marks anything read.
   const markSeen = () => {
     if (!thread.current || thread.current.offsetParent === null) return;
     for (const m of messages)

@@ -47,6 +47,7 @@ survives either person signing out and back in, and survives a restart.
 | Its styles (own file, not recovery.css) | `src/recovery/conversation.css`                | Ian        |
 | Who is signed in, for display only      | `src/recovery/model/currentUser.js`            | Ian        |
 | Where it is mounted                     | `patient/Care.jsx`, `doctor/CareTeamPanel.jsx` | Ian        |
+| The clinician's Messages page           | `doctor/Messages.jsx` (`#/doctor/messages`)    | Ian        |
 | The suite that pins all of this         | `tests/messaging.integration.js`               | shared     |
 
 ## The contract
@@ -127,8 +128,8 @@ and the accounts survive a restart.
 By hand, against `npm run build && npm start` with `RELAY_REQUIRE_ACCOUNTS=true`, both
 access codes, a data key and `RELAY_DEMO_PASSWORD` set:
 
-1. Sign in through the care-team door as Dr. Alvarez, open Maya, open "Contact patient
-   or record follow-up", send a message, sign out.
+1. Sign in through the care-team door as Dr. Alvarez, open Messages in the sidebar,
+   pick Maya, send a message, sign out.
 2. Sign in through the patient door as Maya. She lands on her own record with no
    discharge code asked. Care team shows the message under the doctor's name. Reply,
    sign out.
