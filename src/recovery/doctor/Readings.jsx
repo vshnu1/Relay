@@ -65,7 +65,9 @@ export function SignalChart({
   height,
 }) {
   const [hover, setHover] = useState(null);
-  const M = compact ? { top: 20, right: 86, bottom: 36, left: 36 } : MARGIN;
+  // The compact chart still has to hold "counts past 15.6 per min" on the
+  // right and the unit on the left, so its gutters are sized for the text.
+  const M = compact ? { top: 20, right: 168, bottom: 36, left: 56 } : MARGIN;
   const inner = width - M.left - M.right;
   // A container mid-layout can report a width narrower than the axes it has to
   // hold. Drawing then gives every rect a negative width, which the browser
