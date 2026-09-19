@@ -1,0 +1,180 @@
+# Pitch
+
+Spoken pitch, submission copy, and the answers to the questions that will
+actually get asked. Numbers here come from [DATA.md](DATA.md) and
+`fixtures/calibration.json`. If you change a threshold, change it here too.
+
+Two claims in this document are **conditional** and marked `[VERIFY]`. Do not
+say them on stage until the thing is true.
+
+---
+
+## The two-minute pitch
+
+**The problem — 25 seconds**
+
+> Hospitals are sending patients home earlier than they used to. Those patients
+> are still recovering, and they are generating more health data than anyone
+> is reading — a watch, a glucose sensor, a pulse oximeter, a medication log,
+> all in separate apps. A nurse covering forty patients cannot open forty
+> dashboards. So the data exists, and nobody looks at it.
+
+**The insight — 25 seconds**
+
+> The useful signal is almost never one number crossing a line. It is several
+> systems moving together, relative to what is normal *for that person*.
+>
+> We measured how much that matters. Across 71 people wearing the same device,
+> resting heart rate baselines span 31 beats per minute — from 47 to 78 — while
+> any one person varies by about 2 and a half beats day to day. A reading of 74
+> is a marked excursion for one person and a Tuesday for another. No fixed
+> threshold can serve both. That is not a design opinion, it is a measurement.
+
+**The product — 40 seconds**
+
+> Relay puts every signal on one timeline against that patient's own baseline,
+> and looks for changes that move together and persist.
+>
+> When the data is ambiguous, it does something most monitoring tools cannot:
+> it asks. A short consented voice check-in collects what no sensor can measure
+> — did you exercise, has your pain changed, did you miss a dose. Those answers
+> come back as structured fields, the analysis runs again, and the clinician
+> gets one evidence packet: what changed, by how much, over how long, what the
+> patient said, and every timestamp behind it.
+>
+> *[demo: Alex Morgan, Context needed → check-in → Ready for review]*
+
+**The honesty — 20 seconds**
+
+> One number we think you should ask every team here for. We ran our rule
+> across 4,453 days from people who were not deteriorating, so every alert it
+> produced there was a false alarm. At our original setting it fired about once
+> per patient per fortnight. We tightened it until that halved — 3.35%, about
+> one alert per two patients per fortnight — and stopped at the point where
+> tightening further would have deleted the one real event we have.
+
+**The boundary — 10 seconds**
+
+> Relay never says what is wrong. It says what changed, by how much, and what
+> the patient reported. The clinician makes every medical judgment. That
+> constraint is enforced in code — generated text is checked against a
+> forbidden-phrasing list before it can render.
+
+---
+
+## Submission copy
+
+### Short description
+
+> Relay turns fragmented home-health data into one auditable evidence packet
+> for a clinician. It compares wearable, glucose, oxygen, sleep, medication and
+> symptom data against each patient's own baseline, detects coordinated
+> changes that persist, collects missing context through a consented voice
+> check-in, and produces a source-linked review item with a mock FHIR handoff.
+> It is decision support: it does not diagnose or recommend treatment.
+
+### What makes it different
+
+1. **Per-patient baselines, measured not assumed.** 71-participant cohort
+   shows 31 bpm of between-person spread in resting HR against 2.42 bpm
+   within-person. Calibration in `fixtures/calibration.json`.
+2. **Coordinated and persistent, not single-threshold.** Two or more signals
+   beyond 1.75 sd of that individual's baseline, with persistence required.
+3. **A measured false-alarm rate.** 3.35% of subject-days on a
+   non-deteriorating cohort, tuned deliberately rather than guessed.
+4. **It asks when it cannot tell.** Voice check-in for context sensors cannot
+   provide; the packet distinguishes "nothing else moved" from "we could not
+   see whether anything else moved".
+5. **Auditable by construction.** Every statement traces to a measurement,
+   timestamp and device. Audit log on every view, run, check-in and export.
+
+### Technology
+
+- Frontend: React provider portal, synchronized evidence timeline
+- Backend: Express API, normalized event store, consent and audit controls
+- Render Workflows: ingest → baseline → deviation → context request → compile `[VERIFY]`
+- ElevenLabs: consented structured voice check-in `[VERIFY]`
+- Mock FHIR: Observation, Communication, Task
+- Validation: 99 days of real wearable physiology; 4,453 subject-days from
+  the LifeSnaps public cohort (CC-BY-4.0) for threshold calibration
+
+---
+
+## The questions that will get asked
+
+**"How do you know it works?"**
+
+Say what we measured and what we did not. We measured the false-positive side:
+4,453 subject-days, 71 people, none deteriorating, 3.35% fire rate at the
+shipped setting. We have one known true positive, in real data, and it is what
+stopped us tightening further. We do not have a true-positive rate and cannot
+claim one. The honest sentence is *"we measured the false-alarm side and tuned
+against it."*
+
+**"Isn't this just WHOOP?"**
+
+WHOOP shows a person their own data. Relay does the thing a clinician cannot
+do from screenshots: normalizes several sources onto one axis, compares to
+that individual's baseline, requires signals to move *together* and persist,
+asks the patient when the passive data is ambiguous, and produces one
+source-linked packet with an EHR handoff. The output is for the care team, not
+the wearer.
+
+**"What happens when it's wrong?"**
+
+It is built to be wrong safely. It never names a condition, so a false alarm
+costs a clinician a look at a timeline and costs the patient nothing. Missing
+data produces "context incomplete" rather than a clean finding. And the whole
+thing is decision support — nothing escalates, nothing is dispatched, no
+treatment is suggested.
+
+**"Why not deep learning?"**
+
+Explainability is the product. A clinician needs to see that respiratory rate
+was 12% above baseline for two nights. A model score that cannot be traced to
+a measurement would fail the one job the output has. The detection rule is
+deterministic and printed in the interface.
+
+**"Did you validate on real patients?"**
+
+No, and we say so. Synthetic demo patients, one real non-clinical wearable
+dataset for engineering validation, and a public research cohort for
+calibration. No PHI, no clinical validation, no HIPAA-compliance claim.
+
+---
+
+## Claims discipline
+
+**Never say:** diagnosis, infection, sepsis, risk of deterioration, high risk,
+critical, urgent, emergency, "the patient should be treated", "contact the
+patient immediately", or that anything is HIPAA compliant.
+
+**Say instead:** "statistical review trigger", "provider review suggested",
+"X% above this patient's baseline for N hours", "context is incomplete",
+"built with HIPAA-aligned controls using synthetic data".
+
+Run any new stage copy through the guard before it goes in a slide:
+
+```bash
+python analysis/language_guard.py "your sentence here"
+```
+
+### The two `[VERIFY]` claims
+
+| Claim | True when | Current |
+|---|---|---|
+| "Render Workflows runs the analysis" | a workflow has executed on Render | `/api/status` → `render:false`; never executed |
+| "A live ElevenLabs voice check-in" | a real conversation has completed | `/api/status` → `voice:false`; key unset, untested |
+
+Both fall back cleanly — analysis runs on the local engine, the check-in
+offers a working text form. **If they are still false at demo time, present
+the text check-in as the check-in and do not mention voice.** A judge who
+hears "voice" and sees a form will discount everything else you said.
+
+### One claim that needs a source
+
+`DATA.md:123` states that Isolation Forest independently ranked the 2026-10-15
+event most anomalous of 45 windows. There is no Isolation Forest in the repo —
+nothing tracked imports sklearn. Either commit the script that produced it or
+cut the sentence. It is a strong line and it will draw exactly the follow-up
+question we cannot currently answer.
