@@ -6920,27 +6920,6 @@ p.rx-row-summary {
   line-height: 1.55;
   max-width: 48ch;
 }
-.rx-auth-points {
-  margin: 18px 0 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-}
-.rx-auth-points li {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  color: var(--ink-2);
-  font-size: 13.5px;
-  line-height: 1.5;
-}
-.rx-auth-points li > svg {
-  flex: none;
-  margin-top: 2px;
-  color: var(--pine);
-}
 .rx-auth-note {
   margin-top: 20px;
   color: var(--faint);
@@ -6977,12 +6956,6 @@ p.rx-row-summary {
   color: var(--faint);
   font-size: 12px;
   line-height: 1.45;
-}
-.rx-optional {
-  font-weight: 500;
-  color: var(--faint);
-  text-transform: none;
-  letter-spacing: 0;
 }
 .rx-auth-or {
   display: flex;
@@ -7049,15 +7022,6 @@ p.rx-row-summary {
 .rx-breakglass {
   border-color: #c77b57;
   background: rgba(199, 123, 87, 0.06);
-}
-.rx-auth-why {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-  color: var(--faint);
-  font-size: 13px;
-  line-height: 1.55;
-  max-width: 46ch;
 }
 
 .rx-auth-tabs button:focus-visible,
