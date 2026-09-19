@@ -1,16 +1,9 @@
 # Read this out loud
 
 Lines in _[square brackets]_ are for whoever drives the app. Do not read them.
-
-**586 words, about 3 minutes 40.** Devpost caps at three minutes. Four sentences
-are marked **(cut)**; drop all four and you are at roughly 3:00 with every topic
-still present. Decide before you record.
-
-What does not fit is in `docs/DEVPOST.md`, which judges read.
+**564 words, about 3:31.**
 
 ---
-
-## The problem · 0:00–0:20
 
 _[Landing page. Slow scroll. Do not click.]_
 
@@ -19,67 +12,57 @@ thirty days after a discharge are when a patient is most likely to come back,
 and when the line to their care team goes quiet. They do not know what is
 worth a phone call, and the clinician has forty of them.
 
-> **(cut)** "and the clinician has forty of them".
+_[Click "I have a discharge code". Bayfront Health, BAY-2741. Patient home.]_
 
----
+Relay turns that stream into something you can act on. Every signal is cut
+into six-hour windows and compared with that patient's own median and median
+absolute deviation, so the threshold is theirs, not a population's. Three of
+four signals must stay past it for twenty-four hours before Relay says
+anything.
 
-## What it does with the data · 0:20–0:55
+_[Point at the guidance card, the one with the next step and the Check in
+button.]_
 
-_[Click "I have a discharge code". Bayfront Health, BAY-2741. Point at the four
-readings.]_
+And the patient is not left holding a number. They get one next step, written
+from their own readings: breathing faster than usual since day nine, three
+others moved with it for thirty-five hours, so complete your check-in and
+meanwhile follow your discharge letter. It names the devices it used, and
+never says what is wrong.
 
-Relay turns that stream into something a clinician can act on. Every signal is
-cut into six-hour windows and compared with that patient's own median and
-median absolute deviation, so the threshold is theirs, not a population's. For
-pneumonia, three of four signals must stay past threshold for twenty-four
-hours before Relay says anything.
+_[Click Check in. Start the voice check-in, answer one question, point at the
+draft it writes.]_
 
-_[Check-in tab. Start the voice check-in, answer one question, point at the
-draft.]_
-
-And then it does what most monitoring gets wrong. It does not alarm. It asks.
-This is an ElevenLabs conversational agent, and the questions come from the
-discharge plan: pneumonia asks about breathing and fever, sleep apnoea about
-nights without the CPAP machine. Nothing reaches the care team until the
-patient approves it.
-
----
-
-## Why a hospital cares · 0:55–1:20
+The check-in is an ElevenLabs conversational agent, and the questions come
+from the discharge plan: pneumonia asks about breathing and fever, sleep
+apnoea about nights without the CPAP machine. Nothing reaches the care team
+until the patient approves it.
 
 _[Clinician tab. Ward list. Point at the four state cards.]_
 
-That is the point for a hospital. Twenty-eight patients, and today two need a
-clinician. Not twenty-eight charts, two. And Medicare penalises six conditions
-on a thirty-day readmission window; four are already pathways here.
-
-> **(cut)** the Medicare sentence. It is in the Devpost text.
+On the other side, twenty-eight patients, and today two need a clinician. Not
+twenty-eight charts, two. Medicare penalises six conditions on a thirty-day
+readmission window; four are pathways here.
 
 _[Open Maya Okafor. Left summary, her own words, then "Listen to summary".]_
 
-Open one and you get the story, not a chart. Four signals past threshold
-together for thirty-five hours, her own words beside the numbers, and a FHIR
-bundle for the record. There is a spoken version too, our second use of
-ElevenLabs.
-
----
-
-## The model, and why it stayed quiet · 1:20–2:00
+Open one and you get the story, not a chart, with her own words beside the
+numbers and a FHIR bundle for the record. There is a spoken version too, our
+second use of ElevenLabs.
 
 _[Model view. Stop on the score.]_
 
 A second model runs beside that rule: an Isolation Forest, unsupervised,
 because nobody in our reference data deteriorated, so there was never a
-positive class. It learns this patient's own six-hour windows, and its
-threshold is the ninety-fifth percentile of their own validation split.
+positive class. It learns this patient's own windows, and its threshold is the
+ninety-fifth percentile of their own validation split.
 
-_[Scroll slowly through "why it stayed quiet" so all four gates are readable.
-Hold this shot longest.]_
+_[Scroll slowly through "why it stayed quiet" so all four gates read. Hold
+longest.]_
 
 And look what it did. It scored above its own line, so the model alone would
 have spoken. It stayed quiet because the coordination gate failed. Four gates,
-each with what was required and what was observed. A product that tells a
-clinician why it said nothing is doing the harder half.
+each with what was required and what was observed. A product that tells you
+why it said nothing is doing the harder half.
 
 _[Render dashboard tab, latest run. Point at the execution ID as you say it.]_
 
@@ -88,78 +71,53 @@ and our evidence checks, then returns traceable results that help focus the
 patient's check-in and inform the clinician's review. Every run carries an
 execution ID.
 
----
+_[Security page. Point at the safeguard table, then the green "Live:" lines.]_
 
-## Storage, transmission, protection · 2:00–2:35
+So where does patient data live? The Apple Health import is parsed in the
+browser and never uploaded. What the server holds sits on an encrypted disk on
+Render, AES-256-GCM at rest. In transit, TLS, strict transport security, and a
+policy naming no third-party script origin at all.
 
-_[Security page. Point at the safeguard table, then at the two green "Live:"
-lines as you name encryption.]_
-
-So where does patient data live, and how is it protected? That Apple Health
-import is parsed entirely in the browser and never uploaded. What the server
-does hold sits on an encrypted disk on Render: the record, the accounts and
-the audit log, all AES-256-GCM at rest. In transit, TLS with strict transport
-security, and a content security policy that names no third-party script
-origin at all. Accounts are named, passwords scrypt-hashed, sessions
-revocable, and a patient is scoped on the server to their one record.
-
-> **(cut)** "Accounts are named, passwords scrypt-hashed, sessions revocable,
-> and". Keep "a patient is scoped on the server to their one record."
-
----
-
-## The audit trail · 2:35–3:00
-
-_[Scroll to the audit trail. Point at one row, then at the actor name on it.
-Let it sit for three seconds, then move on.]_
+_[Scroll to the audit trail. Point at one row, then at the person's name on it.
+Three seconds, then move on.]_
 
 And this is audit controls, 164.312(b). Every access records the person who
-made it, not just their role, carried through the model's asynchronous work so
-one request can never be attributed to another. Each entry carries the digest
-of the one before it, so an edited or deleted line breaks the chain and the
-page names where. That is what makes it evidence rather than a list.
+made it, not just their role. Each entry carries the digest of the one before
+it, so an edited line breaks the chain and the page names where. That makes it
+evidence, not a list.
 
-> **(cut)** "carried through the model's asynchronous work so one request can
-> never be attributed to another".
+_[Scroll to "Before clinical use". Two seconds.]_
 
-_[Scroll to the second table. Two seconds, no more.]_
-
-What is not met is on the same page. Business associate agreements, risk
-analysis, FDA clearance: none of them fixable in software.
+All ten technical safeguards built, plus a patient's right to take a copy of
+their record. What is left sits under Before clinical use: a business
+associate agreement, a risk analysis, workforce training, clinical evaluation.
+None fixable in software.
 
 _[Back to the ward list. Hold.]_
 
-Our own reading is that this is probably a regulated device, and we say so
-rather than claim an exemption. Ninety JavaScript tests, sixty-three Python.
-Relay never diagnoses, never scores risk, never escalates by itself. A
-clinician decides.
+And our own reading is that this is probably a regulated device, which we say
+rather than claim an exemption. Relay never diagnoses, never scores risk,
+never escalates by itself. A clinician decides.
 
 ---
 
-## Before you start
+## Before you record
 
 Three numbers come from the clock. Check them on screen.
 
 1. Ward counts, last seen **2, 12, 12 and 2**.
 2. Maya's persistence, last seen **thirty-five hours**.
 3. The model score, **above** its nought-point-five line. If below that day:
-   _"it scored below its own line, so the model stayed quiet, and it still
-   shows you every gate it checked."_
+   _"it scored below its own line, so the model stayed quiet, and it still shows
+   you every gate it checked."_
 
-## Two things to say accurately
+## Say these accurately
 
-**It is a disk, not a database.** Patient data sits on a Render persistent
-disk, encrypted at rest with AES-256-GCM. There is no database in the
-blueprint. "Encrypted disk on Render" is true and names the mechanism, which is
-stronger for a security reviewer than "secured database" anyway.
-
-**Never** call the labelled fallback a Render Workflow run, and never say a
-reading is irrelevant to a condition.
-
-## If Pranav's patient next-steps ship in time
-
-Nothing for it is in the app yet. If it lands, add one sentence after the
-check-in beat and cut the Medicare sentence to pay for it:
-
-> "And the patient is not left holding a number. They get the next step their
-> discharge plan calls for."
+- **A disk, not a database.** A Render persistent disk holding encrypted JSON.
+  No database is declared in the blueprint.
+- The safeguard table now reads **eleven built, one partial**. All ten technical
+  safeguards are built; the partial is minimum necessary.
+- The standalone "what software cannot fix" table was removed. That content now
+  lives in **Before clinical use** at the bottom of the same page.
+- Never call the labelled fallback a Render Workflow run, and never say a
+  reading is irrelevant to a condition.
