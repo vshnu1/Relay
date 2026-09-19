@@ -161,7 +161,19 @@ function Chart({ signal, cols, width, homeFrom }) {
 
 export default function Readings({ patient: p }) {
   const [ref, width] = useWidth();
-  const [openId, setOpenId] = useState(() => p.moved[0]?.id ?? null);
+  // Open the highest-contributing signal by default so its chart, with the green
+  // usual-band, is visible without a click. Prefer a signal past its threshold, then
+  // the one furthest from usual today; fall back to a counted signal so something is
+  // always open even when nothing has moved.
+  const [openId, setOpenId] = useState(() => {
+    const top = [...p.counted].sort(
+      (a, b) =>
+        b.moved - a.moved ||
+        Math.abs(b.todayLevel ?? 0) - Math.abs(a.todayLevel ?? 0) ||
+        b.towardDays - a.towardDays,
+    )[0];
+    return (top ?? p.signals[0])?.id ?? null;
+  });
   const [more, setMore] = useState(false);
   const homeFrom = Math.max(0, p.dayHome + 1 - HOME_DAYS);
   const homeCount = p.dayHome + 1 - homeFrom;
