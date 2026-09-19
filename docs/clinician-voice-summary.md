@@ -6,4 +6,4 @@ The briefing includes the recovery-watch status, persistent counted signals with
 
 The API endpoint is clinician-role gated and accepts only bounded text explicitly marked as synthetic demo data. It returns audio without persisting the audio or summary text in the app. The Render blueprint enables the endpoint for this synthetic-only demo; set `ELEVENLABS_DEMO_SUMMARY_ENABLED=false` before loading any real patient records. ElevenLabs receives the summary text when the feature is used, so this prototype must not send real patient information without appropriate vendor agreements and privacy review.
 
-The service uses `ELEVENLABS_VOICE_ID` when set, otherwise it reads the voice ID from `ELEVENLABS_AGENT_ID`. The ElevenLabs API key remains server-side.
+The service uses `ELEVENLABS_VOICE_ID` when explicitly set. Otherwise it reads the live agent's voice ID, TTS model, and configured voice settings on each request, so a stale server cache cannot keep using an older voice. If ElevenLabs synthesis fails, the page keeps the written summary and does not substitute the computer's robotic built-in voice. The ElevenLabs API key remains server-side.

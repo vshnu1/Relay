@@ -33,13 +33,6 @@ const SUMMARY = [
     detail: "Check-in sent; response not yet received",
   },
   {
-    key: "nodata",
-    title: "Not enough data",
-    icon: CircleAlert,
-    className: "nodata",
-    detail: "Too few readings to compare with their usual",
-  },
-  {
     key: "monitoring",
     title: "Monitoring",
     icon: CheckCircle2,

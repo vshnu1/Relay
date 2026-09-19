@@ -24,7 +24,6 @@ export default function Profiles() {
       <div className="rx-profiles">
         {Object.entries(PROFILES).map(([id, profile]) => (
           <section key={id} className="rx-card" aria-label={profile.name}>
-            <span className="rx-profile-preview-status">Demo profile</span>
             <h2>{profile.name}</h2>
             <div className="rx-profile-signals" aria-label="Watched signals">
               {profile.counted.map((c) => (

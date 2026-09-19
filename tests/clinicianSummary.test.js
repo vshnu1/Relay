@@ -27,7 +27,7 @@ const patient = {
   },
 };
 
-test("clinician briefing states watch status, readings, and model evidence", () => {
+test("clinician briefing stays concise and includes concerning readings and patient context", () => {
   const text = buildClinicianSummary(
     patient,
     {
@@ -37,32 +37,29 @@ test("clinician briefing states watch status, readings, and model evidence", () 
     },
     true,
   );
-  assert.match(text, /clinician review is recommended/);
-  assert.match(text, /16\.5 per minute, about 16 percent above usual/);
+  assert.match(text, /Review recommended/);
+  assert.match(text, /16\.5 per minute/);
   assert.match(
     text,
-    /The latest Relay model assessment is unusual pattern; clinician review is recommended/,
+    /patient reports breathing with usual activity is a little worse/,
   );
-  assert.match(
+  assert.doesNotMatch(
     text,
-    /The strongest model signals were Breathing rate higher than this patient's usual/,
-  );
-  assert.match(
-    text,
-    /the patient reported a little worsening in breathing with usual activity/,
+    /trained-model score|model assessment|wearable readings/,
   );
   assert.doesNotMatch(text, /Demo Person|Sensitive free text|synthetic-1/);
 });
 
-test("without a score the briefing clearly identifies its readings-only fallback", () => {
+test("a calm day gets a short general update without model implementation details", () => {
   const text = buildClinicianSummary(
-    { ...patient, moved: [], status: "monitoring" },
+    {
+      ...patient,
+      moved: [],
+      status: "monitoring",
+      answered: { answers: { breathing: "No" } },
+    },
     null,
   );
-  assert.match(text, /No clinician review is requested right now/);
-  assert.match(
-    text,
-    /No watched reading is currently past its persistent threshold/,
-  );
-  assert.match(text, /A trained-model score is not included in this briefing/);
+  assert.match(text, /No concerning changes are flagged today/);
+  assert.doesNotMatch(text, /trained-model score|readings-only fallback/);
 });

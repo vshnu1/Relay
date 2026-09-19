@@ -229,7 +229,7 @@ export function createStore(source, { sync = null } = {}) {
     seen.add(e.eid);
     apply[type](e);
     appendLog(e);
-    sync?.push(e);
+    return sync?.push(e) || Promise.resolve({ delivered: false });
   };
 
   function answerCheckin(id, answers, at = Date.now(), details = {}) {
@@ -395,12 +395,19 @@ export function createStore(source, { sync = null } = {}) {
       send({ type: "appointment", patientId: id, t, with: who, where });
     },
     submitCheckin(id, answers, details = {}) {
-      logged("checkin", { patientId: id, answers, ...details, at: Date.now() });
+      const delivery = logged("checkin", {
+        patientId: id,
+        answers,
+        ...details,
+        at: Date.now(),
+      });
       send({ type: "checkin", patientId: id, answers, ...details });
+      return delivery;
     },
     sendNote(id, note) {
-      logged("note", { patientId: id, note, at: Date.now() });
+      const delivery = logged("note", { patientId: id, note, at: Date.now() });
       send({ type: "note", patientId: id, note });
+      return delivery;
     },
     requestCheckin(id) {
       logged("request", { patientId: id, at: Date.now() });

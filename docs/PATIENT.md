@@ -30,7 +30,7 @@ chooses to send.
 2. **Home**: what the patient needs the moment the app opens. A header with the
    condition and hospital, a greeting, and the day of recovery with a progress bar
    and the device sync line. Then one banner for the day's state: amber "Something
-   unusual was found in your readings" with **See what changed** and **Check in now**
+   unusual was found in your readings" with a focused **Check in** action
    when the readings or the model call for an off-schedule check-in (or the care
    team asked, or a report is recommended); a calm card for a routine check-in;
    a quiet line when nothing is needed. Below it, two lanes: **Your readings**
@@ -40,18 +40,22 @@ chooses to send.
    the next follow-up, and a link to messages). The model scores the patient's own
    readings when the home opens. The discharge (notes, prescriptions, follow-up) is
    seeded per pathway for the demo; messages, journal entries and reports happen live.
-   Demo path: sign in with `BAY-2741`, read the banner, **Check in now**, talk it
-   through, confirm the report, then open the clinician view.
+   Demo path: sign in with `BAY-2741`, read the banner, complete the check-in,
+   share it with the care team, then open the clinician view.
 3. **Check-in** (`#/patient/checkin`): one voice conversation. Relay opens by saying
    why it is checking in (daily for the first week at home, every other day after,
    `SCHEDULE` in `model/profiles.js`; or because the readings moved; or because the
-   care team asked), then talks through the profile's questions. With
+   care team asked), then asks the profile's questions one at a time and accepts
+   natural spoken answers. The final optional prompt invites context about activity,
+   meals, drinks, and anything else that may help the care team. With
    `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on the server the ElevenLabs agent
    runs it: it reads the readings and the model's result through a client tool,
-   records the answers, and returns one recommendation. Without the key the browser
-   speaks and listens itself. Tapping an answer always works. When every question is
-   answered the app submits, re-scores with the model, and offers **What this
-   means** (`#/patient/insight`).
+   records a draft for the patient to review. Without the key the browser speaks
+   and listens itself. If voice is interrupted, answer buttons remain available.
+   After review and consent, the answers and optional context are sent to the shared
+   record. The patient sees a sent confirmation only after the server acknowledges
+   delivery; the clinician view shows the check-in and uses those answers as model
+   context.
    Check-in alerts: `checkinDue` also fires off-schedule when the rules see a
    persistent pattern or the model marks the recent windows anomalous
    (`reason: "readings"`); the sidebar badge and the home alert show it at once.
@@ -72,7 +76,7 @@ chooses to send.
 
 `POST /api/ml/score` spawns the Python model for the readings the browser sends
 (`model/mlClient.js` maps app signals to the model's metrics). The patient can score
-from Home or the insight screen; a check-in re-scores with the answers as context.
+from Home; a check-in re-scores with the answers as context.
 The model's state leads the insight, the notifications and the report. Requires
 `RELAY_ML_ENABLED=true` on the server.
 

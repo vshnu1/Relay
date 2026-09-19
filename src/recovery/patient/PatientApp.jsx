@@ -18,7 +18,6 @@ import Connect from "./Connect.jsx";
 import Metrics from "./Metrics.jsx";
 import Journal from "./Journal.jsx";
 import Care from "./Care.jsx";
-import Insight from "./Insight.jsx";
 import HomeAlert from "./HomeAlert.jsx";
 import HomeReadings from "./HomeReadings.jsx";
 import HomeHospital from "./HomeHospital.jsx";
@@ -128,7 +127,6 @@ export default function PatientApp({ patient, route, onSignOut }) {
     "readings",
     "journal",
     "care",
-    "insight",
   ].includes(route[1])
     ? route[1]
     : route[1] === "assistant"
@@ -139,9 +137,7 @@ export default function PatientApp({ patient, route, onSignOut }) {
       ? "connect"
       : page === "watching" || page === "journal"
         ? "readings"
-        : page === "insight"
-          ? "checkin"
-          : page;
+        : page;
   const due = checkinDue(patient);
   return (
     <div className="rx-doctor rx-pweb">
@@ -192,8 +188,6 @@ export default function PatientApp({ patient, route, onSignOut }) {
             <Journal patient={patient} />
           ) : page === "care" ? (
             <Care patient={patient} />
-          ) : page === "insight" ? (
-            <Insight patient={patient} />
           ) : (
             <Home patient={patient} />
           )}
