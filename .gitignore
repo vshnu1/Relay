@@ -9,9 +9,3 @@ data/
 
 __pycache__/
 *.pyc
-*.zip
-export.xml
-export_cda.xml
-apple_health_export/
-.venv/
-venv/
