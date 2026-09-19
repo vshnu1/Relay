@@ -27,14 +27,21 @@ chooses to send.
    MER-9855 Clara Moreau, LAK-1482 Arthur Bennett, LAK-9985 Mei Tanaka, TAM-6507
    Rosa Iglesias, TAM-1604 Amara Nwosu.
 
-2. **Home**: what the patient needs the moment the app opens. A one-line header
-   (day at home, condition, hospital, progress and the next check-in), then alerts
-   (check-in due, report recommended, appointment soon, unread nurse message, device
-   to connect), then two columns: **From your hospital** (discharge date and
-   clinician, the doctor's notes, prescriptions, the next follow-up) and **Your
-   readings today** (value and usual/changed per signal, the model's line with a
-   score button, device status). The care team writes the notes, medicines and
-   appointments from the clinician view; nothing is seeded.
+2. **Home**: what the patient needs the moment the app opens. A header with the
+   condition and hospital, a greeting, and the day of recovery with a progress bar
+   and the device sync line. Then one banner for the day's state: amber "Something
+   unusual was found in your readings" with **See what changed** and **Check in now**
+   when the readings or the model call for an off-schedule check-in (or the care
+   team asked, or a report is recommended); a calm card for a routine check-in;
+   a quiet line when nothing is needed. Below it, two lanes: **Your readings**
+   (one tile per counted signal with today's value, the usual, a Changed/Usual chip
+   and a 14-day sparkline, then the model's line with a score button) and **From
+   your hospital** (discharge date and clinician, the doctor's notes, prescriptions,
+   the next follow-up, and a link to messages). The model scores the patient's own
+   readings when the home opens. The discharge (notes, prescriptions, follow-up) is
+   seeded per pathway for the demo; messages, journal entries and reports happen live.
+   Demo path: sign in with `BAY-2741`, read the banner, **Check in now**, talk it
+   through, confirm the report, then open the clinician view.
 3. **Check-in** (`#/patient/checkin`): one voice conversation. Relay opens by saying
    why it is checking in (daily for the first week at home, every other day after,
    `SCHEDULE` in `model/profiles.js`; or because the readings moved; or because the
