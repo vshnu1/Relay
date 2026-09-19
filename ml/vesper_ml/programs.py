@@ -80,7 +80,7 @@ PROGRAMS = {
     ),
     "sepsis_watch": Program(
         key="sepsis_watch",
-        title="Sepsis watch after surgery",
+        title="Post-discharge recovery after surgery",
         metrics=("rhr", "hrv", "respiratory", "spo2", "sleep", "temperature", "heart_rate", "steps"),
         core=("rhr", "hrv", "respiratory", "temperature"),
         context_fields=COMMON_CONTEXT + ("fever_symptoms", "pain_change", "wound_concern"),
