@@ -14,7 +14,7 @@ const { createSimulatedSource } =
   await import("../src/recovery/model/simulatedSource.js");
 const { derive } = await import("../src/recovery/model/derive.js");
 const { PROFILES, SIGNALS } = await import("../src/recovery/model/profiles.js");
-const { homeGuidance, metricGuidance, observation } =
+const { homeGuidance, metricGuidance, observation, CHECKIN_HREF } =
   await import("../src/recovery/patient/guidance.js");
 
 const HOUR = 3600000;
@@ -32,13 +32,16 @@ async function cohort() {
 // them, and it speaks only about measurements the record holds.
 const FORBIDDEN =
   /diagnos|\bhigh\b|\blow\b|\bnormal\b|abnormal|will improve|will get better|guarantee|cholesterol|blood pressure|glucose|sugar|\blabs?\b|\bdiet\b/i;
-const text = (g) => `${g.title} ${g.body} ${g.evidence}`;
+const tips = (g) => (g.tips || []).map((t) => t.text);
+const text = (g) => [g.title, g.lead, ...tips(g), g.evidence].join(" ");
 const clean = (g, label) => {
   assert.ok(g, `${label}: guidance exists`);
   assert.doesNotMatch(text(g), FORBIDDEN, `${label}: ${text(g)}`);
-  assert.ok(g.title && g.body && g.evidence, `${label}: all three lines`);
-  assert.match(g.evidence, /^(Based on|Requested by)/, `${label}: evidence`);
+  assert.ok(g.title && g.lead && g.evidence, `${label}: title, lead, evidence`);
+  assert.ok(Array.isArray(g.tips), `${label}: tips is a list`);
+  assert.match(g.evidence, /^Based on/, `${label}: evidence`);
 };
+const someTip = (g, re) => tips(g).some((t) => re.test(t));
 
 // A derived-looking signal, built from the real definition so names, units and
 // directions are the ones the patient sees.
@@ -67,7 +70,6 @@ function sig(id, over = {}) {
     runStart: null,
     moved: false,
     enoughBaseline: true,
-    home: [],
     fmt: (v) => (v === null || v === undefined ? "–" : v.toFixed(info.digits)),
     ...over,
   };
@@ -98,6 +100,10 @@ function patient(signals, over = {}) {
       phone: { name: "iPhone Health app", connected: true },
       manual: { name: "Your own entries", connected: true },
     },
+    medications: [
+      "Amoxicillin 500 mg, three times a day, 5 more days",
+      "Paracetamol 1 g, up to four times a day, as needed",
+    ],
     signals,
     counted,
     moved: counted.filter((s) => s.moved),
@@ -112,81 +118,107 @@ function patient(signals, over = {}) {
   };
 }
 
-test("the demo patient with four moved vitals is told to complete the check-in, with the numbers", async () => {
+test("the demo patient with four moved vitals gets a list of what helps, and no second check-in button", async () => {
   const { store, view, now } = await cohort();
   const maya = view("maya");
   const g = homeGuidance(maya, now);
   clean(g, "maya home");
-  assert.equal(g.id, "checkin");
-  assert.equal(g.title, "Complete your check-in");
-  assert.equal(g.cta.href, "#/patient/checkin");
+  assert.equal(g.id, "act");
+  assert.equal(g.tone, "attention");
+  assert.equal(g.title, "What you can do today");
   assert.match(
-    g.body,
-    /breathing while asleep has been faster than your usual since day 9/,
+    g.lead,
+    /^Your breathing while asleep has been faster than your usual since day 9 \(16\.5 against 14\.2 per min\)\. Four other readings have moved with it, for about \d+ hours, and three more are a little away from your usual\.$/,
   );
-  assert.match(
-    g.body,
-    /Three other readings have moved with it, for about \d+ hours/,
+  assert.ok(someTip(g, /regular bedtime/), "her shorter sleep gets its line");
+  const thermometer = g.tips.find((t) => /own thermometer/.test(t.text));
+  assert.equal(thermometer?.href, "#/patient/readings/temperature");
+  assert.ok(g.tips.length >= 4 && g.tips.length <= 6, `${g.tips.length} tips`);
+  assert.ok(someTip(g, /rest more than usual and avoid heavy effort/));
+  assert.ok(someTip(g, /Sit upright rather than lying flat/));
+  assert.ok(someTip(g, /Skip caffeine and alcohol today/));
+  assert.ok(
+    someTip(
+      g,
+      /exactly as prescribed, and nothing extra: Amoxicillin 500 mg and Paracetamol 1 g/,
+    ),
   );
-  assert.match(g.body, /discharge letter/);
+  assert.ok(!someTip(g, /walk|exercise/i), "vitals never lead to exercise");
+  assert.notEqual(g.cta.href, CHECKIN_HREF, "the banner owns the check-in");
+  assert.ok(g.tips.every((t) => t.href !== CHECKIN_HREF));
   assert.match(g.evidence, /Apple Watch and WHOOP/);
-  assert.doesNotMatch(
-    g.body,
-    /walk|exercise/i,
-    "vitals never lead to exercise",
-  );
-  // Under the charts: the vital repeats the step, sleep gets its own advice,
-  // and the temperature she never entered gets nothing at all.
+  // Under the charts: the vital keeps a check-in link (no banner there), sleep
+  // gets its own advice, and the temperature she never entered gets nothing.
   const by = Object.fromEntries(maya.signals.map((s) => [s.id, s]));
-  assert.equal(metricGuidance(by.breathing, maya, now).id, "checkin");
+  const breathing = metricGuidance(by.breathing, maya, now);
+  clean(breathing, "maya breathing");
+  assert.equal(breathing.cta.href, CHECKIN_HREF);
+  assert.ok(breathing.tips.length <= 3);
   const sleep = metricGuidance(by.sleep, maya, now);
   clean(sleep, "maya sleep");
-  assert.equal(sleep.id, "sleep");
   assert.match(
-    sleep.body,
+    sleep.lead,
     /sleep has been shorter than your usual since day 9 \(5\.9 against 7\.2 hours\)/,
   );
-  assert.match(sleep.body, /bedtime/);
-  assert.match(sleep.body, /caffeine/);
+  assert.ok(
+    someTip(
+      sleep,
+      /regular bedtime tonight and avoid caffeine late in the day/,
+    ),
+  );
   assert.equal(metricGuidance(by.temperature, maya, now), null);
   store.destroy();
 });
 
-test("the quiet demo patient is told to keep to the plan, and her empty weight log says nothing", async () => {
+test("the quiet demo patient is told to keep to the plan, with the plan's own items", async () => {
   const { store, view, now } = await cohort();
   const aisha = view("aisha");
   const g = homeGuidance(aisha, now);
   clean(g, "aisha home");
   assert.equal(g.id, "usual");
-  assert.match(g.title, /discharge plan/);
+  assert.equal(g.tone, "calm");
   assert.match(
-    g.body,
+    g.lead,
     /All three readings watched after atrial fibrillation are about your usual/,
   );
+  assert.ok(
+    someTip(
+      g,
+      /Take your medicines as listed: Apixaban 5 mg and Bisoprolol 5 mg/,
+    ),
+  );
+  assert.ok(someTip(g, /Wear your Apple Watch tonight/));
+  assert.ok(someTip(g, /next check-in is on day 23/));
   assert.equal(g.cta.href, "#/patient/readings");
-  assert.match(g.evidence, /Apple Watch/);
   for (const s of aisha.signals) {
     const m = metricGuidance(s, aisha, now);
     if (s.id === "weight") assert.equal(m, null, "no weight was ever entered");
     else {
       clean(m, `aisha ${s.id}`);
       assert.equal(m.id, "usual");
-      assert.doesNotMatch(m.body, /walk|check-in/i);
+      assert.equal(m.tips.length, 0);
     }
   }
   store.destroy();
 });
 
-test("no patient in the cohort is ever diagnosed, judged, or told about a measurement they lack", async () => {
+test("no patient in the cohort is diagnosed, judged, told about a measurement they lack, or given a second check-in button", async () => {
   const { store, view } = await cohort();
   const s = store.getState();
   for (const id of s.order) {
     const p = view(id);
     const g = homeGuidance(p, s.now);
     assert.ok(g, `${id} gets one insight`);
-    assert.ok(!Array.isArray(g), "exactly one, never a list");
+    assert.ok(!Array.isArray(g), "exactly one, never a list of cards");
     clean(g, `${id} home`);
     assert.ok(g.cta?.href, `${id}: the card always links somewhere`);
+    assert.notEqual(
+      g.cta.href,
+      CHECKIN_HREF,
+      `${id}: Home never adds a check-in button`,
+    );
+    if (g.id !== "usual")
+      assert.ok(g.tips.length > 0, `${id}: something to do`);
     for (const signal of p.signals) {
       const m = metricGuidance(signal, p, s.now);
       if (signal.usual === null)
@@ -197,81 +229,100 @@ test("no patient in the cohort is ever diagnosed, judged, or told about a measur
   store.destroy();
 });
 
-test("a moved vital asks for the check-in when one is due, and for the discharge instructions otherwise", () => {
+test("a moved vital brings rest, posture or stimulant tips and the medicines, never exercise", () => {
   const signals = [
     sig("restingHr", { usual: 62, today: 70, todayLevel: 2, moved: true }),
     usual("breathing", 14.2),
     usual("oxygen", 96.8),
     usual("skinTemp", 33.9),
   ];
-  // The readings have made a check-in due.
   const p = patient(signals, { pattern: true, hours: 26 });
   const g = homeGuidance(p, NOW);
   clean(g, "vital moved");
-  assert.equal(g.id, "checkin");
-  assert.equal(g.cta.href, "#/patient/checkin");
-  assert.match(
-    g.body,
-    /Your resting heart rate has been higher than your usual since day 8 \(70 against 62 bpm\)/,
+  assert.equal(g.id, "act");
+  assert.equal(g.tone, "attention");
+  assert.equal(
+    g.lead,
+    "Your resting heart rate has been higher than your usual since day 8 (70 against 62 bpm).",
   );
-  assert.doesNotMatch(g.body, /walk|exercise|eat|drink/i);
+  assert.deepEqual(tips(g), [
+    "Take it easy today: rest more than usual and avoid heavy effort.",
+    "Take your medicines exactly as prescribed, and nothing extra: Amoxicillin 500 mg and Paracetamol 1 g.",
+    "Skip caffeine and alcohol today, and rest between activities.",
+  ]);
+  assert.equal(g.cta.href, "#/patient/readings/restingHr");
   assert.equal(
     g.evidence,
     "Based on resting heart rate from your Apple Watch, compared with your usual before your stay.",
   );
-
-  // Answered three hours ago: the care team has it, so the step is the letter.
+  // The same reading under its chart links to the check-in that is due there.
+  const m = metricGuidance(signals[0], p, NOW);
+  assert.equal(m.cta.href, CHECKIN_HREF);
+  assert.equal(m.cta.primary, true);
+  // Answered: the link softens to "again".
   const answered = {
     requestedAt: NOW - 4 * HOUR,
     answeredAt: NOW - 3 * HOUR,
     kind: "priority",
     answers: {},
   };
-  const settled = homeGuidance(
-    patient(signals, {
-      pattern: true,
-      hours: 26,
-      checkins: [answered],
-      answered,
-    }),
+  const again = metricGuidance(
+    signals[0],
+    patient(signals, { pattern: true, checkins: [answered], answered }),
     NOW,
   );
-  clean(settled, "vital answered");
-  assert.equal(settled.id, "settle");
-  assert.match(settled.title, /discharge instructions/);
-  assert.match(
-    settled.body,
-    /Your care team has your check-in from 3 hours ago/,
-  );
-  assert.equal(settled.cta.label, "Check in again");
-
-  // One vital on its own, below what this pathway counts as a pattern: the
-  // letter again, and a check-in offered rather than demanded.
-  const single = homeGuidance(patient(signals), NOW);
-  clean(single, "single vital");
-  assert.equal(single.id, "settle");
-  assert.match(single.body, /Your care team can see your readings/);
-  assert.match(single.body, /check in if you feel unwell/);
-  assert.equal(single.cta.label, "Check in");
-  assert.equal(metricGuidance(signals[0], patient(signals), NOW).id, "settle");
+  assert.equal(again.cta.label, "Check in again");
+  // Without medicines on the record, nothing about medicines is invented.
+  const noMeds = homeGuidance(patient(signals, { medications: [] }), NOW);
+  assert.ok(!someTip(noMeds, /medicines/));
 });
 
-test("coordinated unusual readings and a model finding both lead to the check-in", () => {
+test("a warmer wrist suggests taking a real temperature when the pathway records one", () => {
+  const p = patient([
+    sig("skinTemp", { usual: 33.9, today: 34.6, todayLevel: 2, moved: true }),
+    usual("breathing", 14.2),
+    sig("temperature", { usual: 36.8, today: null, counted: false }),
+  ]);
+  const g = homeGuidance(p, NOW);
+  clean(g, "skin temp");
+  const t = g.tips.find((x) => /own thermometer/.test(x.text));
+  assert.ok(t, "a thermometer tip");
+  assert.equal(t.href, "#/patient/readings/temperature");
+  assert.ok(!someTip(g, /Dress lightly/), "one line for the wrist, not two");
+  // Already entered today: the things that keep a temperature down instead.
+  const entered = homeGuidance(
+    patient([
+      p.signals[0],
+      p.signals[1],
+      sig("temperature", { usual: 36.8, today: 37.0, counted: false }),
+    ]),
+    NOW,
+  );
+  assert.ok(!someTip(entered, /own thermometer/));
+  assert.ok(someTip(entered, /Dress lightly and keep the room cool/));
+  // A pathway that records no temperature at all gets the same.
+  const noThermometer = homeGuidance(
+    patient([p.signals[0], p.signals[1]]),
+    NOW,
+  );
+  assert.ok(someTip(noThermometer, /Dress lightly/));
+});
+
+test("coordinated readings and a model finding still produce a list, with the hours", () => {
   const signals = [
     sig("restingHr", { usual: 62, today: 70, todayLevel: 2, moved: true }),
     sig("breathing", { usual: 14.2, today: 16, todayLevel: 2, moved: true }),
     usual("oxygen", 96.8),
   ];
-  const coordinated = homeGuidance(
-    patient(signals, { pattern: true, hours: 30 }),
-    NOW,
-  );
-  assert.equal(coordinated.id, "checkin");
+  const g = homeGuidance(patient(signals, { pattern: true, hours: 30 }), NOW);
   assert.match(
-    coordinated.body,
-    /One other reading has moved with it, for about 30 hours/,
+    g.lead,
+    /One other reading has moved with it, for about 30 hours\.$/,
   );
-
+  assert.ok(someTip(g, /Sit upright/));
+  assert.ok(someTip(g, /Skip caffeine/));
+  // The model alone, with every reading usual, changes nothing on the card: the
+  // banner carries the model's request.
   const model = homeGuidance(
     patient([usual("restingHr", 62), usual("breathing", 14.2)], {
       analysis: { application_state: "context_needed", is_anomalous: true },
@@ -279,8 +330,8 @@ test("coordinated unusual readings and a model finding both lead to the check-in
     NOW,
   );
   clean(model, "model only");
-  assert.equal(model.id, "checkin");
-  assert.match(model.body, /Relay's model found a pattern/);
+  assert.equal(model.id, "usual");
+  assert.notEqual(model.cta.href, CHECKIN_HREF);
 });
 
 test("fewer steps with usual vitals suggests one short walk, conditioned on the plan, with a stop rule", () => {
@@ -300,20 +351,23 @@ test("fewer steps with usual vitals suggests one short walk, conditioned on the 
   );
   const g = homeGuidance(p, NOW);
   clean(g, "steps");
-  assert.equal(g.id, "activity");
-  assert.match(
-    g.body,
-    /Your steps in a day have been fewer than your usual since day 9 \(3900 against 6200 steps\)/,
+  assert.equal(g.id, "act");
+  assert.equal(g.tone, "action");
+  assert.equal(
+    g.lead,
+    "Your steps in a day have been fewer than your usual since day 9 (3900 against 6200 steps).",
   );
-  assert.match(g.body, /If your discharge plan allows activity/);
-  assert.match(g.body, /one short walk or the exercises you were given/);
-  assert.match(g.body, /Stop and rest if you feel worse/);
+  assert.ok(
+    someTip(
+      g,
+      /^If your discharge plan allows activity, take one short walk or do your prescribed exercises\. Stop and rest if you feel worse\.$/,
+    ),
+  );
   assert.equal(
     g.evidence,
     "Based on daily steps from your iPhone Health app, compared with your usual before your stay.",
   );
   assert.equal(g.cta.href, "#/patient/readings/steps");
-  // Slower walking reads the same way.
   const slow = metricGuidance(
     sig("walkingSpeed", {
       usual: 1.07,
@@ -324,8 +378,9 @@ test("fewer steps with usual vitals suggests one short walk, conditioned on the 
     p,
     NOW,
   );
-  assert.equal(slow.id, "activity");
-  assert.match(slow.body, /How fast you walk has been slower than your usual/);
+  assert.match(slow.lead, /How fast you walk has been slower than your usual/);
+  assert.ok(someTip(slow, /one short walk/));
+  assert.equal(slow.cta, null, "activity never links to the check-in");
 });
 
 test("a walk is never suggested while a vital is away from usual, even a little", () => {
@@ -335,18 +390,19 @@ test("a walk is never suggested while a vital is away from usual, even a little"
   ]);
   const g = homeGuidance(p, NOW);
   clean(g, "steps with drifting vital");
-  assert.notEqual(g.id, "activity");
-  assert.doesNotMatch(g.body, /walk today|short walk/i);
-  assert.match(g.title, /discharge plan/);
   assert.match(
-    g.body,
-    /Daily steps fewer since day 8 and resting heart rate higher for one day/,
+    g.lead,
+    /^Your steps in a day have been fewer than your usual since day 8 \(3900 against 6200 steps\)\. One other reading is a little away from your usual too\.$/,
   );
+  assert.ok(someTip(g, /Keep activity light today/));
+  assert.ok(!someTip(g, /short walk/));
+  assert.ok(someTip(g, /Skip caffeine/), "the drifting vital gets its own tip");
   const m = metricGuidance(p.signals[0], p, NOW);
-  assert.notEqual(m.id, "activity");
+  assert.ok(someTip(m, /Keep activity light today/));
+  assert.ok(!someTip(m, /short walk/));
 });
 
-test("shorter sleep, more pain and a heavier morning weight each get their own gentle step", () => {
+test("shorter sleep, more pain and a heavier morning weight each get their own gentle steps", () => {
   const base = [usual("restingHr", 62), usual("breathing", 14.2)];
   const sleep = homeGuidance(
     patient([
@@ -362,43 +418,43 @@ test("shorter sleep, more pain and a heavier morning weight each get their own g
     NOW,
   );
   clean(sleep, "sleep");
-  assert.equal(sleep.id, "sleep");
+  assert.equal(sleep.tone, "action");
   assert.match(
-    sleep.body,
-    /shorter than your usual for two nights \(5\.8 against 7\.2 hours\)/,
+    sleep.lead,
+    /^Your sleep has been shorter than your usual for two nights \(5\.8 against 7\.2 hours\), but not by much\.$/,
   );
-  assert.match(sleep.body, /consistent bedtime/);
-  assert.match(sleep.body, /caffeine late in the day/);
+  assert.ok(someTip(sleep, /consistent|regular bedtime/));
+  assert.ok(someTip(sleep, /caffeine late in the day/));
   assert.equal(sleep.cta.href, "#/patient/readings/sleep");
 
-  const pain = homeGuidance(
-    patient([
-      ...base,
-      sig("pain", {
-        usual: 3,
-        today: 6,
-        todayLevel: 2,
-        moved: true,
-        counted: false,
-      }),
-    ]),
-    NOW,
-  );
+  const painSignal = sig("pain", {
+    usual: 3,
+    today: 6,
+    todayLevel: 2,
+    moved: true,
+    counted: false,
+  });
+  const pain = homeGuidance(patient([...base, painSignal]), NOW);
   clean(pain, "pain");
-  assert.equal(pain.id, "pain");
   assert.match(
-    pain.body,
+    pain.lead,
     /Your pain has been higher than your usual since day 8 \(6 against 3 out of 10\)/,
   );
-  assert.match(pain.body, /as prescribed/);
-  assert.match(
-    pain.body,
-    /getting worse rather than better, complete a check-in/,
+  assert.ok(someTip(pain, /pain relief as prescribed, and nothing extra/));
+  assert.ok(
+    someTip(
+      pain,
+      /getting worse rather than better, tell your care team at your check-in/,
+    ),
+  );
+  assert.notEqual(
+    pain.cta.href,
+    CHECKIN_HREF,
+    "Home leaves the button to the banner",
   );
   assert.equal(
-    pain.cta.href,
-    "#/patient/checkin",
-    "worsening pain links to the check-in",
+    metricGuidance(painSignal, patient([...base, painSignal]), NOW).cta.href,
+    CHECKIN_HREF,
   );
   assert.equal(
     pain.evidence,
@@ -411,39 +467,37 @@ test("shorter sleep, more pain and a heavier morning weight each get their own g
         ...base,
         sig("weight", { usual: 78, today: 80.5, todayLevel: 3, moved: true }),
       ],
-      { profileId: "heartFailure", profile: PROFILES.heartFailure },
+      {
+        profileId: "heartFailure",
+        profile: PROFILES.heartFailure,
+      },
     ),
     NOW,
   );
   clean(weight, "weight");
-  assert.equal(weight.id, "weight");
   assert.match(
-    weight.body,
+    weight.lead,
     /heavier than your usual since day 8 \(80\.5 against 78\.0 kg\)/,
   );
-  assert.match(weight.body, /same scale, same time, before breakfast/);
-  assert.match(
-    weight.body,
-    /any fluid or salt instructions your care team has given you/,
+  assert.ok(
+    someTip(
+      weight,
+      /^Weigh again tomorrow: same scale, same time, before breakfast\.$/,
+    ),
   );
-  assert.doesNotMatch(
-    weight.body,
-    /limit|restrict|avoid/i,
+  assert.ok(
+    someTip(
+      weight,
+      /any fluid or salt instructions your care team has given you/,
+    ),
+  );
+  assert.ok(
+    !someTip(weight, /limit|restrict|avoid/i),
     "no invented restriction",
   );
-  // Pain outranks sleep when both are present and neither has moved.
-  const both = homeGuidance(
-    patient([
-      ...base,
-      sig("sleep", { usual: 7.2, today: 6.4, todayLevel: 1, towardDays: 1 }),
-      sig("pain", { usual: 3, today: 5, todayLevel: 1, towardDays: 1 }),
-    ]),
-    NOW,
-  );
-  assert.equal(both.id, "pain");
 });
 
-test("a missing wearable reading asks for the device, never for a reading it cannot see", () => {
+test("missing wearable readings ask for the device, never for a reading it cannot see", () => {
   const worn = [
     sig("breathing", { usual: 14.2, today: null }),
     sig("restingHr", { usual: 62, today: null }),
@@ -454,13 +508,13 @@ test("a missing wearable reading asks for the device, never for a reading it can
   assert.equal(g.id, "missing");
   assert.equal(g.title, "Wear your Apple Watch tonight");
   assert.match(
-    g.body,
+    g.lead,
     /no breathing rate and resting heart rate reading for last night/,
   );
-  assert.match(g.body, /charged, on your wrist and connected/);
+  assert.ok(someTip(g, /Charge it before bed/));
   assert.equal(g.cta.href, "#/patient/connect");
   assert.doesNotMatch(
-    g.body,
+    text(g),
     /higher|lower|faster/i,
     "nothing is said about a value",
   );
@@ -476,13 +530,11 @@ test("a missing wearable reading asks for the device, never for a reading it can
   );
   assert.equal(off.title, "Reconnect your WHOOP");
 
-  const phone = metricGuidance(
-    sig("steps", { usual: 6200, today: null }),
-    patient([]),
-    NOW,
+  assert.equal(
+    metricGuidance(sig("steps", { usual: 6200, today: null }), patient([]), NOW)
+      .title,
+    "Carry your phone with you today",
   );
-  assert.equal(phone.title, "Carry your phone with you today");
-
   const entry = metricGuidance(
     sig("weight", { usual: 78, today: null }),
     patient([]),
@@ -490,9 +542,26 @@ test("a missing wearable reading asks for the device, never for a reading it can
   );
   assert.equal(entry.title, "Add today's weight");
   assert.equal(entry.cta.href, "#/patient/readings/weight");
+
+  // One reading missing from an otherwise complete night becomes a line in the
+  // list rather than the whole card.
+  const one = homeGuidance(
+    patient([
+      sig("skinTemp", { usual: 33.9, today: null }),
+      usual("breathing", 14.2),
+      usual("restingHr", 62),
+      usual("oxygen", 96.8),
+    ]),
+    NOW,
+  );
+  assert.equal(one.id, "usual");
+  const t = one.tips.find((x) =>
+    /no skin temperature reading arrived last night/.test(x.text),
+  );
+  assert.ok(t && t.href === "#/patient/connect");
 });
 
-test("usual readings reinforce the plan, and a small drift is named without alarm", () => {
+test("usual readings reinforce the plan with the record's own items, and a small drift is named without alarm", () => {
   const p = patient([
     usual("breathing", 14.2),
     usual("restingHr", 62),
@@ -504,9 +573,14 @@ test("usual readings reinforce the plan, and a small drift is named without alar
   assert.equal(g.id, "usual");
   assert.equal(g.title, "Keep to your discharge plan and your routine today");
   assert.match(
-    g.body,
-    /All four readings watched after pneumonia are about your usual\. Nothing to change today\./,
+    g.lead,
+    /^All four readings watched after pneumonia are about your usual\. Nothing to change today\.$/,
   );
+  assert.deepEqual(tips(g), [
+    "Take your medicines as listed: Amoxicillin 500 mg and Paracetamol 1 g.",
+    "Wear your Apple Watch and WHOOP tonight so tomorrow's readings can be compared.",
+    "Your next check-in is on day 11.",
+  ]);
   assert.equal(g.cta.href, "#/patient/readings");
   assert.equal(metricGuidance(p.signals[0], p, NOW).id, "usual");
 
@@ -523,23 +597,29 @@ test("usual readings reinforce the plan, and a small drift is named without alar
     NOW,
   );
   clean(drift, "drift");
-  assert.equal(drift.id, "watch");
+  assert.equal(drift.id, "act");
+  assert.equal(drift.tone, "action", "a drift is not amber");
   assert.match(
-    drift.body,
-    /Breathing rate faster for one night, but not by much/,
+    drift.lead,
+    /faster than your usual for one night \(15\.2 against 14\.2 per min\), but not by much\.$/,
   );
-  assert.match(drift.body, /Nothing to change today/);
+  assert.ok(
+    !someTip(drift, /rest more than usual/),
+    "rest is for a reading that has moved",
+  );
+  assert.ok(someTip(drift, /Sit upright/));
 });
 
-test("a check-in the care team asked for is the step when the readings say nothing", () => {
+test("a check-in the care team asked for is left to the banner", () => {
   const pending = { requestedAt: NOW - HOUR, answeredAt: null, answers: {} };
   const g = homeGuidance(
     patient([usual("restingHr", 62)], { pending, checkins: [pending] }),
     NOW,
   );
   clean(g, "asked");
-  assert.equal(g.id, "asked");
-  assert.equal(g.cta.href, "#/patient/checkin");
+  assert.equal(g.id, "usual");
+  assert.notEqual(g.cta.href, CHECKIN_HREF);
+  assert.ok(g.tips.every((t) => t.href !== CHECKIN_HREF));
 });
 
 test("a reading the record does not hold never produces advice", () => {
@@ -562,6 +642,7 @@ test("a reading the record does not hold never produces advice", () => {
   const g = homeGuidance(p, NOW);
   assert.equal(g.id, "usual");
   assert.ok(!g.signals.includes("glucose"));
+  assert.doesNotMatch(text(g), /glucose/);
   // A pathway signal with no baseline: nothing to compare, nothing to say.
   const noUsual = sig("weight", { usual: null, today: null });
   assert.equal(metricGuidance(noUsual, p, NOW), null);

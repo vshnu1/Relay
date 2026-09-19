@@ -3,29 +3,18 @@ import {
   ChevronRight,
   CircleCheck,
   ClipboardList,
-  Footprints,
-  HeartPulse,
-  Mic,
-  Moon,
   PenLine,
-  Route,
-  Scale,
   Smartphone,
   Watch,
 } from "lucide-react";
 import "./guidance.css";
 
-// One card, one next step. It renders whatever guidance.js selected and adds
-// nothing of its own: the observation leads, the evidence line is small, and
-// the one link goes where the guidance says. Nothing when there is no guidance.
+// One card: the observation, then the short list of what can help. It renders
+// whatever guidance.js selected and adds nothing of its own. The evidence line
+// stays small, and the one link goes where the guidance says. Nothing when
+// there is no guidance.
 const ICONS = {
-  checkin: Mic,
   plan: ClipboardList,
-  activity: Footprints,
-  gait: Route,
-  sleep: Moon,
-  pain: HeartPulse,
-  weight: Scale,
   watch: Watch,
   phone: Smartphone,
   entry: PenLine,
@@ -54,13 +43,31 @@ export default function GuidanceCard({
       <div className="rx-ph-guide-body">
         <span className="rx-ph-kicker">{kicker}</span>
         <Heading id={headingId}>{g.title}</Heading>
-        <p>{g.body}</p>
+        {g.lead && <p>{g.lead}</p>}
+        {g.tips?.length > 0 && (
+          <ul className="rx-ph-guide-tips">
+            {g.tips.map((t) => (
+              <li key={t.text}>
+                {t.text}
+                {t.href && (
+                  <>
+                    {" "}
+                    <a href={t.href}>
+                      {t.label}
+                      <ChevronRight size={12} aria-hidden="true" />
+                    </a>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
         <small className="rx-ph-guide-evidence">{g.evidence}</small>
       </div>
       {g.cta && (
         <div className="rx-ph-guide-actions">
           <a
-            className={`rx-ph-btn small ${g.tone === "attention" ? "primary" : "outline"}`}
+            className={`rx-ph-btn small ${g.cta.primary ? "primary" : "outline"}`}
             href={g.cta.href}
           >
             {g.cta.label}

@@ -1,15 +1,19 @@
-// "For today": one clear, safe next step from the readings the patient already
-// has. Pure functions over the derived view (derive.js): no clock of their own,
-// no fetch, no model call. Every sentence is a template over the patient's own
-// value, their usual, how long a change has lasted, and which device saw it.
+// "For today": what a patient can do about the readings they already have.
+// Pure functions over the derived view (derive.js): no clock of their own, no
+// fetch, no model call. Every sentence is a template over the patient's own
+// value, their usual, how long a change has lasted, which device saw it, and
+// what is on their discharge record (medicines, devices, schedule).
 //
-// What it never does: diagnose, call a reading clinically "high" or "low",
-// promise that something will improve, prescribe treatment, or speak about a
-// measurement the record does not hold. A signal with no usual to compare
-// against, or one this pathway does not track, produces no guidance at all.
+// When a reading is unusual the card is a short list of small, safe things that
+// can help a little and cannot make it worse: rest, posture, no stimulants,
+// medicines exactly as prescribed, a regular bedtime. It never diagnoses, never
+// calls a reading clinically "high" or "low", never promises improvement, and
+// never speaks about a measurement the record does not hold. The check-in
+// itself belongs to the alert banner above the card, so the Home card never
+// carries a second check-in button.
 import { SIGNALS } from "../model/profiles.js";
-import { checkinDue, readingsAsk } from "../model/schedule.js";
-import { ago, list, numberWord } from "../format.js";
+import { checkinDue, nextScheduledDay } from "../model/schedule.js";
+import { list, numberWord } from "../format.js";
 
 export const CHECKIN_HREF = "#/patient/checkin";
 export const CONNECT_HREF = "#/patient/connect";
@@ -17,7 +21,6 @@ export const READINGS_HREF = "#/patient/readings";
 export const readingHref = (id) => `${READINGS_HREF}/${id}`;
 
 // Signal families, by what a patient can safely do about a change in them.
-// Vitals only ever lead to a check-in or to the discharge instructions.
 const FAMILY = {
   breathing: "vitals",
   oxygen: "vitals",
@@ -38,20 +41,25 @@ const FAMILY = {
   pain: "pain",
   weight: "weight",
 };
-// When more than one reading asks for something, the first family here wins.
-const FAMILY_RANK = ["pain", "weight", "gait", "activity", "sleep"];
-
 export const familyOf = (id) => FAMILY[id] || null;
+
+const HOME_TIPS = 6;
+const METRIC_TIPS = 3;
 
 // A reading can only be compared once the patient has a usual.
 const comparable = (s) => !!s && s.usual !== null && s.usual !== undefined;
 // The same definition the tiles use for their "Unusual" chip.
 const unusual = (s) => !!(s.moved || s.towardDays > 0);
-
+const deviceOf = (s) => SIGNALS[s.id]?.device || s.device;
 const cap = (text) => text[0].toUpperCase() + text.slice(1);
+// Moved first, then the furthest from usual.
+const bySeverity = (a, b) =>
+  Number(b.moved) - Number(a.moved) ||
+  Math.abs(b.todayLevel ?? 0) - Math.abs(a.todayLevel ?? 0) ||
+  (b.towardDays || 0) - (a.towardDays || 0);
 
 function deviceName(p, s) {
-  const device = SIGNALS[s.id]?.device || s.device;
+  const device = deviceOf(s);
   const name = p.devices?.[device]?.name;
   if (name && device !== "manual") return name;
   return { watch: "watch", whoop: "WHOOP", phone: "phone" }[device] || null;
@@ -97,12 +105,8 @@ export function observation(s) {
 
 // "Based on breathing rate from your Apple Watch, compared with your usual."
 function evidenceFor(p, signals) {
-  const manual = signals.filter(
-    (s) => (SIGNALS[s.id]?.device || s.device) === "manual",
-  );
-  const worn = signals.filter(
-    (s) => (SIGNALS[s.id]?.device || s.device) !== "manual",
-  );
+  const manual = signals.filter((s) => deviceOf(s) === "manual");
+  const worn = signals.filter((s) => deviceOf(s) !== "manual");
   const parts = [];
   if (worn.length === 1)
     parts.push(`${worn[0].short} from your ${deviceName(p, worn[0])}`);
@@ -119,70 +123,121 @@ function evidenceFor(p, signals) {
   return `Based on ${parts.join(" and ")}, compared with your usual before your stay.`;
 }
 
-const checkin = (label = "Check in") => ({ label, href: CHECKIN_HREF });
+// ---- Tips: small, safe, and grounded in the record --------------------------
 
-// Readings that stayed away from usual: the step is the check-in, or the
-// discharge instructions if the check-in is already with the care team.
-function checkinGuidance(p, moved, due, now) {
-  const lead = [...moved].sort(
-    (a, b) =>
-      Math.abs(b.todayLevel ?? 0) - Math.abs(a.todayLevel ?? 0) ||
-      (b.towardDays || 0) - (a.towardDays || 0),
-  )[0];
-  const span = p.hours ? `, for about ${p.hours} hours` : "";
-  const others = moved.length - 1;
-  const what = lead
-    ? `${observation(lead)}.${
-        others > 0
-          ? ` ${numberWord(others, true)} other ${others === 1 ? "reading has" : "readings have"} moved with it${span}.`
-          : ""
-      }`
-    : "Relay's model found a pattern away from your usual in your recent readings.";
-  const signals = moved.map((s) => s.id);
-  const evidence = lead
-    ? evidenceFor(p, moved)
-    : "Based on Relay's model reading your recent readings against your usual.";
-  if (due.due)
-    return {
-      id: "checkin",
-      tone: "attention",
-      icon: "checkin",
-      title: "Complete your check-in",
-      body: `${what} A short check-in gives your care team the context they need. In the meantime, follow the instructions on your discharge letter.`,
-      evidence,
-      cta: checkin(),
-      signals,
-    };
-  // Not due: either the check-in is already with the care team, or this
-  // pathway does not ask for one over a single reading. Either way the step is
-  // the discharge letter, and the door to a check-in stays open.
-  const answered = p.answered?.answeredAt;
-  return {
-    id: "settle",
-    tone: "attention",
-    icon: "plan",
-    title: "Follow your discharge instructions today",
-    body: answered
-      ? `${what} Your care team has your check-in from ${ago(now - answered)}. Keep to the instructions on your discharge letter, and check in again if anything has changed.`
-      : `${what} Your care team can see your readings. Keep to the instructions on your discharge letter, and check in if you feel unwell.`,
-    evidence,
-    cta: checkin(answered ? "Check in again" : "Check in"),
-    signals,
-  };
+const tip = (text, href, label) => (href ? { text, href, label } : { text });
+const TIP = {
+  rest: "Take it easy today: rest more than usual and avoid heavy effort.",
+  upright:
+    "Sit upright rather than lying flat, and take slow, steady breaths when you rest.",
+  stimulants: "Skip caffeine and alcohol today, and rest between activities.",
+  cool: "Dress lightly and keep the room cool. Drink regularly, unless your care team has told you to limit fluids.",
+  sleep: "Keep a regular bedtime tonight and avoid caffeine late in the day.",
+  activityGo:
+    "If your discharge plan allows activity, take one short walk or do your prescribed exercises. Stop and rest if you feel worse.",
+  activityHold:
+    "Keep activity light today. A longer walk can wait until your readings settle.",
+  gait: "Take your time standing up or turning, and keep to the exercises in your discharge plan.",
+  painPlan: "Take your pain relief as prescribed, and nothing extra.",
+  painWorse:
+    "If the pain is getting worse rather than better, tell your care team at your check-in.",
+  weighAgain: "Weigh again tomorrow: same scale, same time, before breakfast.",
+  fluidSalt:
+    "Keep to any fluid or salt instructions your care team has given you.",
+};
+
+// "Amoxicillin 500 mg, three times a day, 5 more days" -> "Amoxicillin 500 mg".
+const medicineNames = (p) =>
+  (p.medications || [])
+    .map((m) => String(m).split(",")[0].trim())
+    .filter(Boolean);
+
+// Only when the record lists medicines; nothing is invented for a patient
+// discharged without any.
+function medicineTip(p, routine) {
+  const names = medicineNames(p);
+  if (!names.length) return null;
+  return tip(
+    routine
+      ? `Take your medicines as listed: ${list(names)}.`
+      : `Take your medicines exactly as prescribed, and nothing extra: ${list(names)}.`,
+  );
 }
 
-function askedGuidance() {
-  return {
-    id: "asked",
-    tone: "attention",
-    icon: "checkin",
-    title: "Complete the check-in your care team asked for",
-    body: "Your care team has a few questions about how you are doing. It takes about two minutes, and your answers sit next to your readings.",
-    evidence: "Requested by your care team, alongside your readings.",
-    cta: checkin(),
-    signals: [],
-  };
+// A warmer wrist is a reason to take a real temperature, when this pathway
+// records one and none was entered today.
+function temperatureTip(p) {
+  const t = (p.signals || []).find((s) => s.id === "temperature");
+  if (!t || (t.today !== null && t.today !== undefined)) return null;
+  return tip(
+    "Check your temperature with your own thermometer and add it in Readings.",
+    readingHref("temperature"),
+    "Add temperature",
+  );
 }
+
+// What a patient can do about one unusual reading.
+function tipsFor(s, p, vitalsAway) {
+  switch (familyOf(s.id)) {
+    case "vitals":
+      if (s.id === "breathing" || s.id === "oxygen") return [tip(TIP.upright)];
+      // A warmer wrist: take a real temperature if one can be entered and
+      // none was today; otherwise the things that keep a temperature down.
+      if (s.id === "skinTemp") return [temperatureTip(p) || tip(TIP.cool)];
+      if (s.id === "temperature") return [tip(TIP.cool)];
+      return [tip(TIP.stimulants)];
+    case "activity":
+      return [tip(vitalsAway ? TIP.activityHold : TIP.activityGo)];
+    case "gait":
+      return [tip(TIP.gait)];
+    case "sleep":
+      return [tip(TIP.sleep)];
+    case "pain":
+      return [tip(TIP.painPlan), tip(TIP.painWorse)];
+    case "weight":
+      return [tip(TIP.weighAgain), tip(TIP.fluidSalt)];
+    default:
+      return [];
+  }
+}
+
+// A reading that did not arrive, as one line with the way to fix it.
+function missingTip(p, s) {
+  const device = deviceOf(s);
+  const name = deviceName(p, s);
+  if (device === "manual")
+    return tip(
+      `Add today's ${s.short} in Readings.`,
+      readingHref(s.id),
+      "Add a reading",
+    );
+  if (p.devices?.[device]?.connected === false)
+    return tip(
+      `Reconnect your ${name}; no ${s.short} readings are arriving.`,
+      CONNECT_HREF,
+      "Your data",
+    );
+  if (device === "phone")
+    return tip(
+      `Carry your phone with you today; no ${s.short} reading arrived.`,
+      CONNECT_HREF,
+      "Your data",
+    );
+  return tip(
+    `Wear your ${name} tonight; no ${s.short} reading arrived last night.`,
+    CONNECT_HREF,
+    "Your data",
+  );
+}
+
+const dedupe = (tips, max) => {
+  const seen = new Set();
+  return tips
+    .filter((t) => t && !seen.has(t.text) && seen.add(t.text))
+    .slice(0, max);
+};
+
+// ---- Cards -------------------------------------------------------------------
 
 // Nights where most counted readings are missing, out of the last four.
 function nightsMissing(p) {
@@ -196,12 +251,9 @@ function nightsMissing(p) {
   ).length;
 }
 
-// No reading to compare: the device is the step, never the reading.
+// Most readings did not arrive: the device is the step, never the reading.
 function missingGuidance(p, missing) {
-  const byDevice = Object.groupBy(
-    missing,
-    (s) => SIGNALS[s.id]?.device || s.device,
-  );
+  const byDevice = Object.groupBy(missing, deviceOf);
   const device = Object.keys(byDevice).sort(
     (a, b) => byDevice[b].length - byDevice[a].length,
   )[0];
@@ -220,7 +272,8 @@ function missingGuidance(p, missing) {
       ...base,
       icon: "entry",
       title: `Add today's ${signals[0].short}`,
-      body: `There is no ${shorts} entry for today, so there is nothing to compare with your usual. Enter it the same way you usually do.`,
+      lead: `There is no ${shorts} entry for today, so there is nothing to compare with your usual.`,
+      tips: [tip("Enter it the same way you usually do, at the usual time.")],
       cta: { label: "Add a reading", href: readingHref(signals[0].id) },
     };
   if (p.devices?.[device]?.connected === false)
@@ -228,7 +281,8 @@ function missingGuidance(p, missing) {
       ...base,
       icon: device === "phone" ? "phone" : "watch",
       title: `Reconnect your ${name}`,
-      body: `Your ${name} is not connected, so no ${shorts} readings are arriving. Reconnect it so your care team can see them.`,
+      lead: `Your ${name} is not connected, so no ${shorts} readings are arriving.`,
+      tips: [tip("Reconnect it in Your data so your care team can see them.")],
       cta: { label: "Your data", href: CONNECT_HREF },
     };
   if (device === "phone")
@@ -236,10 +290,14 @@ function missingGuidance(p, missing) {
       ...base,
       icon: "phone",
       title: "Carry your phone with you today",
-      body: `There is no ${shorts} reading for today, so there is nothing to compare with your usual. The phone in your pocket measures it as you walk; check the Health app is still connected.`,
+      lead: `There is no ${shorts} reading for today, so there is nothing to compare with your usual.`,
+      tips: [
+        tip("The phone in your pocket measures it as you walk."),
+        tip("Check the Health app is still connected in Your data."),
+      ],
       cta: { label: "Your data", href: CONNECT_HREF },
     };
-  const gap =
+  const lead =
     nights > 1
       ? `Readings are missing for ${numberWord(nights)} of the last four nights, so there is little to compare with your usual.`
       : signals.every((s) => s.today === null || s.today === undefined)
@@ -249,174 +307,144 @@ function missingGuidance(p, missing) {
     ...base,
     icon: "watch",
     title: `Wear your ${name} tonight`,
-    body: `${gap} Check it is charged, on your wrist and connected before you sleep.`,
+    lead,
+    tips: [
+      tip("Charge it before bed and keep it on your wrist through the night."),
+      tip("Check it is still connected in Your data."),
+    ],
     cta: { label: "Your data", href: CONNECT_HREF },
   };
 }
 
-function activityGuidance(p, s) {
-  return {
-    id: "activity",
-    tone: "action",
-    icon: "activity",
-    title: "If your plan allows it, take one short walk today",
-    body: `${observation(s)}. If your discharge plan allows activity, one short walk or the exercises you were given is enough for today. Stop and rest if you feel worse.`,
-    evidence: evidenceFor(p, [s]),
-    cta: null,
-    signals: [s.id],
-  };
-}
-
-function gaitGuidance(p, s) {
-  return {
-    id: "gait",
-    tone: "action",
-    icon: "gait",
-    title: "Take extra care moving around today",
-    body: `${observation(s)}. Keep to the exercises in your discharge plan, take your time when you stand up or turn, and check in if you feel less steady.`,
-    evidence: evidenceFor(p, [s]),
-    cta: s.moved ? checkin() : null,
-    signals: [s.id],
-  };
-}
-
-function sleepGuidance(p, s) {
-  return {
-    id: "sleep",
-    tone: "action",
-    icon: "sleep",
-    title: "Keep a regular bedtime tonight",
-    body: `${observation(s)}. Try a consistent bedtime tonight and avoid caffeine late in the day. Your care team can see this reading too.`,
-    evidence: evidenceFor(p, [s]),
-    cta: null,
-    signals: [s.id],
-  };
-}
-
-function painGuidance(p, s) {
-  return {
-    id: "pain",
-    tone: s.moved ? "attention" : "action",
-    icon: "pain",
-    title: s.moved
-      ? "Follow your pain plan and complete a check-in"
-      : "Follow your prescribed pain plan",
-    body: `${observation(s)}. Take your pain relief as prescribed. If it is getting worse rather than better, complete a check-in so your care team knows.`,
-    evidence: evidenceFor(p, [s]),
-    cta: s.moved ? checkin() : null,
-    signals: [s.id],
-  };
-}
-
-function weightGuidance(p, s) {
-  return {
-    id: "weight",
-    tone: "action",
-    icon: "weight",
-    title: "Weigh again tomorrow under the same conditions",
-    body: `${observation(s)}. Weigh yourself again tomorrow: same scale, same time, before breakfast. Follow any fluid or salt instructions your care team has given you${s.moved ? ", and complete a check-in if it keeps rising" : ""}.`,
-    evidence: evidenceFor(p, [s]),
-    cta: s.moved ? checkin() : null,
-    signals: [s.id],
-  };
-}
-
-// A reading that is a little away, or one whose change is not something to act
-// on alone: say so, and point back at the plan.
-function watchGuidance(p, changed) {
-  const phrases = changed.map(
-    (s) => `${s.short} ${directionWord(s)} ${spanText(s)}`,
+// Something is unusual: the observation, then the list of what can help.
+function actGuidance(p, changed, missing, { home }) {
+  const sorted = [...changed].sort(bySeverity);
+  const lead = sorted[0];
+  const vitalsMoved = sorted.some(
+    (s) => familyOf(s.id) === "vitals" && s.moved,
   );
-  const anyMoved = changed.some((s) => s.moved);
+  // "Four other readings have moved with it, for about 35 hours, and three
+  // more are a little away from your usual."
+  const rest = sorted.slice(1);
+  const movedOthers = rest.filter((s) => s.moved).length;
+  const mildOthers = rest.length - movedOthers;
+  const span = p.hours ? `, for about ${p.hours} hours` : "";
+  let tail = "";
+  if (movedOthers)
+    tail += ` ${numberWord(movedOthers, true)} other ${movedOthers === 1 ? "reading has" : "readings have"} moved with it${span}`;
+  if (mildOthers)
+    tail += movedOthers
+      ? `, and ${numberWord(mildOthers)} more ${mildOthers === 1 ? "is" : "are"} a little away from your usual.`
+      : ` ${numberWord(mildOthers, true)} other ${mildOthers === 1 ? "reading is" : "readings are"} a little away from your usual too.`;
+  else if (movedOthers) tail += ".";
+  const observed = `${observation(lead)}${lead.moved ? "" : ", but not by much"}.${tail}`;
+  const away = vitalsAway(p);
+  const tips = dedupe(
+    [
+      vitalsMoved ? tip(TIP.rest) : null,
+      home ? medicineTip(p, false) : null,
+      ...sorted.flatMap((s) => tipsFor(s, p, away)),
+      ...missing.map((s) => missingTip(p, s)),
+    ],
+    home ? HOME_TIPS : METRIC_TIPS,
+  );
   return {
-    id: "watch",
-    tone: "calm",
+    id: "act",
+    tone: vitalsMoved ? "attention" : "action",
     icon: "plan",
-    title: "Keep to your discharge plan and your routine today",
-    body: anyMoved
-      ? `${cap(list(phrases))}. Your care team can see all of your readings. Follow your discharge plan today, and check in if you feel unwell.`
-      : `${cap(list(phrases))}, but not by much. The rest are about your usual, and your care team can see them all. Nothing to change today.`,
-    evidence: evidenceFor(p, changed),
+    title: "What you can do today",
+    lead: observed,
+    tips,
+    evidence: evidenceFor(p, sorted),
     cta: null,
-    signals: changed.map((s) => s.id),
+    signals: sorted.map((s) => s.id),
   };
 }
 
-function usualGuidance(p, signals) {
+// Everything about usual: the plan, as the things on the record to keep doing.
+function usualGuidance(p, signals, missing, now) {
   const n = signals.length;
+  const worn = [
+    ...new Set(
+      signals
+        .filter((s) => ["watch", "whoop"].includes(deviceOf(s)))
+        .map((s) => deviceName(p, s))
+        .filter(Boolean),
+    ),
+  ];
+  const due = checkinDue(p, now);
+  const next = nextScheduledDay(p.dayHome ?? 0);
+  const tips = dedupe(
+    [
+      medicineTip(p, true),
+      ...missing.map((s) => missingTip(p, s)),
+      worn.length
+        ? tip(
+            `Wear your ${list(worn)} tonight so tomorrow's readings can be compared.`,
+          )
+        : null,
+      !due.due && next ? tip(`Your next check-in is on day ${next}.`) : null,
+    ],
+    4,
+  );
   return {
     id: "usual",
     tone: "calm",
     icon: "usual",
     title: "Keep to your discharge plan and your routine today",
-    body: `${n === 1 ? "The reading" : `All ${numberWord(n)} readings`} watched after ${p.profile?.after || "your stay"} ${n === 1 ? "is" : "are"} about your usual. Nothing to change today.`,
+    lead: `${n === 1 ? "The reading" : `All ${numberWord(n)} readings`} watched after ${p.profile?.after || "your stay"} ${n === 1 ? "is" : "are"} about your usual. Nothing to change today.`,
+    tips,
     evidence: evidenceFor(p, signals),
     cta: null,
     signals: signals.map((s) => s.id),
   };
 }
 
-function usualMetric(p, s) {
-  return {
-    id: "usual",
-    tone: "calm",
-    icon: "usual",
-    title: "Nothing to change today",
-    body: `${subject(s)} is about your usual (${values(s)}). Keep to your discharge plan and your routine.`,
-    evidence: evidenceFor(p, [s]),
-    cta: null,
-    signals: [s.id],
-  };
-}
-
-const vitalsUnusual = (p) =>
+const vitalsAway = (p) =>
   (p.signals || []).some(
     (s) => comparable(s) && familyOf(s.id) === "vitals" && unusual(s),
   );
 
-// The readings that call for a check-in on this pathway, or Relay's model did.
-const concern = (p) =>
-  (p.signals || []).some(
-    (s) => comparable(s) && familyOf(s.id) === "vitals" && s.moved,
-  ) || readingsAsk(p);
-
 // Guidance for one reading, shown under its chart. Null when there is nothing
-// to compare: no usual yet, or a signal this pathway does not track.
+// to compare: no usual yet, or a signal this pathway does not track. This page
+// has no alert banner, so a moved vital may carry the check-in link here.
 export function metricGuidance(s, p, now = Date.now()) {
-  if (!comparable(s)) return null;
-  const family = familyOf(s.id);
-  if (!family) return null;
+  if (!comparable(s) || !familyOf(s.id)) return null;
   if (s.today === null || s.today === undefined) return missingGuidance(p, [s]);
-  if (!unusual(s)) return usualMetric(p, s);
-  switch (family) {
-    case "vitals":
-      return s.moved
-        ? checkinGuidance(p, [s], checkinDue(p, now), now)
-        : watchGuidance(p, [s]);
-    case "activity":
-      return vitalsUnusual(p) ? watchGuidance(p, [s]) : activityGuidance(p, s);
-    case "gait":
-      return gaitGuidance(p, s);
-    case "sleep":
-      return sleepGuidance(p, s);
-    case "pain":
-      return painGuidance(p, s);
-    case "weight":
-      return weightGuidance(p, s);
-    default:
-      return null;
-  }
+  if (!unusual(s))
+    return {
+      id: "usual",
+      tone: "calm",
+      icon: "usual",
+      title: "Nothing to change today",
+      lead: `${subject(s)} is about your usual (${values(s)}). Keep to your discharge plan and your routine.`,
+      tips: [],
+      evidence: evidenceFor(p, [s]),
+      cta: null,
+      signals: [s.id],
+    };
+  const g = actGuidance({ ...p, hours: 0 }, [s], [], { home: false });
+  // Only the readings that ask for a check-in on this pathway link to one.
+  if (familyOf(s.id) === "vitals" && s.moved) {
+    const due = checkinDue(p, now);
+    g.cta = due.due
+      ? { label: "Check in", href: CHECKIN_HREF, primary: true }
+      : { label: "Check in again", href: CHECKIN_HREF };
+  } else if (s.id === "pain" && s.moved)
+    g.cta = { label: "Check in", href: CHECKIN_HREF, primary: true };
+  return g;
 }
 
-// The one insight for Home. Most important first; at most one, so the screen
-// stays calm. Always carries a link: to the check-in, the device page, or the
-// reading it rests on.
+// The one card for Home. At most one, so the screen stays calm, and never a
+// check-in button: the alert banner above it owns the check-in.
 export function homeGuidance(p, now = Date.now()) {
   const signals = (p.signals || []).filter(
     (s) => comparable(s) && familyOf(s.id),
   );
   const counted = signals.filter((s) => s.counted);
-  const due = checkinDue(p, now);
+  const missing = counted.filter(
+    (s) => s.today === null || s.today === undefined,
+  );
   const withLink = (g) =>
     g && {
       ...g,
@@ -427,57 +455,20 @@ export function homeGuidance(p, now = Date.now()) {
           : { label: "See your readings", href: READINGS_HREF }),
     };
 
-  // 1. Readings that stayed away, or the model's pattern: the check-in.
-  if (concern(p)) {
-    const moved = signals.filter(
-      (s) =>
-        s.moved && (familyOf(s.id) === "vitals" || (p.moved || []).includes(s)),
-    );
-    return withLink(checkinGuidance(p, moved, due, now));
-  }
-  // 2. The care team asked, with nothing in the readings to point at.
-  if (due.reason === "asked") return withLink(askedGuidance());
-  // 3. Too few readings to compare: the device is the step.
-  const missing = counted.filter((s) => s.today === null);
+  // 1. Most readings did not arrive: the device is the step.
   const mostMissing =
     missing.length > 0 && missing.length * 2 >= counted.length;
   if (p.status === "nodata" || mostMissing) {
-    // Name what is missing tonight when most of it is; otherwise whole nights
-    // are missing, so name the device most of the readings come from.
-    const worn = counted.filter(
-      (s) => (SIGNALS[s.id]?.device || s.device) !== "manual",
-    );
+    const worn = counted.filter((s) => deviceOf(s) !== "manual");
     const pool = mostMissing ? missing : worn.length ? worn : missing;
     if (pool.length) return withLink(missingGuidance(p, pool));
   }
-  // 4. One reading a patient can do something about, moved before mild.
+  // 2. Something is unusual: what can help, and cannot make it worse.
   const changed = signals.filter(unusual);
-  const actionable = changed
-    .filter((s) => FAMILY_RANK.includes(familyOf(s.id)))
-    .filter((s) => familyOf(s.id) !== "activity" || !vitalsUnusual(p))
-    .sort(
-      (a, b) =>
-        Number(b.moved) - Number(a.moved) ||
-        FAMILY_RANK.indexOf(familyOf(a.id)) -
-          FAMILY_RANK.indexOf(familyOf(b.id)) ||
-        Math.abs(b.todayLevel ?? 0) - Math.abs(a.todayLevel ?? 0),
-    );
-  if (actionable.length) {
-    const s = actionable[0];
-    const g = {
-      gait: gaitGuidance,
-      activity: activityGuidance,
-      sleep: sleepGuidance,
-      pain: painGuidance,
-      weight: weightGuidance,
-    }[familyOf(s.id)](p, s);
-    return withLink(g);
-  }
-  // 5. A single reading missing from an otherwise complete night.
-  if (missing.length) return withLink(missingGuidance(p, missing));
-  // 6. Something a little away, or nothing at all: the plan.
-  if (changed.length) return withLink(watchGuidance(p, changed));
-  if (counted.length) return withLink(usualGuidance(p, counted));
-  if (signals.length) return withLink(usualGuidance(p, signals));
+  if (changed.length)
+    return withLink(actGuidance(p, changed, missing, { home: true }));
+  // 3. Everything usual: keep doing what the record says.
+  const shown = counted.length ? counted : signals;
+  if (shown.length) return withLink(usualGuidance(p, shown, missing, now));
   return null;
 }
