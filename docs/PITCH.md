@@ -210,12 +210,69 @@ same reason as the thirty-second version.
 
 **"How do you know it works?"**
 
-Say what we measured and what we did not. We measured the false-positive side:
-4,453 subject-days, 71 people, none deteriorating, 3.35% fire rate at the
-shipped setting. We have one known true positive, in real data, and it is what
-stopped us tightening further. We do not have a true-positive rate and cannot
-claim one. The honest sentence is *"we measured the false-alarm side and tuned
-against it."*
+Say what we measured, how, and what we did not. On 71 real wearable subjects
+with nobody deteriorating, the rule fires on **3.35%** of subject-days at the
+shipped 1.75 sd — but that is measured against a baseline built from a
+subject's whole series, which includes the day being judged. Judged only
+against the days before it, which is all a deployment has, it is **6.04%**.
+Both are in `fixtures/calibration.json` and we quote them separately, because
+quoting the first as the second overstates us by nearly half.
+
+For the other half: a coordinated change of two personal standard deviations
+is seen **the next day**, against five days for the same person's own noise.
+Say it as speed, not as a catch rate — over a fortnight the rule fires for
+most healthy subjects eventually; what the measurement shows is that a real
+change is seen sooner, and a thirty-day readmission window is a race.
+
+**Sensitivity is unmeasured and we say so.** Nobody in the reference cohort
+deteriorated after a discharge, so there is no positive class to count.
+
+*Volunteering the 3.35-vs-6.04 distinction before anyone asks is the single
+most credible thing in this pitch. It is the move of a team that measured
+carefully rather than one that found a good number.*
+
+**"Is this a regulated device?"**
+
+*Probably yes, and say so first.* Clinical decision support is exempt under
+FD&C Act 520(o)(1)(E) only if all four criteria hold, and we fail the first:
+it excludes software that analyses a pattern from a signal acquisition system,
+and reading a wearable stream and requiring 24 hours of persistence is exactly
+that. The language guard keeps us clear of Criteria 3 and 4 — it is checked at
+runtime on every generated sentence — but it does not move us outside the
+definition. The full walkthrough is `docs/FDA.md`, and the concession is in it
+in writing.
+
+A reviewer who knows this area reaches Criterion 1 within a minute of
+understanding what we ingest. Conceding it is worth more than a claim that
+does not survive the first question.
+
+**"What about security and HIPAA?"**
+
+Open the **Security** tab in the clinician view. It renders the HIPAA Security
+Rule's technical safeguards cite by cite: four built, one partial, **five not
+met**, with the failures named — unique user identification, emergency access,
+encryption at rest, stored-data authentication, person authentication. Beside
+it is the audit trail, live, showing the acting role on every access.
+
+Then say the thing that is not on the screen: this is not a compliant system
+and cannot be, because compliance is agreements, risk analyses and trained
+staff. `docs/COMPLIANCE.md` also answers which law would even apply, which
+changes with the business model — a hospital contract makes this a HIPAA
+business associate, selling to patients directly makes it an FTC Health Breach
+Notification Rule vendor instead, and Washington's My Health My Data Act
+reaches either with a private right of action.
+
+**"Where does the patient's data go?"**
+
+Nowhere. The Apple Health export inflates and parses **in the browser** — 284
+MB, 852,000 records, never uploaded, and no third-party model sees it. The one
+path that leaves our origin is the voice check-in: restricted to synthetic
+patients, and it carries no name and no free text. The typefaces are served
+from our own origin too, so not even a font request tells anyone who opened a
+record.
+
+*Staff reaching for tools without knowing where the data goes is the named top
+risk in this field. This is that claim demonstrated rather than asserted.*
 
 **"Isn't this just WHOOP?"**
 
@@ -246,6 +303,33 @@ deterministic and printed in the interface.
 No, and we say so. Synthetic demo patients, one real non-clinical wearable
 dataset for engineering validation, and a public research cohort for
 calibration. No PHI, no clinical validation, no HIPAA-compliance claim.
+
+Making a clinical claim would need IRB review, a prospective cohort, and
+reporting against the standard matching the design — TRIPOD+AI for a
+prediction model, DECIDE-AI for early live evaluation. Naming the path is the
+answer; claiming to be on it would not be.
+
+**"Is any of this new?"**
+
+Personal baselines are established practice and that helps us. A 2024 review
+in the Journal of Personalized Medicine found 78.5% of wearable-ML studies
+already personalise to the individual, and Jeppesen et al. measured a **31%
+reduction in false alarms** from a patient-adaptive model on wearable ECG. We
+are not claiming the idea. We are claiming it applied to the thirty days after
+a discharge, which that review does not cover anywhere in its 21 pages — which
+is also why there was no external benchmark and we had to produce the numbers
+ourselves.
+
+Do not quote their accuracy figures beside ours: theirs are classification
+accuracies on curated sets, ours is a false-alarm rate per subject-day and a
+detection lag. They answer different questions.
+
+**"If a cancer centre asked about oncology?"**
+
+The post-chemotherapy program is already in the demo: temperature, resting
+heart rate, heart rate variability and breathing counted, with fever and
+mouth-sore questions — the neutropenic-fever watch. Grace Adebayo and Victor
+Lindqvist are discharged from Moffitt, Malignant Hematology. Open Grace.
 
 ---
 
