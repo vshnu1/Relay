@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 import {
   Activity,
-  CalendarDays,
   CheckCircle2,
-  ChevronRight,
   CircleAlert,
   Home as HomeIcon,
   LineChart,
@@ -11,12 +9,8 @@ import {
   Smartphone,
   Users,
 } from "lucide-react";
-import { ago, dateLong, list } from "../format.js";
-import {
-  checkinDue,
-  nextScheduledDay,
-  notifications,
-} from "../model/schedule.js";
+import { ago, list } from "../format.js";
+import { checkinDue, nextScheduledDay } from "../model/schedule.js";
 import Checkin from "./Checkin.jsx";
 import Watching from "./Watching.jsx";
 import Sharing from "./Sharing.jsx";
@@ -25,8 +19,9 @@ import Metrics from "./Metrics.jsx";
 import Journal from "./Journal.jsx";
 import Care from "./Care.jsx";
 import Insight from "./Insight.jsx";
-import { useAnalysis } from "./useAnalysis.js";
-import { describeAnalysis } from "../model/mlClient.js";
+import HomeAlert from "./HomeAlert.jsx";
+import HomeReadings from "./HomeReadings.jsx";
+import HomeHospital from "./HomeHospital.jsx";
 
 // Five places to go. Everything else is reached from inside one of them.
 const NAV = [
@@ -47,202 +42,78 @@ const NAV = [
   },
 ];
 
-const when = (t) =>
-  new Date(t).toLocaleString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
 function Home({ patient: p }) {
-  const notes = notifications(p);
-  const { run, busy, error } = useAnalysis(p);
-  useEffect(() => {
-    // Score the patient's own recent readings when their home screen opens, so
-    // a model-triggered focused check-in is visible before they start one.
-    if (!p.analysis) void run();
-  }, [p.id]);
   const due = checkinDue(p);
   const next = nextScheduledDay(p.dayHome);
   const connected = Object.entries(p.devices).filter(
     ([id, d]) =>
       !["sensor", "manual", "phone"].includes(id) && d.connected !== false,
   );
-  const followUp = [...p.appointments]
-    .filter((a) => a.t > Date.now())
-    .sort((a, b) => a.t - b.t)[0];
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const left = Math.max(0, p.windowDays - p.dayHome);
   return (
     <>
-      <header className="rx-p-top">
+      <header className="rx-ph-top">
         <div>
-          <span className="rx-p-kicker">
-            Day {p.dayHome} of {p.windowDays} · after {p.profile.after} ·{" "}
-            {p.hospital}
+          <span className="rx-ph-kicker">
+            Recovering from {p.profile.after} · {p.hospital.split(" — ")[0]}
           </span>
-          <h1>
+          <h1 className="rx-serif">
             {greeting}, {p.first}
           </h1>
         </div>
-        <div className="rx-p-day compact">
-          <div aria-hidden="true">
+        <div className="rx-ph-progress">
+          <div className="rx-ph-progress-labels">
+            <strong>
+              Day {p.dayHome} of {p.windowDays} at home
+            </strong>
+            <span>
+              {left === 0
+                ? "Last day"
+                : `${left} ${left === 1 ? "day" : "days"} to go`}
+            </span>
+          </div>
+          <div className="rx-ph-bar" aria-hidden="true">
             <i
               style={{
                 width: `${Math.min(100, (p.dayHome / p.windowDays) * 100)}%`,
               }}
             />
           </div>
-          <small>
-            {due.due
-              ? due.reason === "readings"
-                ? "Relay noticed a change. A focused check-in is ready."
-                : due.reason === "asked"
-                  ? "Your care team requested a check-in."
-                  : "Your daily check-in is ready."
-              : next
-                ? `Next check-in on day ${next}.`
-                : "Check-ins complete."}
-          </small>
+          <a className="rx-ph-device" href="#/patient/connect">
+            {connected.length ? (
+              <>
+                <CheckCircle2 size={14} color="#2f7a62" aria-hidden="true" />
+                {list(connected.map(([, d]) => d.name))} connected · synced{" "}
+                {ago(
+                  Date.now() -
+                    Math.max(...connected.map(([, d]) => d.lastSync || 0)),
+                )}
+              </>
+            ) : (
+              <>
+                <CircleAlert size={14} color="#8a6520" aria-hidden="true" />
+                No wearable connected · connect one
+              </>
+            )}
+            {!due.due && next && ` · next check-in day ${next}`}
+          </a>
         </div>
       </header>
 
-      {notes.length ? (
-        <div className="rx-p-alerts" aria-label="For you today">
-          {notes.map((n) => (
-            <div key={n.id} className={`rx-p-notif ${n.kind}`}>
-              <strong>{n.title}</strong>
-              <p>{n.body}</p>
-              <a href={n.href}>{n.cta} →</a>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="rx-p-quiet">
-          <CheckCircle2 size={16} aria-hidden="true" /> Nothing is needed from
-          you today. Your care team can see your readings.
-        </p>
-      )}
+      <HomeAlert patient={p} />
 
-      <div className="rx-p-devices" aria-label="Your devices">
-        {connected.length ? (
-          <CheckCircle2 size={16} color="#2f7a62" aria-hidden="true" />
-        ) : (
-          <CircleAlert size={16} color="#8a6520" aria-hidden="true" />
-        )}
-        <strong>
-          {connected.length
-            ? `${list(connected.map(([, d]) => d.name))} connected`
-            : "No wearable connected"}
-        </strong>
-        <span>
-          {connected.length
-            ? `Synced ${ago(Date.now() - Math.max(...connected.map(([, d]) => d.lastSync || 0)))}`
-            : "Connect one so your care team sees your readings."}
-        </span>
-        <a href="#/patient/connect">
-          Your data <ChevronRight size={14} aria-hidden="true" />
-        </a>
+      <div className="rx-ph-lanes">
+        <HomeReadings patient={p} />
+        <HomeHospital patient={p} />
       </div>
 
-      <div className="rx-p-home">
-        <div className="rx-p-col">
-          <section className="rx-p-card" aria-label="From your hospital">
-            <h2>From {p.hospital}</h2>
-            <p className="rx-p-meta">
-              Discharged {dateLong(p.dischargedAt)} after a {p.stayDays}-day
-              stay. Responsible clinician: {p.clinician}.
-            </p>
-            <h3 className="rx-p-h3">Doctor's notes</h3>
-            {p.notes ? (
-              <p className="rx-serif rx-p-notes">{p.notes}</p>
-            ) : (
-              <p className="rx-p-empty">
-                Not written yet. They appear here when your care team adds them.
-              </p>
-            )}
-            <h3 className="rx-p-h3">Prescriptions</h3>
-            {p.medications.length ? (
-              <ul className="rx-p-bullets">
-                {p.medications.map((m) => (
-                  <li key={m}>{m}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="rx-p-empty">None listed yet.</p>
-            )}
-            <h3 className="rx-p-h3">Follow-up</h3>
-            {followUp ? (
-              <p className="rx-p-appt">
-                <CalendarDays size={15} aria-hidden="true" />
-                <span>
-                  <strong>{when(followUp.t)}</strong> · {followUp.with},{" "}
-                  {followUp.where}
-                </span>
-              </p>
-            ) : (
-              <p className="rx-p-empty">Not scheduled yet.</p>
-            )}
-            <a className="rx-p-rowlink" href="#/patient/care">
-              Messages, appointments and reports
-              <ChevronRight size={16} aria-hidden="true" />
-            </a>
-          </section>
-        </div>
-        <div className="rx-p-col">
-          <section className="rx-p-card list" aria-label="Your readings today">
-            <h2>Your readings today</h2>
-            {p.counted.map((s) => (
-              <div className="rx-p-row" key={s.id}>
-                <span>{s.plain}</span>
-                <strong>
-                  {s.today === null ? "—" : `${s.fmt(s.today)} ${s.unit}`}
-                </strong>
-                <span className={`rx-p-chip ${s.towardDays ? "changed" : ""}`}>
-                  {s.today === null
-                    ? "No reading"
-                    : s.towardDays
-                      ? "Changed"
-                      : "Usual"}
-                </span>
-              </div>
-            ))}
-            <div className="rx-p-row model">
-              <span>Relay's model</span>
-              <p>
-                {busy && !p.analysis
-                  ? "Comparing your recent readings with your usual…"
-                  : p.analysis
-                    ? describeAnalysis(p.analysis, p.profile)
-                    : "Not scored yet. Scoring compares your recent readings with your own usual."}
-              </p>
-              <button
-                type="button"
-                className="rx-p-btn small"
-                disabled={busy}
-                onClick={() => run(p.answered ? p.answered.answers : null)}
-              >
-                {busy ? "Scoring…" : p.analysis ? "Score again" : "Score"}
-              </button>
-            </div>
-            {error && (
-              <p className="rx-p-error" role="alert">
-                {error}
-              </p>
-            )}
-            <a className="rx-p-rowlink" href="#/patient/readings">
-              See the charts
-              <ChevronRight size={16} aria-hidden="true" />
-            </a>
-          </section>
-        </div>
-      </div>
       <p className="rx-p-fine">
         Feeling very unwell? Follow the emergency instructions in your discharge
-        papers.
+        papers. A change in a reading is not a diagnosis; it is a reason for
+        your care team to look.
       </p>
     </>
   );
