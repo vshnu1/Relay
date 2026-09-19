@@ -1,0 +1,209 @@
+import { useState } from "react";
+import {
+  BookOpen,
+  Brain,
+  ClipboardList,
+  FileText,
+  PenLine,
+  Smartphone,
+} from "lucide-react";
+import { QUESTIONS, SIGNALS } from "../model/profiles.js";
+import { ago, clock } from "../format.js";
+
+// Everything the patient did, newest first: check-ins answered, reports sent,
+// what they recorded, readings they entered, imports, and the model's result
+// they were shown. It is the same event log the patient's app writes, so it
+// updates while the clinician watches. A report opens in full.
+const DAY = 86400000;
+
+function build(p) {
+  const items = [];
+  for (const c of p.checkins)
+    if (c.answeredAt)
+      items.push({
+        t: c.answeredAt,
+        kind: "checkin",
+        icon: ClipboardList,
+        title: "Check-in answered",
+        text: (p.questions || p.profile.questions)
+          .filter((q) => c.answers[q])
+          .map((q) => `${QUESTIONS[q].short}: ${c.answers[q]}`)
+          .join(" · "),
+        note: c.note,
+      });
+  for (const r of p.reports || [])
+    items.push({
+      t: r.sentAt,
+      kind: "report",
+      icon: FileText,
+      title: "Report sent by the patient",
+      text: r.reason || r.subject,
+      body: r.body,
+    });
+  for (const j of p.journal || [])
+    items.push({
+      t: j.t,
+      kind: "journal",
+      icon: BookOpen,
+      title: `Recorded: ${j.kind}`,
+      text: j.text,
+    });
+  for (const s of p.signals)
+    if (SIGNALS[s.id].device === "manual")
+      for (const r of (p.readings[s.id] || []).slice(-5))
+        items.push({
+          t: r.t,
+          kind: "manual",
+          icon: PenLine,
+          title: `${s.name} entered by hand`,
+          text: `${s.fmt(r.v)} ${s.unit}`,
+        });
+  const phone = p.devices.phone;
+  if (phone?.imports)
+    items.push({
+      t: phone.lastSync,
+      kind: "import",
+      icon: Smartphone,
+      title: "Health app export imported",
+      text: `${phone.imports} import${phone.imports === 1 ? "" : "s"}; readings before admission set the baseline.`,
+    });
+  if (p.analysis?.at)
+    items.push({
+      t: p.analysis.at,
+      kind: "model",
+      icon: Brain,
+      title: `Model scored: ${p.analysis.application_state.replace("_", " ")}`,
+      text: `Anomaly score ${p.analysis.anomaly_score ?? "n/a"}, ${p.analysis.withContext ? "with the patient's answers" : "readings only"}.`,
+    });
+  return items.sort((a, b) => b.t - a.t);
+}
+
+// The model's contributors against the rule's flags, so a clinician can see
+// at a glance whether the second opinion is describing the same readings.
+function crossCheck(p) {
+  const a = p.analysis;
+  if (!a) return null;
+  const ruleIds = new Set(p.moved.map((s) => s.id));
+  const labelOf = (c) => (c.label || c.metric).toLowerCase();
+  const contributors = a.contributors || [];
+  const ruleSignals = p.moved.map((s) => s.name.toLowerCase());
+  const both = contributors.filter((c) => p.moved.some((s) => matches(s, c)));
+  const modelOnly = contributors.filter((c) => !both.includes(c));
+  const ruleOnly = p.moved.filter(
+    (s) => !contributors.some((c) => matches(s, c)),
+  );
+  return {
+    both: both.map(labelOf),
+    modelOnly: modelOnly.map(labelOf),
+    ruleOnly: ruleOnly.map((s) => s.name.toLowerCase()),
+    ruleSignals,
+    ruleIds,
+  };
+}
+const MODEL_TO_SIGNAL = {
+  rhr: "restingHr",
+  hrv: "hrv",
+  respiratory: "breathing",
+  spo2: "oxygen",
+  sleep: "sleep",
+  heart_rate: "avgHr",
+  weight: "weight",
+  temperature: "temperature",
+  skin_temperature: "skinTemp",
+};
+const matches = (signal, contributor) =>
+  MODEL_TO_SIGNAL[contributor.metric] === signal.id ||
+  (contributor.label || "").toLowerCase() === signal.name.toLowerCase();
+
+export default function PatientActivity({ patient: p }) {
+  const check = crossCheck(p);
+  const [open, setOpen] = useState(null);
+  const [showAll, setShowAll] = useState(false);
+  const items = build(p);
+  const shown = showAll ? items : items.slice(0, 8);
+  const answered = p.checkins.filter((c) => c.answeredAt).length;
+  const reports = (p.reports || []).length;
+  const week = items.filter((i) => Date.now() - i.t < 7 * DAY).length;
+  const last = items[0];
+  return (
+    <section className="rx-activity" aria-label="Patient activity">
+      <div className="rx-inline-checkin-head">
+        <div>
+          <span className="rx-home-kicker">Patient activity</span>
+          <h2>
+            {last
+              ? `Last activity ${ago(Date.now() - last.t)}`
+              : "Nothing from the patient yet"}
+          </h2>
+        </div>
+        <span className="rx-activity-stats">
+          {answered} check-in{answered === 1 ? "" : "s"} · {reports} report
+          {reports === 1 ? "" : "s"} · {week} this week
+        </span>
+      </div>
+      {check && (
+        <p
+          className={`rx-activity-check ${check.modelOnly.length ? "differs" : "agrees"}`}
+        >
+          <strong>Model cross-check.</strong>{" "}
+          {check.both.length
+            ? `Model and rule both flag ${check.both.join(", ")}.`
+            : p.moved.length
+              ? "The model names none of the signals the rule flagged."
+              : "Neither the rule nor the model flags a signal."}
+          {check.modelOnly.length
+            ? ` Model only: ${check.modelOnly.join(", ")}.`
+            : ""}
+          {check.ruleOnly.length
+            ? ` Rule only: ${check.ruleOnly.join(", ")}.`
+            : ""}{" "}
+          Every contributor is a measured deviation from this patient's own
+          baseline; the model never adds a signal that was not recorded.
+        </p>
+      )}
+      {items.length > 0 && (
+        <ol className="rx-activity-list">
+          {shown.map((i, n) => (
+            <li key={`${i.kind}-${i.t}-${n}`} className={i.kind}>
+              <i.icon size={15} aria-hidden="true" />
+              <div>
+                <div className="rx-activity-row">
+                  <strong>{i.title}</strong>
+                  <time dateTime={new Date(i.t).toISOString()}>
+                    {clock(i.t)}
+                  </time>
+                </div>
+                {i.text && <p>{i.text}</p>}
+                {i.note && <blockquote>“{i.note}”</blockquote>}
+                {i.body && (
+                  <>
+                    <button
+                      type="button"
+                      className="rx-textbtn"
+                      aria-expanded={open === i.t}
+                      onClick={() => setOpen(open === i.t ? null : i.t)}
+                    >
+                      {open === i.t ? "Hide the report" : "Read the report"}
+                    </button>
+                    {open === i.t && (
+                      <pre className="rx-activity-report">{i.body}</pre>
+                    )}
+                  </>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+      {items.length > 8 && (
+        <button
+          type="button"
+          className="rx-textbtn"
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll ? "Show fewer" : `Show all ${items.length}`}
+        </button>
+      )}
+    </section>
+  );
+}

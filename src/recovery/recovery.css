@@ -5942,3 +5942,193 @@ p.rx-row-summary {
     width: 100%;
   }
 }
+
+/* ---------- Patient activity (clinician view) and sync status ---------- */
+.rx-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+}
+.rx-activity-stats {
+  font-size: 12.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.rx-activity-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rx-activity-list li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13px;
+}
+.rx-activity-list li:first-child {
+  border-top: 0;
+}
+.rx-activity-list li > svg {
+  margin-top: 2px;
+  color: var(--faint);
+}
+.rx-activity-list li.report > svg {
+  color: var(--amber-ink);
+}
+.rx-activity-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rx-activity-row strong {
+  font-size: 13px;
+}
+.rx-activity-row time {
+  font-size: 12px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.rx-activity-list p {
+  margin: 2px 0 0;
+  color: var(--ink-2);
+}
+.rx-activity-list blockquote {
+  margin: 4px 0 0;
+  font-family: var(--serif);
+  color: var(--ink-2);
+}
+.rx-activity-report {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font: 12px/1.5 ui-monospace, Menlo, monospace;
+  white-space: pre-wrap;
+}
+.rx-sync i {
+  background: var(--faint);
+}
+.rx-sync.live i {
+  background: #2f7a62;
+}
+.rx-sync.offline i {
+  background: var(--amber);
+}
+
+/* Patient sign-in: a small card, not a page. */
+.rx-p-auth {
+  padding: 28px 16px;
+}
+.rx-p-auth .rx-p-screen {
+  max-width: 400px;
+  padding: 22px 24px 20px;
+  gap: 10px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+.rx-p-auth .rx-p-top {
+  margin-bottom: 2px;
+}
+.rx-p-auth .rx-p-signin-kicker {
+  margin: 6px 0 2px;
+  font-size: 10.5px;
+}
+.rx-p-auth .rx-p-title {
+  font-size: 20px;
+}
+.rx-p-auth .rx-p-lead {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.rx-p-auth .rx-p-form {
+  gap: 10px;
+}
+.rx-p-auth .rx-p-field {
+  gap: 4px;
+}
+.rx-p-auth .rx-p-field label {
+  font-size: 13px;
+}
+.rx-p-auth .rx-p-field small {
+  font-size: 12px;
+}
+.rx-p-auth .rx-p-select,
+.rx-p-auth .rx-p-code input {
+  min-height: 38px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+.rx-p-auth .rx-p-code svg {
+  width: 16px;
+  height: 16px;
+}
+.rx-p-auth .rx-p-consent {
+  gap: 8px;
+  font-size: 13px;
+}
+.rx-p-auth .rx-p-consent span {
+  font-size: 13px;
+}
+.rx-p-auth .rx-p-btn {
+  min-height: 38px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+.rx-p-auth .rx-p-signin-foot {
+  margin-top: 8px;
+  padding-top: 10px;
+  font-size: 11.5px;
+}
+
+/* Device status is one line, not a card, so the two home columns hold one card each. */
+.rx-pweb .rx-p-devices {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 13px;
+}
+.rx-pweb .rx-p-devices strong {
+  font-size: 13px;
+}
+.rx-pweb .rx-p-devices span {
+  color: var(--faint);
+}
+.rx-pweb .rx-p-devices a {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  font-weight: 600;
+  white-space: nowrap;
+}
+@media (max-width: 1180px) {
+  .rx-pweb .rx-p-col:last-child {
+    display: flex;
+  }
+}
+.rx-activity-check {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--sage);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.rx-activity-check.differs {
+  background: var(--amber-tint);
+}

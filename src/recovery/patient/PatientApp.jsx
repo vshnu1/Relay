@@ -127,6 +127,27 @@ function Home({ patient: p }) {
         </p>
       )}
 
+      <div className="rx-p-devices" aria-label="Your devices">
+        {connected.length ? (
+          <CheckCircle2 size={16} color="#2f7a62" aria-hidden="true" />
+        ) : (
+          <CircleAlert size={16} color="#8a6520" aria-hidden="true" />
+        )}
+        <strong>
+          {connected.length
+            ? `${list(connected.map(([, d]) => d.name))} connected`
+            : "No wearable connected"}
+        </strong>
+        <span>
+          {connected.length
+            ? `Synced ${ago(Date.now() - Math.max(...connected.map(([, d]) => d.lastSync || 0)))}`
+            : "Connect one so your care team sees your readings."}
+        </span>
+        <a href="#/patient/connect">
+          Your data <ChevronRight size={14} aria-hidden="true" />
+        </a>
+      </div>
+
       <div className="rx-p-home">
         <div className="rx-p-col">
           <section className="rx-p-card" aria-label="From your hospital">
@@ -216,30 +237,6 @@ function Home({ patient: p }) {
               See the charts
               <ChevronRight size={16} aria-hidden="true" />
             </a>
-          </section>
-          <section className="rx-p-card list" aria-label="Your devices">
-            <div className="rx-p-status">
-              {connected.length ? (
-                <CheckCircle2 size={20} color="#2f7a62" aria-hidden="true" />
-              ) : (
-                <CircleAlert size={20} color="#8a6520" aria-hidden="true" />
-              )}
-              <div>
-                <strong>
-                  {connected.length
-                    ? `${list(connected.map(([, d]) => d.name))} connected`
-                    : "No wearable connected"}
-                </strong>
-                <span>
-                  {connected.length
-                    ? `Synced ${ago(Date.now() - Math.max(...connected.map(([, d]) => d.lastSync || 0)))}`
-                    : "Connect one so your care team sees your readings."}
-                </span>
-              </div>
-              <a href="#/patient/connect" aria-label="Your data">
-                <ChevronRight size={16} aria-hidden="true" />
-              </a>
-            </div>
           </section>
         </div>
       </div>
