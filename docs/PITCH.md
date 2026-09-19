@@ -358,7 +358,7 @@ avoid.
 
 **"What stops the documentation drifting from the code?"**
 
-Tests, and they run in seconds. `npm test` is 64 checks over the detection rule,
+Tests, and they run in seconds. `npm test` is 67 checks over the detection rule,
 the derived sentences, the patient store, the at-rest encryption, the account
 store and the Render task chain. `PYTHONPATH=ml python3 -m unittest discover -s
 ml/tests` is 63 over the model's contracts, features, scoring and scenarios. One
