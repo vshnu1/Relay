@@ -72,7 +72,7 @@ export default function Insight({ patient: p }) {
         <h2>Relay's model</h2>
         {a ? (
           <>
-            <p>{describeAnalysis(a)}</p>
+            <p>{describeAnalysis(a, p.profile)}</p>
             <p className="rx-p-fine">
               State: {a.application_state.replace("_", " ")} · score{" "}
               {a.anomaly_score ?? "n/a"} · data {a.data_quality?.status} ·{" "}

@@ -181,7 +181,7 @@ function Home({ patient: p }) {
               <span>Relay's model</span>
               <p>
                 {p.analysis
-                  ? describeAnalysis(p.analysis)
+                  ? describeAnalysis(p.analysis, p.profile)
                   : "Not scored yet. Scoring compares your recent readings with your own usual."}
               </p>
               {error && (

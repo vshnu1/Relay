@@ -2,6 +2,7 @@ import { ArrowUp, ChevronDown, ChevronLeft } from "lucide-react";
 import { actions, usePatient } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { ago, clock, dateLong } from "../format.js";
+import ModelCard from "./ModelCard.jsx";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";
 import CareTeamPanel from "./CareTeamPanel.jsx";
@@ -218,6 +219,7 @@ export default function PatientOverview({ id }) {
               </div>
             )}
           </section>
+          <ModelCard patient={p} />
           <details className="rx-followup-details">
             <summary>Contact patient or record follow-up</summary>
             <CareTeamPanel patient={p} embedded />
