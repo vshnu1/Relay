@@ -1,5 +1,11 @@
 import { ArrowUp } from "lucide-react";
-import { PROFILES, QUESTIONS, SIGNALS, ruleText } from "../model/profiles.js";
+import {
+  PROFILES,
+  PROGRAM_PREVIEWS,
+  QUESTIONS,
+  SIGNALS,
+  ruleText,
+} from "../model/profiles.js";
 import { list, numberWord } from "../format.js";
 
 export default function Profiles() {
@@ -7,22 +13,30 @@ export default function Profiles() {
     <div className="rx-page">
       <header className="rx-pagehead">
         <div>
+          <span className="rx-home-kicker">Monitoring setup</span>
           <h1>Watch profiles</h1>
           <p>
-            What is counted after each illness, and in which direction.
-            Illustrative settings, not clinically validated.
+            Choose a recovery pathway to explore its signals and check-in topics.
+            Demo settings are illustrative, not clinically validated.
           </p>
         </div>
       </header>
       <div className="rx-profiles">
         {Object.entries(PROFILES).map(([id, profile]) => (
           <section key={id} className="rx-card" aria-label={profile.name}>
+            <span className="rx-profile-preview-status">Demo profile</span>
             <h2>{profile.name}</h2>
-            <p>
-              A review is recommended when at least{" "}
-              {numberWord(profile.minMoved)} of these stay past their threshold
-              for 24 hours, over the same period.
-            </p>
+            <div className="rx-profile-signals" aria-label="Watched signals">
+              {profile.counted.map((c) => (
+                <span key={c.signal}>{SIGNALS[c.signal].short}</span>
+              ))}
+            </div>
+            <details className="rx-profile-rules">
+              <summary>View review criteria</summary>
+              <p>
+                At least {numberWord(profile.minMoved)} signals past their
+                thresholds for 24 hours over the same period.
+              </p>
             <ul>
               {profile.counted.map((c) => (
                 <li key={c.signal}>
@@ -42,6 +56,7 @@ export default function Profiles() {
                 </li>
               ))}
             </ul>
+            </details>
             <dl>
               <div>
                 <dt>Recorded, not counted</dt>
@@ -61,6 +76,36 @@ export default function Profiles() {
           </section>
         ))}
       </div>
+      <section className="rx-profile-roadmap" aria-label="Additional recovery programs">
+        <div className="rx-profile-roadmap-head">
+          <span className="rx-home-kicker">Program development</span>
+          <h2>More recovery pathways</h2>
+          <p>
+            Additional programs need connected signals and condition-specific
+            validation before they can be enabled here.
+          </p>
+        </div>
+        <div className="rx-profile-preview-grid">
+          {PROGRAM_PREVIEWS.map((program) => (
+            <article className="rx-card rx-profile-preview" key={program.id}>
+              <span className="rx-profile-preview-status">{program.status}</span>
+              <h3>{program.name}</h3>
+              <p className="rx-profile-preview-summary">{program.summary}</p>
+              <dl>
+                <div>
+                  <dt>Potential signals</dt>
+                  <dd>{list(program.measures)}</dd>
+                </div>
+                <div>
+                  <dt>Check-in context</dt>
+                  <dd>{list(program.context)}</dd>
+                </div>
+              </dl>
+              <p className="rx-profile-coverage">{program.coverage}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

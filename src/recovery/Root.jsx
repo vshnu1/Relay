@@ -15,9 +15,11 @@ import "./recovery.css";
 export default function Root() {
   const route = useRoute();
   const section = route[0];
-  // The root is always the public welcome screen. Explicit role routes are the
-  // handoff into the demo workspace, so a refresh never skips the introduction.
-  if (!section || section === "welcome")
+  // The application opens in the clinician workspace overview. A product
+  // introduction remains available at /welcome for presentations.
+  if (!section || section === "doctor")
+    return <DoctorRoot route={route} />;
+  if (section === "welcome" || section === "about")
     return (
       <div className="rx">
         <Landing />
@@ -85,12 +87,13 @@ function DemoBar({ isPatient, roster, actingId, onSelect }) {
 
 function DoctorRoot({ route }) {
   const cohort = useCohort();
+  const sourceLabel = useSourceLabel();
   if (!cohort.length)
     return <div className="rx rx-loading">Connecting to the data stream…</div>;
   return (
     <div className="rx">
       <DemoBar isPatient={false} />
-      <DoctorApp route={route} cohort={cohort} />
+      <DoctorApp route={route} cohort={cohort} sourceLabel={sourceLabel} />
     </div>
   );
 }

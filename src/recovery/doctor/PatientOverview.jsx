@@ -18,7 +18,7 @@ export default function PatientOverview({ id }) {
     return (
       <div className="rx-page">
         <p>No patient with that link.</p>
-        <a href="#/doctor">Back to the watchlist</a>
+        <a href="#/doctor/watchlist">Back to the watchlist</a>
       </div>
     );
   const twoAgo = p.dayHome - 2;
@@ -36,7 +36,7 @@ export default function PatientOverview({ id }) {
   return (
     <div className="rx-page">
       <header className="rx-patienthead">
-        <a className="rx-back" href="#/doctor">
+        <a className="rx-back" href="#/doctor/watchlist">
           <ChevronLeft size={15} /> Watchlist
         </a>
         <div>

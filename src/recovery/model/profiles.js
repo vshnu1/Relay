@@ -293,6 +293,42 @@ export const PROFILES = {
   },
 };
 
+// Model program ideas that are not enabled in the simulated patient feed yet.
+// Keeping them separate from PROFILES prevents these cards from implying that
+// the current frontend is scoring their metrics or that the programs are validated.
+export const PROGRAM_PREVIEWS = [
+  {
+    id: "strokeRehabilitation",
+    name: "Stroke rehabilitation",
+    status: "Limited synthetic example",
+    summary:
+      "Tracks functional recovery trends after discharge. It does not detect or rule out a new stroke.",
+    measures: [
+      "Walking speed and step length",
+      "Walking asymmetry and double-support time",
+      "Daily steps and walking steadiness",
+    ],
+    context: ["Falls", "Dizziness", "Therapy adherence"],
+    coverage:
+      "A synthetic gait-decline scenario is available. The reference wearable cohort has no gait metrics, so this profile has not been validated on that cohort.",
+  },
+  {
+    id: "cardiacRecovery",
+    name: "Cardiac recovery",
+    status: "Program draft",
+    summary:
+      "A planned follow-up profile for recovery after a heart attack, stent procedure, or bypass surgery.",
+    measures: [
+      "Resting and daily heart rate",
+      "Heart rate variability and sleep",
+      "Steps, with blood pressure and weight when connected",
+    ],
+    context: ["Chest symptoms", "Dizziness", "Breathlessness"],
+    coverage:
+      "The model program is defined, but this prototype has no dedicated patient scenario or connected blood-pressure and weight feed.",
+  },
+];
+
 export const thresholdOf = (thr, usual) =>
   thr.abs !== undefined ? thr.abs : (Math.abs(usual) * thr.pct) / 100;
 export function ruleText({ dir, thr }, unit) {

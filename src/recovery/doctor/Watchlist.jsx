@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, ArrowUpRight, CircleAlert, Clock3, CheckCircle2 } from "lucide-react";
 import { list, numberWord } from "../format.js";
 
 const GROUPS = [
@@ -35,7 +35,7 @@ export default function Watchlist({ cohort }) {
   const context = cohort.filter((p) => p.group === "context").length;
   const monitoring = cohort.filter((p) => p.group === "monitoring").length;
   return (
-    <div className="rx-page">
+    <div className="rx-page rx-watchlist">
       <header className="rx-pagehead">
         <div>
           <span className="rx-eyebrow">Care team workspace · Today</span>
@@ -57,36 +57,18 @@ export default function Watchlist({ cohort }) {
           />
         </label>
       </header>
-      <div className="rx-watch-summary" aria-label="Watchlist summary">
-        <div className="rx-watch-summary-card attention">
-          <span className="rx-summary-icon">!</span>
-          <div>
-            <strong>{reviews}</strong>
-            <span>Need your review</span>
-          </div>
-        </div>
-        <div className="rx-watch-summary-card waiting">
-          <span className="rx-summary-icon">○</span>
-          <div>
-            <strong>{context}</strong>
-            <span>Waiting on patient</span>
-          </div>
-        </div>
-        <div className="rx-watch-summary-card calm">
-          <span className="rx-summary-icon">✓</span>
-          <div>
-            <strong>{monitoring}</strong>
-            <span>Monitoring quietly</span>
-          </div>
-        </div>
-        <div className="rx-watch-summary-note">
-          <span className="rx-pulse-dot" />
-          <span>All connected devices checked in recently</span>
-        </div>
+      <div className="rx-watch-statusbar" aria-label="Watchlist summary">
+        <span className="rx-watch-total">{cohort.length} patients</span>
+        <span className="rx-watch-stat"><CircleAlert size={16} /> <strong>{reviews}</strong> need review</span>
+        <span className="rx-watch-stat waiting"><Clock3 size={16} /> <strong>{context}</strong> awaiting check-in</span>
+        <span className="rx-watch-stat"><CheckCircle2 size={16} /> <strong>{monitoring}</strong> monitoring</span>
       </div>
+      {query.trim() && !shown.length && (
+        <p className="rx-card rx-row-summary">No patients match “{query.trim()}”.</p>
+      )}
       {GROUPS.map((g) => {
         const rows = shown.filter((p) => p.group === g.id);
-        if (!rows.length && !g.empty) return null;
+        if (!rows.length && (!g.empty || query.trim())) return null;
         const expanded = !g.collapsible || open[g.id] || query.trim() !== "";
         return (
           <section key={g.id} className="rx-group" aria-label={g.title}>
@@ -105,6 +87,11 @@ export default function Watchlist({ cohort }) {
               )}
             </div>
             <div className="rx-card rx-rows">
+              {expanded && rows.length > 0 && (
+                <div className="rx-watch-columns" aria-hidden="true">
+                  <span>Patient</span><span>Recovery pathway</span><span>Latest summary</span><span>Signals changed</span><span />
+                </div>
+              )}
               {!rows.length ? (
                 <p className="rx-row-summary">{g.empty}</p>
               ) : !expanded ? (
@@ -132,7 +119,7 @@ export default function Watchlist({ cohort }) {
                         Day {p.dayHome} of {p.windowDays}
                       </small>
                     </div>
-                    <p className="rx-serif">
+                    <p className="rx-watch-finding">
                       {p.acknowledged ? `Reviewed. ${p.line}` : p.line}
                     </p>
                     <div
@@ -156,7 +143,7 @@ export default function Watchlist({ cohort }) {
                       href={`#/doctor/p/${p.id}`}
                       aria-label={`Open ${p.name}`}
                     >
-                      Open
+                      Open <ArrowUpRight size={14} aria-hidden="true" />
                     </a>
                   </div>
                 ))
