@@ -1,5 +1,6 @@
 import { METRIC_MAP } from "../model/mlClient.js";
 import {
+  CHECKIN_QUESTIONS,
   PROFILES,
   QUESTIONS,
   QUESTION_SIGNAL_MAP,
@@ -151,6 +152,16 @@ export function buildCheckinPlan(patient, analysis = patient.analysis) {
     const planQuestion = planQuestionFor(profileId, allowed);
     if (planQuestion && selected.length < 2) selected.push(planQuestion);
   }
+  // The questions themselves are fixed per watch profile for now (CHECKIN_QUESTIONS in
+  // model/profiles.js), worded for what the patient was discharged with. The model and
+  // the readings still decide the mode, the priority and what the opening line
+  // mentions; they no longer pick the questions, because a model result listing
+  // ordinary variation could replace the ones the patient's own readings pointed to.
+  // The adaptive selection above is kept as the fallback for a profile with no list.
+  const fixed = (CHECKIN_QUESTIONS[profileId] || []).filter(
+    (id) => QUESTIONS[id],
+  );
+  if (fixed.length) selected = fixed;
   return {
     mode,
     priority,
