@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   ChevronRight,
   CircleAlert,
+  CircleCheck,
   Home as HomeIcon,
   LineChart,
   MessageCircle,

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, ChevronLeft, Volume2 } from "lucide-react";
-import { actions } from "../useRecovery.js";
+import { CheckCircle2, ChevronLeft, Mic, Volume2 } from "lucide-react";
+import { actions, useRecovery } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { checkinDue } from "../model/schedule.js";
 
@@ -17,7 +17,8 @@ function speak(text) {
 // so skipping the free-text step never loses them. Questions come from the watch
 // profile and map one-to-one onto the ML model's context fields.
 export default function Checkin({ patient: p }) {
-  const questions = p.profile.questions;
+  const { capabilities } = useRecovery();
+  const questions = p.questions || p.profile.questions;
   const due = checkinDue(p);
   const [mode, setMode] = useState("question");
   const [step, setStep] = useState(0);
@@ -36,6 +37,15 @@ export default function Checkin({ patient: p }) {
     }
   }, [mode, step, aloud, questions]);
   useEffect(() => () => canSpeak() && speechSynthesis.cancel(), []);
+  // The future ElevenLabs adapter listens for this event. Keeping the entry point
+  // here lets voice replace the same structured check-in without changing the
+  // patient's navigation or the doctor-facing evidence contract.
+  const startVoice = (entry) =>
+    window.dispatchEvent(
+      new CustomEvent("relay:voice-checkin", {
+        detail: { patientId: p.id, entry, questions },
+      }),
+    );
 
   if (mode === "question") {
     const id = questions[step];
@@ -74,6 +84,12 @@ export default function Checkin({ patient: p }) {
           </p>
         )}
         <h1 className="rx-p-question">{QUESTIONS[id].text}</h1>
+        {step === 0 && (
+          <p className="rx-p-question-help">
+            {p.questionReason ||
+              "These answers give your care team context for the readings they see."}
+          </p>
+        )}
         <div className="rx-p-options" role="group" aria-label="Your answer">
           {QUESTIONS[id].options.map((option) => (
             <button
@@ -105,6 +121,16 @@ export default function Checkin({ patient: p }) {
             >
               <Volume2 size={22} aria-hidden="true" />{" "}
               {aloud ? "Stop reading aloud" : "Read the questions aloud"}
+            </button>
+          )}
+          {capabilities.voice && (
+            <button
+              type="button"
+              className="rx-p-btn"
+              data-voice-entry="checkin-answers"
+              onClick={() => startVoice("answers")}
+            >
+              <Mic size={22} aria-hidden="true" /> Answer by voice instead
             </button>
           )}
           <a className="rx-p-textbtn" href="#/patient/assistant">
@@ -141,7 +167,7 @@ export default function Checkin({ patient: p }) {
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
           />
-          <span>Share these answers with my care team at {p.hospital}.</span>
+          <span>Share these answers with my care team.</span>
         </label>
         <button
           type="button"
@@ -169,7 +195,7 @@ export default function Checkin({ patient: p }) {
           </h1>
         </div>
         <div className="rx-p-field">
-          <label htmlFor="rx-note">Your message. You can skip this.</label>
+          <label htmlFor="rx-note">Add a note (optional)</label>
           <textarea
             id="rx-note"
             rows="4"
@@ -178,6 +204,16 @@ export default function Checkin({ patient: p }) {
             placeholder="For example: how you slept, a new symptom, or a question."
           />
         </div>
+        {capabilities.voice && (
+          <button
+            type="button"
+            className="rx-p-btn"
+            data-voice-entry="checkin-note"
+            onClick={() => startVoice("note")}
+          >
+            <Mic size={22} aria-hidden="true" /> Say it instead
+          </button>
+        )}
         <p className="rx-p-fine">
           Your care team reads messages during working hours, not right away. If
           you feel very unwell, follow the emergency instructions in your

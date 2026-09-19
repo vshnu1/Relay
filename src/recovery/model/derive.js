@@ -4,6 +4,7 @@
 import {
   PROFILES,
   QUESTIONS,
+  QUESTION_SIGNAL_MAP,
   SIGNALS,
   ruleText,
   thresholdOf,
@@ -14,6 +15,19 @@ const HOUR = 3600000;
 const DAY = 24 * HOUR;
 const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
 const CONCERNING = ["A lot", "A little", "Yes"];
+
+function questionsFor(profileId, questions, moved) {
+  const links = QUESTION_SIGNAL_MAP[profileId] || {};
+  const movedIds = new Set(moved.map((signal) => signal.id));
+  return questions
+    .map((id, index) => ({
+      id,
+      index,
+      score: (links[id] || []).filter((signal) => movedIds.has(signal)).length,
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map(({ id }) => id);
+}
 
 // How far a day sits from usual, in threshold units, signed toward the watched direction.
 function levelOf(ratio) {
@@ -138,6 +152,13 @@ export function derive(p, now) {
   const signals = specs.map((spec) => deriveSignal(p, spec, dayHome, now));
   const counted = signals.filter((s) => s.counted);
   const moved = counted.filter((s) => s.moved);
+  const questions = questionsFor(p.profile, profile.questions, moved);
+  const questionReason = moved.length
+    ? `Relay noticed a change in ${moved
+        .slice(0, 3)
+        .map((signal) => signal.plain.toLowerCase())
+        .join(", ")}. Your answers add context for your care team; they do not explain or diagnose the change.`
+    : "Your care team asks about your recovery and any changes in your readings.";
 
   const pattern = moved.length >= profile.minMoved;
   const starts = moved.map((s) => s.runStartT);
@@ -338,6 +359,8 @@ export function derive(p, now) {
     age: p.age,
     profile,
     profileId: p.profile,
+    questions,
+    questionReason,
     hospital: p.hospital,
     clinician: p.clinician,
     dayHome,

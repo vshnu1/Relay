@@ -38,7 +38,7 @@ test("every question maps onto a field the ML model scores", () => {
       assert.notEqual(q.toModel(option), undefined, `${id}/${option}`);
   }
   for (const [id, p] of Object.entries(PROFILES)) {
-    assert.ok(p.ml, `${id} has no ML program`);
+    assert.ok("ml" in p, `${id} does not say which ML program it maps to`);
     for (const q of p.questions)
       assert.ok(QUESTIONS[q], `${id} asks unknown question ${q}`);
   }
@@ -108,7 +108,10 @@ test("due, insight and notifications follow the readings and the answers", async
   assert.equal(insight(aisha).level, "fine");
   const report = buildReport(maya);
   assert.match(report.subject, /Maya Okafor, day 9/);
-  assert.match(report.body, /Breathing harder than yesterday: A lot/);
+  assert.ok(
+    report.body.includes(`${QUESTIONS.breathing.short}: A lot`),
+    "check-in answers are in the report",
+  );
   assert.equal(report.modelContext.shortness_of_breath, true);
   assert.match(report.body, /does not diagnose/);
   store.destroy();

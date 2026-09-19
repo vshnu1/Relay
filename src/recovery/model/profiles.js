@@ -194,40 +194,40 @@ const worse = (a) =>
 const yes = (a) => (a === "Yes" ? true : a === "No" ? false : null);
 export const QUESTIONS = {
   breathing: {
-    text: "Is your breathing harder than yesterday?",
-    short: "Breathing harder than yesterday",
+    text: "Is your breathing harder when you walk or climb stairs than yesterday?",
+    short: "Breathing with usual activity",
     options: SCALE,
     reports: "harder breathing",
     ml: "shortness_of_breath",
     toModel: (a) => (a === "No" ? false : true),
   },
   cough: {
-    text: "Are you coughing more than yesterday?",
-    short: "Coughing more than yesterday",
+    text: "Are you coughing more, or bringing up more mucus, than yesterday?",
+    short: "Cough or mucus change",
     options: SCALE,
     reports: "more coughing",
     ml: "cough",
     toModel: worse,
   },
   fever: {
-    text: "Have you had any fever or chills?",
-    short: "Fever or chills",
+    text: "Have you had a fever or chills since you came home?",
+    short: "Fever or chills since discharge",
     options: NYS,
     reports: "fever or chills",
     ml: "fever_symptoms",
     toModel: yes,
   },
   swelling: {
-    text: "Are your ankles or legs more swollen than yesterday?",
-    short: "More swelling than yesterday",
+    text: "Are your ankles, feet, or legs more swollen than yesterday?",
+    short: "Swelling in ankles or legs",
     options: SCALE,
     reports: "more swelling",
     ml: "swelling",
     toModel: worse,
   },
   pain: {
-    text: "Is the pain around your wound worse than yesterday?",
-    short: "Wound pain worse than yesterday",
+    text: "Is the pain around your incision worse than yesterday?",
+    short: "Incision pain since discharge",
     options: SCALE,
     reports: "worse wound pain",
     ml: "pain_change",
@@ -285,8 +285,8 @@ export const QUESTIONS = {
       a === "Yes" ? "Less than usual" : a === "No" ? "Usual" : "Unsure",
   },
   racing: {
-    text: "Have you felt your heart racing or fluttering?",
-    short: "Heart racing or fluttering",
+    text: "Have you felt your heart racing, fluttering, or beating irregularly?",
+    short: "Racing or irregular heartbeat",
     options: NYS,
     reports: "a racing heart",
     ml: "chest_symptoms",
@@ -316,9 +316,33 @@ export const QUESTIONS = {
     ml: "fatigue",
     toModel: worse,
   },
+  bleeding: {
+    text: "Has your bleeding been heavier than yesterday?",
+    short: "Heavier bleeding than yesterday",
+    options: SCALE,
+    reports: "heavier bleeding",
+    ml: "bleeding",
+    toModel: worse,
+  },
+  headache: {
+    text: "Have you had a headache or changes to your vision?",
+    short: "Headache or vision changes",
+    options: NYS,
+    reports: "headache or vision changes",
+    ml: "headache",
+    toModel: yes,
+  },
+  sleepiness: {
+    text: "Have you felt sleepy during the day?",
+    short: "Sleepy during the day",
+    options: SCALE,
+    reports: "daytime sleepiness",
+    ml: "sleepiness",
+    toModel: worse,
+  },
   medicine: {
-    text: "Have you missed any of your medicines?",
-    short: "Missed any medicines",
+    text: "Have you missed, changed, or stopped any medicines from your discharge plan?",
+    short: "Medicine changes since discharge",
     options: NYS,
     reports: "missed medicines",
     ml: "medication",
@@ -326,8 +350,8 @@ export const QUESTIONS = {
       a === "Yes" ? "Missed or changed" : a === "No" ? "No changes" : "Unsure",
   },
   activity: {
-    text: "Did you do anything more active than usual today?",
-    short: "More active than usual",
+    text: "Were you more active than your discharge plan recommended?",
+    short: "Activity beyond discharge plan",
     options: NYS,
     ml: "exercise",
     toModel: (a) =>
@@ -367,6 +391,43 @@ export const isScheduledDay = (day) =>
   day <= SCHEDULE.dailyUntil ||
   (day <= SCHEDULE.windowDays &&
     (day - SCHEDULE.dailyUntil) % SCHEDULE.thenEvery === 0);
+
+// These links make the patient check-in follow the model's observed contributors.
+// They are relevance hints only: a matching wearable signal does not prove that a
+// symptom caused it. Questions with no direct wearable counterpart (for example
+// medicine adherence or wound pain) remain in every program as patient context.
+export const QUESTION_SIGNAL_MAP = {
+  pneumonia: {
+    breathing: ["breathing", "oxygen"],
+    fever: ["skinTemp"],
+    medicine: [],
+    activity: ["walkingHr"],
+  },
+  heartFailure: {
+    breathing: ["breathing", "oxygen"],
+    swelling: [],
+    medicine: [],
+    activity: ["walkingHr", "sleep"],
+  },
+  abdominalSurgery: {
+    pain: [],
+    fever: ["skinTemp"],
+    medicine: [],
+    activity: ["walkingHr"],
+  },
+  copd: {
+    breathing: ["breathing", "oxygen"],
+    cough: ["breathing", "oxygen"],
+    medicine: [],
+    activity: ["walkingHr"],
+  },
+  afib: {
+    racing: ["restingHr", "avgHr", "hrv"],
+    breathing: ["breathing"],
+    medicine: [],
+    activity: ["walkingHr", "avgHr"],
+  },
+};
 
 const counted = (signal, over = {}) => ({
   signal,
@@ -467,6 +528,91 @@ export const PROFILES = {
       "activity",
     ],
   },
+  sepsisWatch: {
+    name: "Sepsis watch after surgery",
+    ml: null,
+    after: "surgery, with a sepsis watch",
+    minMoved: 3,
+    counted: [
+      counted("restingHr"),
+      counted("breathing"),
+      counted("skinTemp"),
+      counted("hrv"),
+    ],
+    recorded: ["oxygen", "sleep", "walkingHr"],
+    questions: ["fever", "pain", "medicine", "activity"],
+  },
+  respiratoryInfection: {
+    name: "Respiratory infection",
+    ml: null,
+    after: "a respiratory infection",
+    minMoved: 3,
+    counted: [
+      counted("breathing"),
+      counted("skinTemp"),
+      counted("oxygen"),
+      counted("hrv"),
+      counted("restingHr"),
+    ],
+    recorded: ["sleep", "deepSleep", "walkingHr"],
+    questions: ["breathing", "cough", "fever", "activity"],
+  },
+  asthma: {
+    name: "Asthma flare-up",
+    ml: null,
+    after: "an asthma flare-up",
+    minMoved: 2,
+    counted: [
+      counted("breathing"),
+      counted("oxygen"),
+      counted("sleep"),
+      counted("walkingHr"),
+    ],
+    recorded: ["restingHr", "hrv"],
+    questions: ["breathing", "cough", "medicine", "activity"],
+  },
+  pulmonaryEmbolism: {
+    name: "Pulmonary embolism recovery",
+    ml: null,
+    after: "a pulmonary embolism",
+    minMoved: 2,
+    counted: [
+      counted("breathing"),
+      counted("oxygen"),
+      counted("restingHr"),
+      counted("walkingHr"),
+    ],
+    recorded: ["hrv", "sleep"],
+    questions: ["breathing", "pain", "medicine", "activity"],
+  },
+  sleepApnoea: {
+    name: "Sleep apnoea, after titration",
+    ml: null,
+    after: "a sleep apnoea titration",
+    minMoved: 2,
+    counted: [
+      counted("oxygen"),
+      counted("deepSleep"),
+      counted("sleep"),
+      counted("restingHr"),
+    ],
+    recorded: ["breathing", "hrv"],
+    questions: ["sleepiness", "breathing", "medicine", "activity"],
+  },
+  postpartum: {
+    name: "Postpartum recovery",
+    ml: null,
+    after: "giving birth",
+    minMoved: 2,
+    counted: [
+      counted("restingHr"),
+      counted("breathing"),
+      counted("sleep"),
+      counted("skinTemp"),
+    ],
+    recorded: ["hrv", "oxygen"],
+    questions: ["bleeding", "headache", "fever", "medicine"],
+  },
   afib: {
     name: "Atrial fibrillation",
     after: "atrial fibrillation",
@@ -485,6 +631,42 @@ export const PROFILES = {
     ],
   },
 };
+
+// Model program ideas that are not enabled in the simulated patient feed yet.
+// Keeping them separate from PROFILES prevents these cards from implying that
+// the current frontend is scoring their metrics or that the programs are validated.
+export const PROGRAM_PREVIEWS = [
+  {
+    id: "strokeRehabilitation",
+    name: "Stroke rehabilitation",
+    status: "Limited synthetic example",
+    summary:
+      "Tracks functional recovery trends after discharge. It does not detect or rule out a new stroke.",
+    measures: [
+      "Walking speed and step length",
+      "Walking asymmetry and double-support time",
+      "Daily steps and walking steadiness",
+    ],
+    context: ["Falls", "Dizziness", "Therapy adherence"],
+    coverage:
+      "A synthetic gait-decline scenario is available. The reference wearable cohort has no gait metrics, so this profile has not been validated on that cohort.",
+  },
+  {
+    id: "cardiacRecovery",
+    name: "Cardiac recovery",
+    status: "Program draft",
+    summary:
+      "A planned follow-up profile for recovery after a heart attack, stent procedure, or bypass surgery.",
+    measures: [
+      "Resting and daily heart rate",
+      "Heart rate variability and sleep",
+      "Steps, with blood pressure and weight when connected",
+    ],
+    context: ["Chest symptoms", "Dizziness", "Breathlessness"],
+    coverage:
+      "The model program is defined, but this prototype has no dedicated patient scenario or connected blood-pressure and weight feed.",
+  },
+];
 
 export const thresholdOf = (thr, usual) =>
   thr.abs !== undefined ? thr.abs : (Math.abs(usual) * thr.pct) / 100;

@@ -31,6 +31,21 @@ test("statuses are derived from readings and check-ins, not stored", async () =>
       samuel: "monitoring",
       george: "monitoring",
       lena: "nodata",
+      // Six further conditions, two patients each: one whose signals have
+      // moved and one whose have not, so every profile is exercised in both
+      // directions and the quiet cases outnumber the loud ones.
+      marcus: "context",
+      nadia: "monitoring",
+      yusuf: "context",
+      ingrid: "nodata",
+      oliver: "context",
+      beatrice: "monitoring",
+      hassan: "context",
+      clara: "monitoring",
+      arthur: "context",
+      mei: "monitoring",
+      rosa: "context",
+      amara: "monitoring",
     },
   );
   assert.equal(v.maya.moved.length, 4);
@@ -68,6 +83,25 @@ test("a patient's answers move them from waiting to review, and a note attaches 
   store.actions.requestCheckin("priya");
   await flush();
   assert.equal(views().priya.status, "context");
+  store.destroy();
+});
+
+test("check-in questions follow the signals that moved for the discharge program", async () => {
+  const { store, views } = await cohort();
+  const priya = views().priya;
+  assert.deepEqual(
+    priya.questions,
+    ["fever", ...priya.profile.questions.filter((q) => q !== "fever")],
+    "skin temperature movement puts the fever question first for abdominal recovery",
+  );
+  assert.match(priya.questionReason, /skin temperature/i);
+
+  const aisha = views().aisha;
+  assert.deepEqual(
+    aisha.questions,
+    aisha.profile.questions,
+    "without a persistent change, the program's normal context order is kept",
+  );
   store.destroy();
 });
 

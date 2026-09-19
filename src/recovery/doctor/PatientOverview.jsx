@@ -18,20 +18,25 @@ export default function PatientOverview({ id }) {
     return (
       <div className="rx-page">
         <p>No patient with that link.</p>
-        <a href="#/doctor">Back to the watchlist</a>
+        <a href="#/doctor/watchlist">Back to the watchlist</a>
       </div>
     );
   const twoAgo = p.dayHome - 2;
   const asked = p.answered
-    ? p.profile.questions.filter((q) => p.answered.answers[q])
+    ? (p.questions || p.profile.questions).filter(
+        (q) => p.answered.answers[q],
+      )
     : [];
   // Read the watched/recorded split straight off the profile, never hardcoded.
   const countedNames = p.counted.map((s) => s.short);
   const recordedNames = p.signals.filter((s) => !s.counted).map((s) => s.short);
+  const activeDevices = Object.values(p.devices).filter((d) => d.sharing).length;
+  const totalDevices = Object.values(p.devices).length;
+  const strongest = p.moved[0];
   return (
     <div className="rx-page">
       <header className="rx-patienthead">
-        <a className="rx-back" href="#/doctor">
+        <a className="rx-back" href="#/doctor/watchlist">
           <ChevronLeft size={15} /> Watchlist
         </a>
         <div>
@@ -95,6 +100,38 @@ export default function PatientOverview({ id }) {
           </div>
         </dl>
       </header>
+
+      <div className="rx-patient-summary" aria-label="Patient recovery summary">
+        <div className="rx-patient-summary-main">
+          <span className="rx-summary-label">At a glance</span>
+          <strong>
+            {p.pattern
+              ? `${p.moved.length} of ${p.counted.length} signals shifted`
+              : "Signals are inside the usual range"}
+          </strong>
+          <span>
+            {p.pattern
+              ? `For ${p.hours} hours · ${strongest?.name || "multiple signals"} is furthest from usual`
+              : "No persistent coordinated change detected"}
+          </span>
+        </div>
+        <div className="rx-patient-summary-stat">
+          <strong>{p.pattern ? `${p.hours}h` : "—"}</strong>
+          <span>Pattern duration</span>
+        </div>
+        <div className="rx-patient-summary-stat">
+          <strong>
+            {p.moved.length}/{p.counted.length}
+          </strong>
+          <span>Signals shifted</span>
+        </div>
+        <div className="rx-patient-summary-stat">
+          <strong>
+            {activeDevices}/{totalDevices}
+          </strong>
+          <span>Devices sharing</span>
+        </div>
+      </div>
 
       <div className="rx-overview">
         <section className="rx-card rx-shows" aria-label="What the data shows">
