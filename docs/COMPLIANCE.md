@@ -194,7 +194,7 @@ _Organisational._
 
 ## Honest summary
 
-Built: **all ten technical safeguards in 45 CFR 164.312** — transport security
+Built: **nine of the ten technical safeguards in 45 CFR 164.312**, the tenth Partial and explained — transport security
 and headers, automatic logoff with a revocable server-side session, audit
 controls with per-person attribution over a hash chain, encryption at rest,
 named accounts, emergency access, role separation with a deny-by-default

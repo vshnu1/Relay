@@ -256,7 +256,7 @@ does not survive the first question.
 **"What about security and HIPAA?"**
 
 Open the **Security** tab in the clinician view. It renders the HIPAA Security
-Rule's technical safeguards cite by cite, **all ten built**, each one carrying
+Rule's technical safeguards cite by cite, **nine built and one Partial**, each one carrying
 what it used to be and what it still is not — no multi-factor authentication, no
 identity proofing. Two of them are checked against the running process rather
 than asserted: the encryption mode, and whether the audit chain verifies. Beside
@@ -313,10 +313,16 @@ deterministic and printed in the interface.
 
 **"You are handling health data. What have you actually done about it?"**
 
-All ten technical safeguards in the HIPAA Security Rule, 45 CFR 164.312, and
-there is a page in the product listing each one with its citation. This morning
-five of them were unmet and the page said so. Four were closed today; the fifth
-was Partial and is now Built.
+Nine of the ten technical safeguards in the HIPAA Security Rule, 45 CFR
+164.312, and there is a page in the product listing each one with its citation.
+This morning five were unmet and one was Partial. Four of the five are now
+Built. The fifth, emergency access, is deliberately still Partial, and why is
+the most useful thing on the page: there is a break-glass control that records
+who declared an emergency and why, but clinician access here is not partitioned,
+so it grants nothing that was not already reachable. A control that lifts no
+restriction is not a safeguard, and marking it green would be the exact move
+this page exists to argue against. Scoping clinicians per care team is what
+would make it real.
 
 Three decisions inside that are worth defending out loud, because each was a
 choice between looking better and being better.
@@ -349,7 +355,7 @@ afterwards. Each line now commits to the line before it, and the verifier
 reports the line number where the history stops adding up. The digest covers the
 bytes as written, so someone holding the file and no key can still check it.
 
-_The part to say last._ Ten out of ten is the smaller half, and the page carries
+_The part to say last._ Nine out of ten is the smaller half, and the page carries
 a second table underneath: business associate agreements, risk analysis,
 workforce training, breach procedures, review board approval, FDA clearance.
 None of those can be closed by writing more software. A page showing only the

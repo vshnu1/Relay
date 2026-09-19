@@ -13,15 +13,53 @@ import { ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
 // actors in the log rather than one anonymous clinician, and every action they
 // take is attributable afterwards.
 
-const post = async (path, body) => {
-  const response = await fetch(path, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error || "That did not work.");
-  return payload;
+// This runs on a free instance that sleeps when nobody is using it. The first
+// request after a quiet spell wakes it, and until it is up the edge answers 502
+// with an HTML page rather than JSON. Read naively that is an empty error
+// message and a button that appears to do nothing, which is exactly how it
+// looked. So: keep trying for a while, and say what is happening meanwhile.
+const WAKING = /^(429|5\d\d)$/;
+
+const post = async (path, body, onProgress) => {
+  const deadline = Date.now() + 45000;
+  let attempt = 0;
+  for (;;) {
+    attempt += 1;
+    let response;
+    try {
+      response = await fetch(path, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      // The server is not answering at all yet.
+      if (Date.now() > deadline)
+        throw new Error(
+          "The server is not responding. It may still be starting up; wait a moment and try again.",
+        );
+      onProgress?.("Waking the server…");
+      await new Promise((r) => setTimeout(r, 2000));
+      continue;
+    }
+    if (response.ok) return response.json();
+
+    const payload = await response.json().catch(() => null);
+    const retryable = WAKING.test(String(response.status));
+    if (retryable && Date.now() < deadline) {
+      onProgress?.(
+        attempt === 1 ? "Waking the server…" : "Still waking the server…",
+      );
+      await new Promise((r) => setTimeout(r, 2000));
+      continue;
+    }
+    throw new Error(
+      payload?.error ||
+        (retryable
+          ? "The server is still starting up. Give it a minute and try again."
+          : `That did not work (${response.status}).`),
+    );
+  }
 };
 
 export default function Account({ onSignedIn, audience = "clinician" }) {
@@ -29,8 +67,8 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [invite, setInvite] = useState("");
-  const [careTeam, setCareTeam] = useState("");
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
 
   const done = (payload) => {
@@ -41,33 +79,36 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
     event.preventDefault();
     setBusy(true);
     setError("");
+    setStatus("");
     try {
       done(
         mode === "signin"
-          ? await post("/api/auth/login", { email, password })
-          : await post("/api/auth/register", {
-              email,
-              password,
-              invite,
-              careTeam,
-            }),
+          ? await post("/api/auth/login", { email, password }, setStatus)
+          : await post(
+              "/api/auth/register",
+              { email, password, invite },
+              setStatus,
+            ),
       );
     } catch (problem) {
       setError(problem.message);
     } finally {
       setBusy(false);
+      setStatus("");
     }
   }
 
   async function demo() {
     setBusy(true);
     setError("");
+    setStatus("");
     try {
-      done(await post("/api/auth/demo", { role: audience }));
+      done(await post("/api/auth/demo", { role: audience }, setStatus));
     } catch (problem) {
       setError(problem.message);
     } finally {
       setBusy(false);
+      setStatus("");
     }
   }
 
@@ -85,10 +126,21 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
             </span>
             <h1>Sign in as yourself.</h1>
             <p className="rx-auth-lede">
+              <strong>Just looking?</strong> Use the demo button under the form.
+              It takes one click, needs nothing from you, and opens the full
+              workspace.
+            </p>
+            <p className="rx-auth-lede">
+              <strong>Have an account?</strong> Sign in with your email and
+              password. <strong>Creating one</strong> needs the access code your
+              care team issued; the code decides whether you get the clinician
+              or the patient view, and opens no record by itself.
+            </p>
+            <p className="rx-auth-why">
               Relay used to take one shared code per role. It could record that
               a clinician opened a record and never which clinician, so a breach
               investigation starting from the log could not answer the only
-              question that matters.
+              question it exists to answer.
             </p>
             <ul className="rx-auth-points">
               <li>
@@ -176,19 +228,10 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
                       onChange={(e) => setInvite(e.target.value)}
                     />
                     <small>
-                      The code decides which view your account gets. It does not
-                      open a record on its own.
+                      The same code your team uses to open Relay. Ask whoever
+                      set up this workspace. It decides which view your account
+                      gets and opens no record on its own.
                     </small>
-                  </label>
-                  <label className="rx-auth-label" htmlFor="rx-acct-team">
-                    Care team <span className="rx-optional">optional</span>
-                    <input
-                      id="rx-acct-team"
-                      type="text"
-                      autoComplete="organization"
-                      value={careTeam}
-                      onChange={(e) => setCareTeam(e.target.value)}
-                    />
                   </label>
                 </>
               )}
@@ -201,7 +244,7 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
 
               <button className="rx-auth-submit" type="submit" disabled={busy}>
                 {busy
-                  ? "Checking…"
+                  ? status || "Checking…"
                   : mode === "signin"
                     ? "Sign in"
                     : "Create account"}{" "}
@@ -218,7 +261,9 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
               disabled={busy}
               onClick={demo}
             >
-              Look around as a demo {audience}
+              {busy
+                ? status || "One moment…"
+                : `Look around as a demo ${audience}`}
             </button>
             <p className="rx-auth-legal">
               A demo identity is issued to this browser alone and named in the

@@ -111,11 +111,14 @@ function audit(action, patientId = null, detail = "") {
 const accounts = createAccountStore(dataDir);
 const REQUIRE_ACCOUNTS = process.env.RELAY_REQUIRE_ACCOUNTS === "true";
 
-// Break-glass. A clinician is scoped to their own care team; this is how they
-// reach a patient outside it when there is no time to arrange otherwise.
-// Deliberately cheap to use and expensive to hide: it needs a reason, it lasts
-// fifteen minutes, every use is audited with that reason, and while one is open
-// it is displayed on the security page.
+// Break-glass, and an honest note about what it currently is.
+//
+// It records an auditable declaration: who, why, which record, for fifteen
+// minutes, shown on the security page while open. What it does not do is widen
+// access, because clinician access here is not partitioned in the first place.
+// A safeguard that grants what you already had is theatre, so the security page
+// marks this Partial rather than Built and says exactly this. Scoping clinicians
+// to a care team is what would make it real, and is the next thing to build.
 const EMERGENCY_MS = 15 * 60 * 1000;
 const grants = [];
 const openGrants = () => {
@@ -349,7 +352,7 @@ const PATIENT_ROUTES = new Set([
 const roleFromInvite = (code) => matchRole(code);
 
 app.post("/api/auth/register", (req, res) => {
-  const { email, password, invite, careTeam } = req.body || {};
+  const { email, password, invite } = req.body || {};
   const role = roleFromInvite(invite);
   if (!role)
     return res
@@ -359,7 +362,6 @@ app.post("/api/auth/register", (req, res) => {
     email,
     password,
     role,
-    careTeam: typeof careTeam === "string" ? careTeam.trim() || null : null,
   });
   if (result.error) return res.status(400).json({ error: result.error });
   const token = accounts.openSession(result.user.id);

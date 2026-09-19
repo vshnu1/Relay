@@ -94,7 +94,7 @@ papers._
 ### Three lines to say out loud, and where
 
 **On the security page.** "This is the HIPAA Security Rule's technical
-safeguards, cite by cite, all ten built. Each one says what it used to be, so
+safeguards, cite by cite, nine built and one Partial. Each says what it used to be, so
 you can see which were unmet this morning, and what it still is not — there is
 no second factor and nobody checks that an account belongs to the clinician it
 names. Two of these are read from the running process rather than asserted: the
@@ -105,7 +105,7 @@ one that matters."** Business associate agreements, risk analysis, workforce
 training, breach procedures, review board approval, FDA clearance. All not met,
 and none of them fixable by writing more software.
 
-_Nothing else on this list is more likely to land. Ten out of ten on its own
+_Nothing else on this list is more likely to land. A clean sweep on its own
 would read as marketing; it is the second table that makes the first believable,
 and it is the artefact a security reviewer's whole argument says healthcare AI
 ships without._

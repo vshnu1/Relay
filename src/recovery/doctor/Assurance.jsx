@@ -45,9 +45,11 @@ const SAFEGUARDS = [
   {
     cite: "164.312(a)(2)(ii)",
     name: "Emergency access procedure",
-    state: BUILT,
-    was: "No break-glass path existed at all.",
-    note: "A clinician may take emergency access to a record outside their care team. It requires a reason in a sentence, lasts fifteen minutes, is recorded with that reason, and is shown on this page for as long as it is open.",
+    state: PARTIAL,
+    was: "No path of any kind existed.",
+    note: "There is a break-glass control. It requires a reason in a sentence, lasts fifteen minutes, is recorded with that reason, and is shown on this page while it is open. Clinician access is not partitioned here, so nothing an emergency needs is ever refused.",
+    caveat:
+      "Which means the control grants nothing that was not already reachable. It records a declaration; it does not lift a restriction, because there is no restriction to lift. This stays Partial until access is scoped per care team, and saying otherwise would be the kind of green row this page exists to argue against.",
   },
   {
     cite: "164.312(a)(2)(iii)",
