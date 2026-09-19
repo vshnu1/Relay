@@ -245,9 +245,26 @@ function App() {
       consent,
     });
     const { Conversation } = await import("@elevenlabs/client");
+    const flagged = (patient?.evidence?.signals || []).filter(
+      (signal) => signal.flagged,
+    );
+    const signalSummary = flagged.length
+      ? flagged.map((signal) => signal.label.toLowerCase()).join(", ")
+      : "recent measurements";
+    const firstMessage = `Hi ${patient?.name || "there"}. Relay noticed a statistical change in ${signalSummary}. This is not a diagnosis or an emergency assessment. With your consent, I will ask three brief context questions for your care team.`;
     voiceRef.current = await Conversation.startSession({
       signedUrl: signed_url,
       connectionType: "websocket",
+      dynamicVariables: {
+        patient_name: patient?.name || "the patient",
+        evidence_state: patient?.evidence?.state || "quiet",
+        flagged_signals: signalSummary,
+      },
+      overrides: {
+        agent: {
+          firstMessage,
+        },
+      },
       onStatusChange: ({ status }) => setVoiceStatus(status),
       onError: () =>
         setError(

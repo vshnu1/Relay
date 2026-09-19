@@ -217,11 +217,9 @@ app.post("/api/patients/:id/checkin", async (req, res) => {
     !["None", "Unchanged", "Worsening", "Unsure"].includes(fatigue) ||
     !["No changes", "Missed or changed", "Unsure"].includes(medication)
   )
-    return res
-      .status(400)
-      .json({
-        error: "Consent and all three structured answers are required.",
-      });
+    return res.status(400).json({
+      error: "Consent and all three structured answers are required.",
+    });
   return updateAnalysis(
     req,
     res,
@@ -274,12 +272,9 @@ app.post("/api/import", (req, res) => {
     !["synthetic", "de-identified"].includes(req.body.dataType) ||
     req.body.confirmed !== true
   )
-    return res
-      .status(400)
-      .json({
-        error:
-          "Confirm records are synthetic or de-identified before importing.",
-      });
+    return res.status(400).json({
+      error: "Confirm records are synthetic or de-identified before importing.",
+    });
   const events = normalize(req.body.events);
   const id = `import-${randomUUID().slice(0, 8)}`;
   const p = {
@@ -304,17 +299,13 @@ app.post("/api/patients/:id/voice", async (req, res) => {
       .status(403)
       .json({ error: "Explicit consent is required for a voice session." });
   if (req.patient.dataType !== "synthetic")
-    return res
-      .status(403)
-      .json({
-        error: "Voice integration is restricted to synthetic demo patients.",
-      });
+    return res.status(403).json({
+      error: "Voice integration is restricted to synthetic demo patients.",
+    });
   if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_AGENT_ID)
-    return res
-      .status(503)
-      .json({
-        error: "Voice is not configured. The text check-in is available.",
-      });
+    return res.status(503).json({
+      error: "Voice is not configured. The text check-in is available.",
+    });
   const response = await fetch(
     `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(process.env.ELEVENLABS_AGENT_ID)}`,
     {

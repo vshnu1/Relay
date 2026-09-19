@@ -65,7 +65,7 @@ Supported metrics/units: `rhr`/`bpm`, `hrv`/`ms`, `respiratory`/`/min`, `sleep`/
 
 ## Render Workflows
 
-1. Create a Workflow service from this repository in Render: build `npm ci`, start `node workflows/tasks.js`.
+1. Create a Workflow service from the `Vishnu` branch in this repository in Render: build `npm ci`, start `node workflows/tasks.js`.
 2. On the web/API service set `RENDER_API_KEY` and `RENDER_WORKFLOW_SLUG` (workflow name only, not the `/monitoringPipeline` suffix).
 3. The API calls `<slug>/monitoringPipeline`. Its chained tasks normalize, calculate baseline, detect deviation, request context, and compile a review item. Check-in submission reruns this chain with the confirmed context.
 4. Run a synthetic scenario and verify the returned Render execution ID in the API response and the actual task runs in the Render dashboard. This has not been live-tested without credentials. Local execution alone does not qualify for the Render prize.
