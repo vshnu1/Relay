@@ -22,6 +22,11 @@ function authHeaders() {
   try {
     const code = sessionStorage.getItem("rx-code");
     if (code) headers.authorization = `Bearer ${code}`;
+    // Proof of which record this browser is entitled to. The role code alone
+    // cannot say, so without this the server can only take the client's word
+    // for the patientId it asks about.
+    const proof = sessionStorage.getItem("rx-patient-proof");
+    if (proof) headers["x-relay-discharge"] = proof;
   } catch {
     // no session storage
   }

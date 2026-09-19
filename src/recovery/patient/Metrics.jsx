@@ -82,7 +82,9 @@ function ManualEntry({ patient: p, signal: s }) {
         </button>
       </div>
       {saved && (
-        <span className="rx-p-saved">Saved. Your care team can see it.</span>
+        <span className="rx-p-saved" role="status">
+          Saved. Your care team can see it.
+        </span>
       )}
     </form>
   );

@@ -1,6 +1,7 @@
 import express from "express";
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { createSimulatedSource } from "../src/recovery/model/simulatedSource.js";
 import {
   readFileSync,
   mkdirSync,
@@ -201,6 +202,34 @@ app.use("/api", (req, res, next) => {
 });
 // Everything the patient view calls, and nothing else. Kept beside the gate
 // that uses it so the two cannot drift apart.
+// Discharge code -> patient, read once from the same roster the app shows. A
+// real deployment would issue these from the hospital system against an
+// account; the point here is that the check happens on the server, because a
+// check that only happens in the browser is not a check.
+const DISCHARGE_CODES = (() => {
+  const byCode = new Map();
+  try {
+    createSimulatedSource().connect({
+      snapshot: (list) => {
+        for (const p of list) if (p.code) byCode.set(p.code, p.id);
+      },
+      readings() {},
+      device() {},
+    })();
+  } catch {
+    // A deployment with a different roster simply has none of these; the
+    // patient scope check below then refuses rather than waving requests past.
+  }
+  return byCode;
+})();
+
+// Which record a patient-role caller has actually proved they may read.
+const provenPatient = (req) => {
+  const supplied = req.headers["x-relay-discharge"];
+  if (typeof supplied !== "string" || !supplied) return null;
+  return DISCHARGE_CODES.get(supplied.trim().toUpperCase()) || null;
+};
+
 const PATIENT_ROUTES = new Set([
   "/session",
   "/status",
@@ -244,6 +273,8 @@ app.get("/api/patients", (req, res) => {
     return res
       .status(403)
       .json({ error: "The patient view cannot list other patients." });
+  // A read of the whole ward is an access to every record in it.
+  audit("roster.view", null, `${patients.length} records`);
   res.json(
     patients.map(({ events, ...p }) => ({
       ...p,
@@ -736,14 +767,27 @@ app.get("/api/recovery/events", (req, res) => {
   const after = Number(req.query.after) || 0;
   const patientId =
     typeof req.query.patientId === "string" ? req.query.patientId : null;
-  if (req.role === "patient" && !patientId)
-    return res.status(400).json({ error: "patientId is required." });
-  res.json({
-    events: recoveryEvents.filter(
-      (e) => e.seq > after && (!patientId || e.patientId === patientId),
-    ),
-    seq: lastSeq(),
-  });
+  if (req.role === "patient") {
+    if (!patientId)
+      return res.status(400).json({ error: "patientId is required." });
+    // The shared role code says "a patient", not "which patient". The
+    // discharge code says which, so it is what the requested record is checked
+    // against. Without it a signed-in patient could read any other patient's
+    // check-ins by editing a query parameter.
+    if (provenPatient(req) !== patientId)
+      return res.status(403).json({ error: "That is not your record." });
+  }
+  const events = recoveryEvents.filter(
+    (e) => e.seq > after && (!patientId || e.patientId === patientId),
+  );
+  // Audit controls, 45 CFR 164.312(b). This route returns a patient's
+  // check-ins, notes and model results, so reaching it is an access to the
+  // record and belongs in the log. Only the first page of a scope is recorded:
+  // the client polls every three seconds and a line per poll would bury the
+  // accesses that matter under a hundred an hour.
+  if (after === 0 && events.length)
+    audit("recovery.read", patientId, `${events.length} events`);
+  res.json({ events, seq: lastSeq() });
 });
 app.post("/api/recovery/events", (req, res) => {
   const list = Array.isArray(req.body?.events) ? req.body.events : [];
@@ -770,6 +814,9 @@ app.post("/api/recovery/events", (req, res) => {
         Array.isArray(e.answers))
     )
       continue;
+    // A patient may only write to their own record, on the same proof. A
+    // clinician may write to any, which is the job.
+    if (req.role === "patient" && provenPatient(req) !== e.patientId) continue;
     const stored = { ...e, seq: lastSeq() + 1, role: req.role };
     recoveryEvents.push(stored);
     recoveryIds.add(e.eid);

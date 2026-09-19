@@ -30,7 +30,7 @@ export default function SignIn({ roster, onSignIn }) {
     if (!agreed)
       return setError("Please agree to share your readings to continue.");
     setError("");
-    onSignIn(match.id);
+    onSignIn(match.id, match.code);
   };
   return (
     <>
