@@ -45,23 +45,37 @@ analytics SDK, a misconfigured third-party call — a reportable breach.
 | (d) | **Person or entity authentication** | **Not met as to persons.** A shared code authenticates a role. The server cannot tell which patient is signed in, so it cannot scope to a single record |
 | (e)(1) | Transmission security | **Built.** TLS terminated by Render; HSTS in production; CSP, nosniff, frame denial, `Referrer-Policy: no-referrer`, restrictive permissions policy, same-origin check on writes |
 
-### The one that matters most
+### The one that mattered most — now fixed
 
-**`GET /api/recovery/events` accepts any `patientId` from a patient-role
-caller.** Because the shared code identifies a role and not a person, the
-server has nothing to check the requested record against. One signed-in patient
-can read another's check-ins by changing a query parameter.
+`GET /api/recovery/events` used to accept **any** `patientId` from a
+patient-role caller. The shared code says "a patient", not "which patient", so
+the server had nothing to check the requested record against: one signed-in
+patient could read another's check-ins by editing a query parameter, and the
+same held for writes.
 
-This is not fixable inside a shared-code scheme, and pretending otherwise would
-be worse than recording it. The fix is per-patient identity: the discharge code
-already exists as a per-patient secret and is currently verified only in the
-browser. Moving that check to the server — exchanging hospital plus discharge
-code for a scoped credential, and binding every patient-scoped read to it —
-closes it, and also closes (a)(2)(i) and (d) above. That is the first thing to
-build after a hackathon, not the tenth.
+The discharge code was already a per-patient secret — it was simply only ever
+checked in the browser, and a check that only happens in the browser is not a
+check. It is now presented on every request and verified server-side against
+the roster, so a patient reaches exactly one record:
 
-Until then the access is at least **recorded**, which is what turns an
-unauthorised read into one a breach investigation can find.
+| Request | Before | Now |
+|---|---|---|
+| Patient role code alone, asking for another patient | 200 | **403** |
+| Holding Nathan's discharge code, asking for Maya | 200 | **403** |
+| Holding Nathan's discharge code, asking for Nathan | 200 | 200 |
+| An invented discharge code | 200 | **403** |
+| Clinician, any patient | 200 | 200 |
+| Patient writing to another patient's record | accepted | **dropped** |
+
+This does not make the scheme equivalent to per-user accounts. The discharge
+code is still shared with anyone the patient shows it to, it does not expire,
+and it still cannot distinguish two people using one patient's code — so
+(a)(2)(i) unique user identification and (d) person authentication remain
+unmet. What it does close is the part that was indefensible: reaching a record
+you hold no credential for at all.
+
+Every such access is also **recorded**, which is what turns an unauthorised
+read into one a breach investigation can find.
 
 ## Other HIPAA obligations
 
@@ -161,7 +175,7 @@ real attribution, role separation with a deny-by-default allow-list, consent
 enforced on both sides, de-identification under a secret that is not in the
 repository, and a runtime boundary on every generated sentence.
 
-Not built and feasible: per-patient identity, patient data export, deletion,
+Not built and feasible: real per-user accounts, patient data export, deletion,
 FHIR conformance, field-level minimum-necessary scoping, billing-readiness
 counters.
 

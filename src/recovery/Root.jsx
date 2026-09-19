@@ -257,8 +257,8 @@ function PatientRoot({ route }) {
   const [signedIn, setSignedIn] = useState(() => currentPatientId());
   const actingId = roster.find((p) => p.id === signedIn)?.id ?? null;
   const patient = usePatient(actingId);
-  const enter = (id) => {
-    signIn(id);
+  const enter = (id, code) => {
+    signIn(id, code);
     setSignedIn(id);
     go("/patient");
   };
