@@ -6289,3 +6289,136 @@ p.rx-row-summary {
     height: 17px;
   }
 }
+
+/* Model view: the card is as wide as the workspace, but a label pinned to the
+   left edge with its value 1,400px away on the right is not a row anyone can
+   read across. Each list becomes a grid whose columns are only as wide as they
+   need to be, and the text stops at a measure rather than the card edge. */
+.rx-model-sub,
+.rx-model .rx-model-fine,
+.rx-model .rx-model-rundown {
+  max-width: 62ch;
+}
+.rx-model-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 22ch) minmax(0, max-content);
+  justify-content: start;
+  column-gap: 28px;
+  align-items: baseline;
+}
+.rx-model-list .rx-model-dir {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rx-cohort li {
+  grid-template-columns:
+    minmax(0, 22ch) minmax(0, 12ch)
+    minmax(0, 20ch) minmax(0, 10ch);
+  column-gap: 24px;
+}
+.rx-cohort li span:last-child {
+  text-align: left;
+}
+.rx-cohort-own,
+.rx-cohort-range,
+.rx-cohort-pct {
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rx-cohort-own em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink);
+}
+/* The gate name and its numbers belong together; the explanation sits under
+   them rather than being stretched to the far side of the card. */
+.rx-ledger li {
+  grid-template-columns: minmax(0, 30ch) minmax(0, max-content);
+  justify-content: start;
+  column-gap: 24px;
+}
+.rx-ledger .rx-ledger-detail {
+  grid-column: 1 / -1;
+  max-width: 62ch;
+}
+.rx-ledger .rx-ledger-val {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .rx-model-list li,
+  .rx-cohort li,
+  .rx-ledger li {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+  }
+}
+
+/* The two data sections sit side by side where there is room for them, so the
+   card's width carries data rather than empty space. Below that they stack. */
+.rx-model-tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 8px 40px;
+  align-items: start;
+}
+.rx-model-block h3 {
+  margin-bottom: 2px;
+}
+/* A clinician reads down a column, so the columns are what the markup is:
+   headed, aligned, and no wider than their contents need. */
+.rx-mtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.rx-mtable th,
+.rx-mtable td {
+  padding: 7px 0;
+  text-align: left;
+  vertical-align: baseline;
+  font-weight: 400;
+}
+.rx-mtable thead th {
+  padding-top: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.rx-mtable tbody th {
+  font-weight: 500;
+  color: var(--ink);
+  padding-right: 20px;
+}
+.rx-mtable tbody tr + tr th,
+.rx-mtable tbody tr + tr td {
+  border-top: 1px solid var(--line-soft, var(--line));
+}
+.rx-mtable td {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.rx-mtable .num {
+  text-align: right;
+  padding-left: 18px;
+}
+.rx-mtable td.strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.rx-mtable td small {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+/* A global rule makes `small` a block, which dropped a parenthetical onto its
+   own line and gave every row two lines' height. Nothing inside these cells
+   should ever break a row. */
+.rx-mtable small {
+  display: inline;
+}
