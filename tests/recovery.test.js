@@ -149,9 +149,10 @@ test("focused voice check-in orders model-linked symptoms before a plan question
     plan.mode,
     plan.findingSummary,
   );
-  assert.match(opening, /different from your usual/);
-  assert.match(opening, /First: Is your breathing harder/);
-  assert.match(opening, /answer in your own words/i);
+  assert.match(opening, /higher than usual/);
+  assert.match(opening, /Is your breathing harder/);
+  assert.ok(opening.split(/\s+/).length <= 40, "the spoken opener stays short");
+  assert.doesNotMatch(opening, /then one optional question/i);
   assert.doesNotMatch(opening, /no, a little, a lot/i);
   assert.doesNotMatch(opening, /are you comfortable continuing/i);
 

@@ -137,12 +137,24 @@ export function openingMessage(
   findingSummary,
 ) {
   const first = QUESTIONS[questions[0]];
-  const introduction = priority
-    ? `I noticed some readings have been different from your usual: ${findingSummary || "a few wearable readings have changed"}. I cannot tell what caused that.`
-    : mode === "insufficient"
-      ? "There are not enough recent readings to compare yet, so I will ask about how you are doing."
-      : `I am checking in about your recovery after ${patient.profile.after}.`;
-  return `Hi ${patient.first}, this is Relay. ${introduction} I have ${questions.length} brief questions, then one optional question about anything else that may help your care team understand what you have been doing and how you feel. You can answer in your own words or stop at any time. First: ${first.text}`;
+  if (!first)
+    return `Hi ${patient.first}, this is Relay checking in. How have you been feeling today?`;
+
+  if (priority) {
+    // Start with the top-ranked finding only. The model and readings remain
+    // available to the agent if the patient asks, but the greeting should not
+    // become a spoken report before the first question.
+    const leadFinding = findingSummary?.split(",")[0]?.trim();
+    const context = leadFinding
+      ? `I noticed ${leadFinding.replace(/^(.+?) (higher|lower) than your usual/, "your $1 has been $2 than usual")}. I cannot tell what caused it.`
+      : "I noticed a change from your usual readings.";
+    return `Hi ${patient.first}, this is Relay. ${context} ${first.text}`;
+  }
+
+  if (mode === "insufficient")
+    return `Hi ${patient.first}, this is Relay. I do not have enough recent readings to compare yet. ${first.text}`;
+
+  return `Hi ${patient.first}, this is Relay checking in about your recovery. ${first.text}`;
 }
 
 export async function startPatientVoiceSession({
@@ -169,7 +181,11 @@ export async function startPatientVoiceSession({
   const body = await res.json().catch(() => ({}));
   if (!res.ok || !body.signed_url)
     throw new Error(body.error || "Voice is not available right now.");
-  const { Conversation } = await import("@elevenlabs/client");
+  const [{ Conversation }, { default: rawAudioProcessorUrl }] =
+    await Promise.all([
+      import("@elevenlabs/client"),
+      import("@elevenlabs/client/worklets/rawAudioProcessor.js?url&no-inline"),
+    ]);
   const status = recoveryStatus(p, questions, {
     analysis,
     contextPrompt,
@@ -180,6 +196,9 @@ export async function startPatientVoiceSession({
   return Conversation.startSession({
     signedUrl: body.signed_url,
     connectionType: "websocket",
+    // Render applies a strict CSP that correctly blocks generated blob/data
+    // worklet modules. Serve the SDK's processor as a same-origin build asset.
+    workletPaths: { rawAudioProcessor: rawAudioProcessorUrl },
     dynamicVariables: {
       patient_name: p.first,
       program: p.profile.name,
