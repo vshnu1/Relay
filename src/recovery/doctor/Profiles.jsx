@@ -1,5 +1,6 @@
 import { ArrowUp } from "lucide-react";
 import {
+  CHECKIN_QUESTIONS,
   PROFILES,
   PROGRAM_PREVIEWS,
   QUESTIONS,
@@ -76,7 +77,9 @@ export default function Profiles() {
                 <dt>Check-in asks about</dt>
                 <dd>
                   {list(
-                    profile.questions.map((q) => lower(QUESTIONS[q].short)),
+                    (CHECKIN_QUESTIONS[id] || profile.questions).map((q) =>
+                      lower(QUESTIONS[q].short),
+                    ),
                   )}
                 </dd>
               </div>

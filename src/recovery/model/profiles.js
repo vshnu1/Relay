@@ -491,6 +491,235 @@ export const QUESTIONS = {
 
 // Turn a check-in into the structured context the ML model scores.
 // Adherence questions feed both the common field and the program's own one.
+// Check-in questions worded for one watch profile. Each is a variant of a question
+// above: it keeps that question's answer options, model field and answer mapping, so
+// everything that reads an answer (the clinician view, the model context, the voice
+// flow) works unchanged, and only the wording a patient hears is specific to what they
+// were discharged with. `base` names the question it varies. Illustrative until a
+// clinician signs it off, like the rest of this table.
+const tailored = (base, text, short, reports) => ({
+  ...QUESTIONS[base],
+  base,
+  text,
+  short,
+  reports,
+});
+Object.assign(QUESTIONS, {
+  pneumoniaBreath: tailored(
+    "breathing",
+    "Do you get more out of breath moving around the house than yesterday?",
+    "Breathless moving around the house",
+    "more breathlessness at home",
+  ),
+  pneumoniaCough: tailored(
+    "cough",
+    "Is your cough worse, or is your phlegm thicker or darker, than yesterday?",
+    "Cough or phlegm change",
+    "a worse cough or a change in phlegm",
+  ),
+  heartFailureLyingFlat: tailored(
+    "breathing",
+    "Is it harder to breathe lying flat, or do you need extra pillows?",
+    "Breathing when lying flat",
+    "harder breathing lying flat",
+  ),
+  heartFailureSwelling: tailored(
+    "swelling",
+    "Are your ankles or legs more swollen, or your shoes or socks tighter?",
+    "Swelling in ankles or legs",
+    "more swelling",
+  ),
+  surgeryWound: tailored(
+    "wound",
+    "Is your wound redder, more swollen, warm, or leaking fluid?",
+    "Wound redness, swelling or leaking",
+    "a wound concern",
+  ),
+  surgeryBowels: tailored(
+    "nausea",
+    "Have you felt sick, vomited, or been unable to pass wind or stool?",
+    "Nausea, vomiting or bowels not moving",
+    "nausea or bowels not moving",
+  ),
+  copdBreath: tailored(
+    "breathing",
+    "Are you more breathless than on a usual day, even when resting?",
+    "Breathless compared with a usual day",
+    "more breathlessness than usual",
+  ),
+  copdRescue: tailored(
+    "inhaler",
+    "Have you needed your rescue inhaler or nebuliser more often than usual?",
+    "Rescue inhaler or nebuliser use",
+    "more rescue inhaler use",
+  ),
+  infectionFever: tailored(
+    "fever",
+    "Have you had a fever, chills, or shivering since yesterday?",
+    "Fever, chills or shivering",
+    "fever or chills",
+  ),
+  infectionDrowsy: tailored(
+    "dizziness",
+    "Have you felt confused, unusually drowsy, or faint today?",
+    "Confusion, drowsiness or faintness",
+    "confusion or drowsiness",
+  ),
+  chestInfectionBreath: tailored(
+    "breathing",
+    "Is your breathing tighter or more wheezy than yesterday?",
+    "Tight or wheezy breathing",
+    "tighter or wheezier breathing",
+  ),
+  chestInfectionCough: tailored(
+    "cough",
+    "Is your cough keeping you awake, or bringing up more phlegm?",
+    "Cough at night or more phlegm",
+    "a worse cough",
+  ),
+  asthmaNight: tailored(
+    "breathing",
+    "Did wheezing, coughing, or a tight chest wake you last night?",
+    "Woken by wheeze, cough or tight chest",
+    "night-time asthma symptoms",
+  ),
+  asthmaReliever: tailored(
+    "inhaler",
+    "Have you needed your reliever inhaler more than usual?",
+    "Reliever inhaler use",
+    "more reliever inhaler use",
+  ),
+  embolismBreath: tailored(
+    "breathing",
+    "Are you more breathless than yesterday, or is it sharp to breathe in?",
+    "Breathless or sharp pain breathing in",
+    "more breathlessness or pain breathing in",
+  ),
+  embolismLeg: tailored(
+    "swelling",
+    "Is one leg more swollen, painful, or warm than yesterday?",
+    "One leg swollen, painful or warm",
+    "a swollen or painful leg",
+  ),
+  apnoeaSleepy: tailored(
+    "sleepiness",
+    "Have you dozed off during the day, or felt unrefreshed on waking?",
+    "Dozing in the day or waking unrefreshed",
+    "daytime sleepiness",
+  ),
+  apnoeaWaking: tailored(
+    "breathing",
+    "Have you woken gasping, choking, or with a very dry mouth?",
+    "Waking gasping or choking",
+    "waking gasping or choking",
+  ),
+  postpartumBleeding: tailored(
+    "bleeding",
+    "Is your bleeding heavier, or are you passing large clots?",
+    "Heavier bleeding or clots",
+    "heavier bleeding or clots",
+  ),
+  postpartumHeadache: tailored(
+    "headache",
+    "Have you had a bad headache, blurred vision, or swelling in your face or hands?",
+    "Headache, vision change or swelling",
+    "headache or vision changes",
+  ),
+  postpartumFever: tailored(
+    "fever",
+    "Have you had a fever, chills, or a sore, hot breast or wound?",
+    "Fever, chills or a sore hot area",
+    "fever or chills",
+  ),
+  jointPain: tailored(
+    "pain",
+    "Is the pain in your new joint worse than yesterday, even when resting?",
+    "Joint pain, including at rest",
+    "worse joint pain",
+  ),
+  jointCalf: tailored(
+    "swelling",
+    "Is your calf or leg more swollen, red, or tender than yesterday?",
+    "Calf or leg swelling or tenderness",
+    "a swollen or tender leg",
+  ),
+  strokeBalance: tailored(
+    "falls",
+    "Have you fallen, nearly fallen, or felt unsteady walking since yesterday?",
+    "Falls or unsteady walking",
+    "a fall or unsteady walking",
+  ),
+  strokeFatigue: tailored(
+    "fatigue",
+    "Were your exercises or daily tasks more tiring than yesterday?",
+    "Tiredness with exercises or tasks",
+    "more tiredness with rehab",
+  ),
+  cardiacChest: tailored(
+    "chest",
+    "Any chest pain, pressure, or tightness, at rest or when active?",
+    "Chest pain, pressure or tightness",
+    "chest pain or pressure",
+  ),
+  cardiacEffort: tailored(
+    "breathing",
+    "Do you get more breathless or tired on your walks than yesterday?",
+    "Breathless or tired on walks",
+    "more breathlessness on walks",
+  ),
+  chemoFever: tailored(
+    "fever",
+    "Have you had a temperature, chills, or felt shivery since yesterday?",
+    "Temperature, chills or shivers",
+    "fever or chills",
+  ),
+  chemoEating: tailored(
+    "nausea",
+    "Are mouth sores, sickness, or diarrhoea stopping you eating or drinking?",
+    "Mouth sores, sickness or diarrhoea affecting eating",
+    "trouble eating or drinking",
+  ),
+  afibRacing: tailored(
+    "racing",
+    "Has your heart felt fast, fluttering, or irregular for more than a few minutes?",
+    "Fast, fluttering or irregular heartbeat",
+    "a racing or irregular heartbeat",
+  ),
+  afibLightheaded: tailored(
+    "dizziness",
+    "Have you felt lightheaded, faint, or unusually short of breath today?",
+    "Lightheaded, faint or short of breath",
+    "lightheadedness or breathlessness",
+  ),
+});
+
+// What each watch profile's check-in asks, in order. Fixed for now: the adaptive
+// selection in patient/checkinPlan.js let ordinary variation in the model's
+// contributor list replace the questions the patient's own readings pointed to, so
+// until that is reworked every patient on a profile is asked these. Two questions
+// about the recovery itself, then one about the discharge plan.
+export const CHECKIN_QUESTIONS = {
+  pneumonia: ["pneumoniaBreath", "pneumoniaCough", "medicine"],
+  heartFailure: ["heartFailureLyingFlat", "heartFailureSwelling", "medicine"],
+  abdominalSurgery: ["pain", "surgeryWound", "surgeryBowels"],
+  copd: ["copdBreath", "mucus", "copdRescue"],
+  sepsisWatch: ["infectionFever", "infectionDrowsy", "medicine"],
+  respiratoryInfection: [
+    "chestInfectionBreath",
+    "chestInfectionCough",
+    "fever",
+  ],
+  asthma: ["asthmaNight", "asthmaReliever", "medicine"],
+  pulmonaryEmbolism: ["embolismBreath", "embolismLeg", "medicine"],
+  sleepApnoea: ["apnoeaSleepy", "apnoeaWaking", "device"],
+  postpartum: ["postpartumBleeding", "postpartumHeadache", "postpartumFever"],
+  jointReplacement: ["jointPain", "jointCalf", "falls"],
+  strokeRehabilitation: ["strokeBalance", "strokeFatigue", "mealPlan"],
+  cardiacRecovery: ["cardiacChest", "cardiacEffort", "medicine"],
+  postChemotherapy: ["chemoFever", "chemoEating", "medicine"],
+  afib: ["afibRacing", "afibLightheaded", "medicine"],
+};
+
 export function toModelContext(profileId, answers) {
   const context = { consent: true };
   for (const [q, a] of Object.entries(answers || {})) {
@@ -919,6 +1148,16 @@ export const PROFILES = {
 // is scoring its metrics. Stroke rehabilitation and cardiac recovery were both
 // listed here until the gait signals landed and gave them something to run on;
 // they are real profiles now, so the list is empty rather than deleted.
+// A profile's pool starts with the questions its check-in asks. The clinician views
+// list a patient's answers by walking this pool, so a question that is asked but not
+// in it would be answered and never shown. The earlier questions stay in the pool so
+// answers recorded before this still appear.
+for (const [id, asked] of Object.entries(CHECKIN_QUESTIONS))
+  if (PROFILES[id])
+    PROFILES[id].questions = [
+      ...new Set([...asked, ...PROFILES[id].questions]),
+    ];
+
 export const PROGRAM_PREVIEWS = [];
 
 export const thresholdOf = (thr, usual) =>

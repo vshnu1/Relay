@@ -8,7 +8,10 @@ import {
   adaptiveTurnGuidance,
   openingMessage,
 } from "../src/recovery/patient/voice.js";
-import { QUESTIONS } from "../src/recovery/model/profiles.js";
+import {
+  CHECKIN_QUESTIONS,
+  QUESTIONS,
+} from "../src/recovery/model/profiles.js";
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 async function cohort() {
@@ -168,7 +171,7 @@ test("check-in questions follow the signals that moved for the discharge program
   store.destroy();
 });
 
-test("focused voice check-in orders model-linked symptoms before a plan question", async () => {
+test("a check-in asks its watch profile's own questions, whatever the model lists", async () => {
   const { store, views } = await cohort();
   const maya = views().maya;
   const analysis = {
@@ -188,7 +191,11 @@ test("focused voice check-in orders model-linked symptoms before a plan question
     ],
   };
   const plan = buildCheckinPlan(maya, analysis);
-  assert.deepEqual(plan.questions, ["breathing", "fatigue", "medicine"]);
+  // Sleep is in the model's list here. It used to pull in a tiredness question and
+  // push out one the patient's own readings pointed to; the questions are now fixed
+  // per watch profile and the model only decides the mode and the priority.
+  assert.deepEqual(plan.questions, CHECKIN_QUESTIONS.pneumonia);
+  assert.deepEqual(plan.questions, buildCheckinPlan(maya).questions);
   assert.equal(plan.priority, true);
   assert.match(plan.contextPrompt, /activity, meals, or drinks/i);
 
@@ -200,7 +207,7 @@ test("focused voice check-in orders model-linked symptoms before a plan question
     plan.findingSummary,
   );
   assert.match(opening, /higher than usual/);
-  assert.match(opening, /Is your breathing harder/);
+  assert.match(opening, /out of breath moving around the house/);
   assert.ok(opening.split(/\s+/).length <= 28, "the spoken opener stays short");
   assert.doesNotMatch(opening, /then one optional question/i);
   assert.doesNotMatch(opening, /no, a little, a lot/i);
@@ -220,8 +227,8 @@ test("focused voice check-in orders model-linked symptoms before a plan question
   });
   assert.deepEqual(
     cardiacPlan.questions,
-    ["fatigue", "chest", "medicine"],
-    "question order follows the model's contributor priority, not just profile order",
+    CHECKIN_QUESTIONS.cardiacRecovery,
+    "a cardiac patient is asked the cardiac questions, in their fixed order",
   );
   store.destroy();
 });
@@ -242,7 +249,10 @@ test("voice check-in adapts one brief follow-up to the patient's answer", () => 
   assert.match(diet.message, /what did you eat or drink/i);
   assert.match(diet.message, /instruction differed/i);
 
-  const stoppedMedicine = adaptiveTurnGuidance("medicine", "I stopped taking it.");
+  const stoppedMedicine = adaptiveTurnGuidance(
+    "medicine",
+    "I stopped taking it.",
+  );
   assert.match(stoppedMedicine.message, /reports Yes/i);
   assert.match(stoppedMedicine.message, /which medicine changed/i);
 

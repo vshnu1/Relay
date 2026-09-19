@@ -1,4 +1,5 @@
 import { plainMetric } from "../model/mlClient.js";
+import { QUESTIONS } from "../model/profiles.js";
 const WATCHED_SIGNAL_LIMIT = 4;
 
 const STATUS_COPY = {
@@ -70,7 +71,8 @@ function patientConcerns(patient) {
   return Object.entries(patient.answered?.answers || {})
     .filter(([, answer]) => answer && answer !== "No")
     .map(([key, answer]) => {
-      const topic = SYMPTOMS[key];
+      // A question worded for one watch profile is spoken as the one it varies.
+      const topic = SYMPTOMS[key] || SYMPTOMS[QUESTIONS[key]?.base];
       if (!topic || key === "medicine" || key === "activity") return null;
       if (answer === "Not sure") return `unsure about ${topic}`;
       if (answer === "Yes") return `reports ${topic}`;
