@@ -171,10 +171,21 @@ offers a working text form. **If they are still false at demo time, present
 the text check-in as the check-in and do not mention voice.** A judge who
 hears "voice" and sees a form will discount everything else you said.
 
-### One claim that needs a source
+### Resolved: the Isolation Forest claim now has a source
 
-`DATA.md:123` states that Isolation Forest independently ranked the 2026-10-15
-event most anomalous of 45 windows. There is no Isolation Forest in the repo —
-nothing tracked imports sklearn. Either commit the script that produced it or
-cut the sentence. It is a strong line and it will draw exactly the follow-up
-question we cannot currently answer.
+`analysis/isolation_forest.py` reproduces it. On the same windows, with no
+thresholds and no rules, it ranks 2026-10-15 **first of 45** at -0.675,
+ahead of the next window at -0.597. Seed fixed, figures in
+[DATA.md](DATA.md) come out the same.
+
+**Safe to say on stage.** The honest framing, if it comes up:
+
+> The statistical rule and an unsupervised model, which share no logic,
+> pick the same day. The model does not ship — an isolation score cannot be
+> traced to the measurement that caused it, and that traceability is the
+> product.
+
+If pressed on why it does not ship, the real answer is better than the
+diplomatic one: only 45 of 325 windows carry all five signals at once, so
+the model discards 86% of the data. The deterministic rule uses whatever is
+present that day and reports what was missing.
