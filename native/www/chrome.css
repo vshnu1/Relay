@@ -1,14 +1,30 @@
-/* Native shell styling for the Relay patient app.
+/* Native shell for the Relay patient app.
  *
- * Injected into the page by RelayViewController (ios/App/App/AppDelegate.swift)
- * as a WKUserScript, NOT imported by the web app. That is deliberate: the web
- * frontend belongs to another owner, and a native-only concern (a tab bar over
- * the home indicator, padding under the notch) should not land in recovery.css
- * where it would also affect every desktop browser.
+ * Injected into the served page by RelayViewController
+ * (ios/App/App/AppDelegate.swift) as a WKUserScript, NOT imported by the web
+ * app. That is deliberate: the web frontend belongs to another owner, and a
+ * tab bar over the home indicator is a native concern that should not land in
+ * recovery.css, where it would also change every desktop browser.
  *
- * Everything is scoped to html.relay-native, a class only this shell sets, so
- * the same server can serve the plain web app to everyone else unchanged.
+ * Everything hangs off html.relay-native, a class only this shell sets, so the
+ * same server serves the plain web app to everyone else unchanged.
+ *
+ * The brief for this file: make the app read as an iPhone app, not a website
+ * on a phone. Concretely — one column, 16px gutters, surfaces that are filled
+ * cards with soft shadows rather than 1px-bordered boxes, 56pt controls,
+ * a primary action that is always reachable, and press feedback on anything
+ * tappable. Colours and typefaces are the product's own tokens (--pine,
+ * --sage, --amber-tint, --serif), so nothing here is a rebrand.
+ *
+ * Two traps for whoever edits this next. At phone widths .rx-side is a CSS
+ * grid, so flex properties on it are inert until display:flex is restated.
+ * And backdrop-filter on the bar makes it the containing block for any
+ * position:fixed descendant; nothing inside it is fixed today, keep it so.
  */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   0. Foundation: background, safe areas, touch semantics
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 html.relay-native,
 html.relay-native body {
@@ -16,49 +32,1158 @@ html.relay-native body {
   overscroll-behavior: none;
 }
 
-/* Content clears the notch. The bar itself is drawn at the bottom. */
 html.relay-native .rx {
+  /* Content clears the notch; the tab bar is drawn at the bottom. */
   padding-top: env(safe-area-inset-top);
-}
 
-/* Demo scaffolding is a judge-facing control on a laptop. On a phone the app
- * is one patient signed in with their own discharge code, so the role switcher
- * and patient picker would be a lie about what this app is. */
-html.relay-native .rx-demobar {
-  display: none !important;
-}
+  /* Shell tokens, layered on the product's own. */
+  --r-card: 20px;
+  --r-control: 14px;
+  --r-button: 16px;
+  --shadow-card: 0 1px 2px rgba(31, 47, 42, 0.04),
+    0 8px 24px -10px rgba(31, 47, 42, 0.12);
+  --shadow-float: 0 12px 32px -8px rgba(31, 47, 42, 0.3);
+  --bar-height: 58px; /* tab bar without the home-indicator inset */
 
-/* A phone is a touch target, not a pointer. */
-html.relay-native .rx {
+  /* A phone is a touch target, not a pointer. */
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
+
 html.relay-native input,
 html.relay-native textarea,
 html.relay-native select,
 html.relay-native [contenteditable] {
   -webkit-user-select: text;
   user-select: text;
-  /* iOS zooms the viewport for any field under 16px. Nothing else prevents it,
-   * and disabling pinch zoom instead would take zoom away from the people who
-   * most need it. */
+  /* iOS zooms the viewport for any field under 16px. */
   font-size: 16px;
 }
 
-/* ---- Bottom tab bar ------------------------------------------------------
- * The web app already collapses the sidebar into a horizontal scrolling strip
- * under 860px. On iOS that strip reads as a web page. These rules move it to
- * the bottom, stack icon over label, and sit it above the home indicator.
- */
+/* Demo scaffolding is a judge-facing control on a laptop. On a phone the app
+ * is one patient signed in with their own discharge code, so a role switcher
+ * and patient picker would be a lie about what this app is. */
+html.relay-native .rx-demobar {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. Press feedback and motion
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.relay-native .rx
+  :is(
+    button,
+    a.rx-p-btn,
+    a.rx-ph-btn,
+    .rx-p-textbtn,
+    .rx-ph-hrow.clickable,
+    .rx-ph-lane-title.clickable,
+    .rx-ph-row,
+    .rx-navlink,
+    .rx-p-mode-choice label,
+    .rx-ph-device
+  ) {
+  transition:
+    transform 0.12s ease,
+    opacity 0.12s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+html.relay-native .rx
+  :is(
+    button,
+    a.rx-p-btn,
+    a.rx-ph-btn,
+    .rx-p-textbtn,
+    .rx-ph-hrow.clickable,
+    .rx-ph-lane-title.clickable,
+    .rx-ph-row,
+    .rx-p-mode-choice label,
+    .rx-ph-device
+  ):active {
+  transform: scale(0.975);
+  opacity: 0.85;
+}
+html.relay-native .rx button:disabled:active {
+  transform: none;
+  opacity: 1;
+}
+
+@keyframes relay-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(47, 122, 98, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 9px rgba(47, 122, 98, 0);
+  }
+}
+@keyframes relay-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.relay-native .rx *,
+  html.relay-native .rx *::before,
+  html.relay-native .rx *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. Screen frame and type scale
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.relay-native .rx-pweb .rx-p-screen {
+  padding: 8px 16px 28px;
+  gap: 20px;
+  font-size: 17px;
+}
+/* Nothing ends up under the bar. */
+html.relay-native .rx-pweb .rx-main {
+  padding-bottom: calc(var(--bar-height) + 16px + env(safe-area-inset-bottom));
+}
+
+html.relay-native .rx-p-title {
+  font-size: 32px;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+html.relay-native .rx-p-lead {
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+html.relay-native .rx-p-kicker,
+html.relay-native .rx-ph-kicker,
+html.relay-native .rx-p-signin-kicker,
+html.relay-native .rx-p-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.07em;
+}
+html.relay-native .rx-p-fine {
+  font-size: 15px;
+  line-height: 1.45;
+}
+html.relay-native .rx-p-back {
+  min-height: 44px;
+  margin-left: -6px;
+  gap: 1px;
+  font-size: 17px;
+  font-weight: 500;
+}
+html.relay-native .rx-p-back svg {
+  width: 24px;
+  height: 24px;
+}
+html.relay-native .rx-p-top {
+  align-items: flex-start;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. Surfaces: filled cards, not bordered boxes
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.relay-native
+  :is(.rx-p-card, .rx-ph-lane, .rx-ph-banner, .rx-p-explain-card, .rx-ph-figure) {
+  border: 0;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+html.relay-native .rx-p-card {
+  padding: 20px;
+  gap: 14px;
+}
+html.relay-native .rx-p-card h2 {
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. Buttons
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.relay-native .rx-p-btn {
+  min-height: 56px;
+  padding: 0 18px;
+  border-width: 1.5px;
+  border-radius: var(--r-button);
+  font-size: 17px;
+  font-weight: 600;
+}
+html.relay-native .rx-p-btn.primary,
+html.relay-native .rx-ph-btn.primary,
+html.relay-native .rx-signin-button {
+  background: var(--pine);
+  border-color: var(--pine);
+  color: #fff !important;
+  box-shadow: 0 8px 18px -8px rgba(36, 73, 61, 0.55);
+}
+html.relay-native .rx-p-btn.primary:disabled,
+html.relay-native .rx-signin-button:disabled {
+  background: #a6b8ae;
+  border-color: #a6b8ae;
+  box-shadow: none;
+}
+html.relay-native .rx-p-btn.outline {
+  background: var(--surface);
+}
+html.relay-native .rx-ph-btn {
+  min-height: 54px;
+  padding: 0 18px;
+  border-radius: var(--r-control);
+  font-size: 17px;
+}
+/* The alert card's button is marked .small for the desktop banner; on a phone
+ * it is the one thing on the screen the patient is asked to do. */
+html.relay-native .rx-ph-btn.small {
+  min-height: 54px;
+  font-size: 17px;
+}
+html.relay-native .rx-p-textbtn {
+  min-height: 48px;
+  font-size: 17px;
+}
+html.relay-native .rx-p-iconbtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. Forms
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.relay-native .rx-p-select,
+html.relay-native .rx-p-code input,
+html.relay-native .rx-p-input input,
+html.relay-native .rx-p-entry input,
+html.relay-native .rx-signin-input,
+html.relay-native .rx-p-voice-review select,
+html.relay-native .rx-p-field textarea,
+html.relay-native .rx-p-message-compose textarea,
+html.relay-native .rx-p-text-reply textarea,
+html.relay-native .rx-p-voice-note textarea {
+  min-height: 56px;
+  padding: 0 16px;
+  border: 1.5px solid var(--control);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 17px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+html.relay-native .rx-p-field textarea,
+html.relay-native .rx-p-message-compose textarea,
+html.relay-native .rx-p-text-reply textarea,
+html.relay-native .rx-p-voice-note textarea {
+  padding: 14px 16px;
+  line-height: 1.4;
+}
+html.relay-native .rx :is(input, select, textarea):focus {
+  border-color: var(--pine);
+  box-shadow: 0 0 0 4px rgba(36, 73, 61, 0.14);
+}
+html.relay-native .rx-p-field label,
+html.relay-native .rx-signin-label,
+html.relay-native .rx-p-message-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+html.relay-native .rx-p-field small {
+  font-size: 14px;
+  color: var(--faint);
+}
+
+/* The discharge code is three letters and four digits, so it reads as a code.
+ * The key icon sits absolutely at the left; the text starts after it. */
+html.relay-native .rx-p-code input {
+  padding-left: 52px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+html.relay-native .rx-p-code input::placeholder {
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: #a9b3ad;
+}
+
+html.relay-native .rx input[type="checkbox"],
+html.relay-native .rx input[type="radio"] {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  accent-color: var(--pine);
+}
+
+html.relay-native .rx-p-consent,
+html.relay-native .rx-p-voice-consent {
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: var(--r-control);
+  background: var(--paper);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+html.relay-native .rx-p-voice-consent input {
+  margin-top: 0;
+}
+html.relay-native .rx-p-error,
+html.relay-native .rx-signin-error {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fbe9e4;
+  color: #8a3b2a;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. Sign-in: two screens, one look. Centred brand, one field, one button.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Access-code gate (src/recovery/SignIn.jsx) */
+html.relay-native .rx-landing {
+  justify-content: flex-start;
+  padding: 0 20px;
+}
+html.relay-native .rx-landing-inner {
+  width: 100%;
+  margin: 0;
+  padding: 12px 0 28px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html.relay-native .rx-landing .rx-brand,
+html.relay-native .rx-p-auth .rx-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 28px 0 32px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+html.relay-native .rx-landing .rx-brand-mark,
+html.relay-native .rx-p-auth .rx-brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px -8px rgba(36, 73, 61, 0.6);
+}
+html.relay-native .rx-landing .rx-brand-mark svg,
+html.relay-native .rx-p-auth .rx-brand-mark svg {
+  width: 24px;
+  height: 24px;
+}
+html.relay-native .rx-landing-lede {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-align: center;
+}
+html.relay-native .rx-signin-sub {
+  margin: 0 0 26px;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
+  text-wrap: pretty;
+}
+html.relay-native .rx-signin-form {
+  gap: 12px;
+  margin-bottom: 26px;
+}
+html.relay-native .rx-signin-input {
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+}
+html.relay-native .rx-signin-button {
+  min-height: 56px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: var(--r-button);
+  font-size: 17px;
+  font-weight: 600;
+}
+html.relay-native .rx-landing-note {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html.relay-native .rx-landing-note-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+html.relay-native .rx-landing-note ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Discharge-code sign-in (src/recovery/patient/SignIn.jsx) */
+html.relay-native .rx-p-auth {
+  padding: 0;
+}
+html.relay-native .rx-p-auth .rx-p-screen.rx-card {
+  gap: 12px;
+  padding: 12px 20px 28px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html.relay-native .rx-p-auth .rx-p-top {
+  justify-content: center;
+}
+html.relay-native .rx-p-auth .rx-brand {
+  margin: 16px 0 20px;
+}
+html.relay-native .rx-p-auth .rx-p-signin-kicker,
+html.relay-native .rx-p-auth .rx-p-title,
+html.relay-native .rx-p-auth .rx-p-lead {
+  text-align: center;
+}
+html.relay-native .rx-p-auth .rx-p-title {
+  font-size: 32px;
+}
+html.relay-native .rx-p-auth .rx-p-lead {
+  margin-bottom: 8px;
+}
+html.relay-native .rx-p-auth .rx-p-form {
+  gap: 16px;
+}
+html.relay-native .rx-p-auth .rx-p-form .rx-p-btn.primary {
+  margin-top: 4px;
+}
+html.relay-native .rx-p-signin-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--faint);
+  text-align: center;
+}
+html.relay-native .rx-p-signin-foot strong {
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7. Home
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.relay-native .rx-ph-top {
+  gap: 14px;
+  padding-top: 6px;
+}
+html.relay-native .rx-ph-top h1 {
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+html.relay-native .rx-ph-progress {
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  font-size: 15px;
+}
+html.relay-native .rx-ph-progress-labels strong {
+  font-size: 16px;
+  color: var(--ink);
+}
+html.relay-native .rx-ph-bar {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+html.relay-native .rx-ph-device {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* The alert is the one thing that matters on this screen: a warm card with an
+ * amber edge, a serif headline, and a button the size of a thumb. */
+html.relay-native .rx-ph-banner {
+  gap: 14px;
+  padding: 20px 20px 18px;
+}
+html.relay-native .rx-ph-banner.unusual {
+  background: var(--amber-tint);
+  box-shadow: var(--shadow-card), inset 5px 0 0 var(--amber);
+}
+html.relay-native .rx-ph-banner.reviewing {
+  box-shadow: var(--shadow-card), inset 5px 0 0 var(--pine);
+}
+html.relay-native .rx-ph-banner strong {
+  display: block;
+  margin: 6px 0 8px;
+  font-family: var(--serif);
+  font-size: 23px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+html.relay-native .rx-ph-banner p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+html.relay-native .rx-ph-banner-actions {
+  margin-top: 4px;
+}
+html.relay-native .rx-ph-banner-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+html.relay-native .rx-ph-quiet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--sage);
+  color: var(--pine);
+  font-size: 16px;
+  font-weight: 500;
+}
+html.relay-native .rx-ph-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+html.relay-native .rx-ph-row {
+  min-height: 56px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  font-size: 15px;
+}
+
+html.relay-native .rx-ph-lanes {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+html.relay-native .rx-ph-lane-head {
+  align-items: center;
+  padding: 16px 18px 10px;
+  border-bottom: 0;
+}
+html.relay-native .rx-ph-lane-title {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+html.relay-native .rx-ph-lane-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+html.relay-native .rx-ph-tiles {
+  gap: 10px;
+  padding: 6px 14px 14px;
+}
+html.relay-native .rx-ph-tile {
+  gap: 8px;
+  padding: 14px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--paper);
+}
+html.relay-native .rx-ph-tile.changed {
+  background: var(--amber-tint);
+}
+html.relay-native .rx-ph-tile.model {
+  background: var(--sage);
+}
+/* Title and status chip side by side leaves a three-line title next to a
+ * pill in a 170px tile. Stack them: chip first as a small status line, then
+ * the full-width title, then the number. */
+html.relay-native .rx-ph-tile-top {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+html.relay-native .rx-ph-tile-top > span:first-child {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+}
+html.relay-native .rx-ph-tile-top > .rx-p-chip-sm {
+  order: -1;
+}
+html.relay-native .rx-ph-tile-value strong {
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+html.relay-native .rx-ph-tile-value span {
+  font-size: 15px;
+  color: var(--muted);
+}
+html.relay-native .rx-ph-tile-value em {
+  flex-basis: 100%;
+  font-size: 14px;
+  font-style: normal;
+}
+html.relay-native .rx-p-chip-sm {
+  border-radius: 999px;
+  font-size: 12px;
+}
+html.relay-native .rx-ph-lane-foot {
+  padding: 4px 18px 16px;
+}
+html.relay-native .rx-ph-hrows {
+  padding: 0 6px 6px;
+}
+html.relay-native .rx-ph-hrow {
+  align-items: center;
+  min-height: 60px;
+  padding: 12px 12px;
+  border-radius: 14px;
+}
+html.relay-native .rx-ph-hrow + .rx-ph-hrow {
+  border-top: 0;
+}
+html.relay-native .rx-ph-hrow-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+html.relay-native .rx-ph-hrow-chev {
+  color: #b3bdb6;
+}
+html.relay-native .rx-ph-count {
+  border-radius: 999px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   8. Check-in: one column, the call card first, its action always in reach
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.relay-native .rx-p-checkin-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+html.relay-native .rx-p-checkin-main,
+html.relay-native .rx-p-checkin-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+html.relay-native .rx-p-callcard {
+  gap: 16px;
+  padding: 18px;
+}
+html.relay-native .rx-p-callrow {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+html.relay-native .rx-p-callrow .rx-p-fine {
+  flex: 1 1 100%;
+  font-size: 15px;
+}
+html.relay-native .rx-p-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+html.relay-native .rx-p-stack {
+  gap: 14px;
+}
+
+/* The opening question, presented like the start of a conversation. */
+html.relay-native .rx-p-voice-welcome {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--sage);
+}
+html.relay-native .rx-p-voice-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--pine);
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.55);
+}
+html.relay-native .rx-p-voice-welcome strong {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+html.relay-native .rx-p-voice-welcome p {
+  margin: 0 0 6px;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+html.relay-native .rx-p-voice-welcome small {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--faint);
+}
+
+/* How to answer: two rows, radio at the left, the chosen one filled. */
+html.relay-native .rx-p-mode-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+html.relay-native .rx-p-mode-choice legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+html.relay-native .rx-p-mode-choice label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+html.relay-native .rx-p-mode-choice label.selected {
+  border-color: var(--pine);
+  background: var(--sage);
+}
+html.relay-native .rx-p-mode-choice label strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.25;
+}
+html.relay-native .rx-p-mode-choice label small {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+/* The start button stays in reach above the tab bar while the card scrolls.
+ * Sticky, not fixed: it leaves with its card, so it never sits over the
+ * transcript or the review form later in the flow. */
+html.relay-native .rx-p-callcard .rx-p-stack > .rx-p-btn.primary {
+  position: sticky;
+  bottom: calc(var(--bar-height) + 12px + env(safe-area-inset-bottom));
+  z-index: 4;
+  box-shadow: var(--shadow-float);
+}
+
+/* Live call */
+html.relay-native .rx-p-live-controls {
+  display: flex;
+  flex-direction: column;
+  /* The base rule wraps; in a column that sends the 100%-basis question into
+   * a second column to the right, where it is clipped. */
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 14px;
+  margin-top: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--sage);
+}
+html.relay-native .rx-p-live-question {
+  flex: 0 0 auto;
+}
+html.relay-native .rx-p-live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pine);
+}
+html.relay-native .rx-p-live-indicator > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2f7a62;
+  animation: relay-pulse 1.5s ease-in-out infinite;
+}
+html.relay-native .rx-p-live-question {
+  font-family: var(--serif);
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+html.relay-native .rx-p-live-controls .rx-p-btn {
+  background: var(--surface);
+  border-color: transparent;
+}
+
+/* Transcript as chat */
+html.relay-native .rx-p-chat {
+  gap: 8px;
+  min-height: 0;
+  max-height: none;
+  padding: 0;
+  overflow: visible;
+}
+html.relay-native .rx-p-chat-label {
+  margin: 4px 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+html.relay-native .rx-p-bubble {
+  max-width: 86%;
+  padding: 12px 16px;
+  border-radius: 20px;
+  font-size: 17px;
+  line-height: 1.4;
+  animation: relay-rise 0.18s ease-out both;
+}
+html.relay-native .rx-p-bubble.relay {
+  border: 0;
+  border-bottom-left-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+html.relay-native .rx-p-bubble.you {
+  border-bottom-right-radius: 8px;
+}
+
+/* Typing a reply: the composer stays above the bar like a messaging app. */
+html.relay-native .rx-p-text-reply {
+  position: sticky;
+  bottom: calc(var(--bar-height) + env(safe-area-inset-bottom));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 -16px;
+  padding: 12px 16px 12px;
+  background: rgba(245, 246, 243, 0.96);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line-soft);
+}
+html.relay-native .rx-p-text-reply label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+html.relay-native .rx-p-text-reply-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+html.relay-native .rx-p-text-reply-actions small {
+  order: 3;
+  flex: 1 1 100%;
+  font-size: 13px;
+  color: var(--faint);
+}
+html.relay-native .rx-p-text-reply-actions .rx-p-btn.primary {
+  flex: 1 1 auto;
+  min-height: 52px;
+}
+
+/* Review before sharing */
+html.relay-native .rx-p-voice-review dl {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+html.relay-native .rx-p-voice-review dl > div {
+  padding: 12px 0;
+  border-top: 1px solid var(--line-soft);
+}
+html.relay-native .rx-p-voice-review dt {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--faint);
+}
+html.relay-native .rx-p-voice-review dd {
+  margin: 0;
+}
+html.relay-native .rx-p-voice-review select {
+  width: 100%;
+}
+html.relay-native .rx-p-voice-note {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+html.relay-native .rx-p-voice-note small {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--faint);
+  text-align: right;
+}
+html.relay-native .rx-p-answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+html.relay-native .rx-p-chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+html.relay-native .rx-p-sent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: #2f7a62;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+html.relay-native .rx-p-delivery strong {
+  font-size: 18px;
+}
+
+/* Context beside the call, stacked under it on a phone */
+html.relay-native .rx-p-aside-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--pine);
+}
+html.relay-native .rx-p-aside-heading h2 {
+  font-size: 18px;
+  color: var(--ink);
+}
+html.relay-native .rx-p-aside-copy {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+html.relay-native .rx-p-focus-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+html.relay-native .rx-p-focus-list li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 16px;
+  text-align: left;
+}
+html.relay-native .rx-p-focus-list li > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+html.relay-native .rx-p-focus-list li > span i {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+html.relay-native .rx-p-focus-list li strong {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--amber-ink);
+  text-align: right;
+}
+html.relay-native .rx-p-focus-card small,
+html.relay-native .rx-p-next-card small {
+  font-size: 13px;
+  color: var(--faint);
+}
+html.relay-native .rx-p-next-card ol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+html.relay-native .rx-p-next-card li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+html.relay-native .rx-p-next-card li > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--sage);
+  color: var(--pine);
+  font-size: 14px;
+  font-weight: 700;
+}
+html.relay-native .rx-p-next-card li strong {
+  display: block;
+  font-size: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   9. Readings, care team, your data
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.relay-native .rx-ph-figures {
+  gap: 12px;
+}
+html.relay-native .rx-ph-figure {
+  padding: 16px;
+}
+html.relay-native .rx-ph-siglist {
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+html.relay-native .rx-p-device {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--paper);
+  border: 0;
+}
+html.relay-native .rx-p-status {
+  border-radius: 999px;
+}
+html.relay-native .rx-p-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+html.relay-native .rx-p-quick button {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+}
+html.relay-native .rx-p-entryrow {
+  padding: 12px 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+/* Bottom sheets sit on the home indicator with a grabber, like a system sheet. */
+html.relay-native .rx-p-sheet-body {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  padding: 26px 20px calc(20px + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 40px rgba(31, 47, 42, 0.18);
+}
+html.relay-native .rx-p-sheet-body::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 40px;
+  height: 5px;
+  border-radius: 999px;
+  background: #d5dbd6;
+  transform: translateX(-50%);
+}
+html.relay-native .rx-panel {
+  border-radius: 24px 24px 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+html.relay-native .rx-panel-close {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   10. Tab bar: the responsive sidebar, moved to the bottom
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 html.relay-native .rx-pweb {
   flex-direction: column;
 }
 html.relay-native .rx-pweb .rx-side {
-  /* Stated explicitly: the responsive layout switches this to display:grid at
-   * phone widths, which makes every flex property below inert and drops the
-   * sign-out button into a second grid row under the tabs. */
+  /* Stated explicitly: at phone widths the responsive layout makes this a
+   * grid, which would leave every flex property below inert. */
   display: flex;
   position: fixed;
   left: 0;
@@ -75,12 +1200,13 @@ html.relay-native .rx-pweb .rx-side {
   justify-content: space-around;
   gap: 2px;
   padding: 6px 6px calc(env(safe-area-inset-bottom) + 4px);
-  /* Opaque rather than a blur on purpose. backdrop-filter would make this bar
-   * a containing block for any position:fixed descendant, which is a trap for
-   * whoever styles it next: such a child silently positions against the bar
-   * instead of the screen. */
-  background: #fcfcfa;
-  border-top: 1px solid var(--line);
+  /* Translucent like a system tab bar. Nothing inside this bar may be
+   * position:fixed while backdrop-filter is here: it would become the
+   * containing block and pin the element to the bar instead of the screen. */
+  background: rgba(250, 251, 249, 0.86);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px);
+  backdrop-filter: saturate(1.6) blur(18px);
+  border-top: 1px solid rgba(31, 47, 42, 0.08);
   border-right: 0;
   border-bottom: 0;
 }
@@ -96,49 +1222,56 @@ html.relay-native .rx-pweb .rx-navlink {
   justify-content: center;
   align-items: center;
   min-height: 48px;
-  padding: 5px 2px 3px;
+  padding: 4px 2px 3px;
   border-radius: 12px;
-  transition: none;
+  color: #6b7a72 !important;
 }
 html.relay-native .rx-pweb .rx-navlink-label {
   flex-direction: column;
   align-items: center;
   gap: 3px;
   font-size: 10.5px;
+  font-weight: 500;
   line-height: 1.1;
   letter-spacing: 0.01em;
   text-align: center;
   white-space: nowrap;
 }
+html.relay-native .rx-pweb .rx-navlink svg {
+  width: 24px;
+  height: 24px;
+}
 html.relay-native .rx-pweb .rx-navlink[aria-current] {
   background: var(--sage);
+  color: var(--pine) !important;
+}
+html.relay-native .rx-pweb .rx-navlink[aria-current] .rx-navlink-label {
+  font-weight: 600;
 }
 html.relay-native .rx-pweb .rx-navlink[aria-current] svg {
   stroke-width: 2.4;
 }
-/* The "check-in waiting" badge, moved off the row and onto the icon. */
+/* The "check-in waiting" count, moved off the row and onto the icon. */
 html.relay-native .rx-pweb .rx-count {
   position: absolute;
-  top: 2px;
-  right: calc(50% - 20px);
-  min-width: 15px;
-  height: 15px;
+  top: 1px;
+  right: calc(50% - 22px);
+  min-width: 17px;
+  height: 17px;
   padding: 0 4px;
-  font-size: 9.5px;
-  line-height: 15px;
-  text-align: center;
   border-radius: 999px;
+  background: var(--amber);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+  box-shadow: 0 0 0 2px rgba(250, 251, 249, 0.9);
 }
 
-/* Nothing should end up underneath the bar. */
-html.relay-native .rx-pweb .rx-main {
-  padding-bottom: calc(66px + env(safe-area-inset-bottom));
-}
-
-/* Sign out, which the web layout hides entirely under 860px: on a phone that
- * would leave the patient no way out of their own session. It rides at the end
- * of the bar rather than floating over the screen, where it would sooner or
- * later cover a reading. */
+/* Sign out rides at the end of the bar rather than floating over the screen,
+ * where it would sooner or later cover a reading. The web layout hides it
+ * under 860px, which on a phone would leave the patient no way out. */
 html.relay-native .rx-pweb .rx-side-foot {
   display: flex !important;
   position: static;
@@ -153,16 +1286,17 @@ html.relay-native .rx-pweb .rx-side-foot {
 }
 html.relay-native .rx-pweb .rx-side-foot button {
   max-width: 56px;
-  padding: 6px 6px;
+  padding: 6px;
   border-radius: 10px;
   font-size: 10.5px;
   line-height: 1.1;
   text-align: center;
   white-space: normal;
-  color: var(--muted);
+  color: #6b7a72;
 }
 
-/* The sign-in screen has no tab bar, so it only needs the notch cleared. */
-html.relay-native .rx-p-auth {
+/* The sign-in screens have no tab bar and only need the home indicator cleared. */
+html.relay-native .rx-p-auth,
+html.relay-native .rx-landing {
   padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
 }
