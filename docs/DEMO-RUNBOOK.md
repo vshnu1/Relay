@@ -122,7 +122,7 @@ papers.*
 | Catches a 2.0 sd coordinated change in 97.6% of subjects, median one day | `fixtures/sensitivity.json` |
 | ML engine: 5.77% of judged subjects | `fixtures/ml_calibration.json` |
 | 99 days of real wearable data, one coordinated event found | `docs/DATA.md` |
-| 53 ML tests, 30 JS tests, API integration suite | run them |
+| 53 ML tests, 32 JS tests, API integration suite | run them |
 
 Never quote the 3.35% and the 5.77% as though one beats the other — the
 first is per subject-day, the second per subject.
