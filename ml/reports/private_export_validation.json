@@ -1,0 +1,427 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "note": "Aggregate-only report from a private export. No raw observations, dates finer than month, device names, or person-level tables.",
+  "export": {
+    "records_scanned": 852070,
+    "records_used_by_metric": {
+      "double_support": 52972,
+      "heart_rate": 347476,
+      "hrv": 193,
+      "respiratory": 26537,
+      "rhr": 54,
+      "sleep": 1340,
+      "spo2": 7949,
+      "step_length": 57189,
+      "steps": 52702,
+      "walking_asymmetry": 29474,
+      "walking_speed": 57192,
+      "walking_steadiness": 113,
+      "weight": 4
+    },
+    "windows_by_metric": {
+      "double_support": 4145,
+      "heart_rate": 327,
+      "hrv": 107,
+      "respiratory": 154,
+      "rhr": 54,
+      "sleep": 132,
+      "spo2": 312,
+      "step_length": 4193,
+      "steps": 4856,
+      "walking_asymmetry": 3445,
+      "walking_speed": 4193,
+      "walking_steadiness": 113,
+      "weight": 2
+    },
+    "active_days_by_metric": {
+      "double_support": 1349,
+      "heart_rate": 91,
+      "hrv": 65,
+      "respiratory": 72,
+      "rhr": 54,
+      "sleep": 67,
+      "spo2": 89,
+      "step_length": 1351,
+      "steps": 1360,
+      "walking_asymmetry": 1303,
+      "walking_speed": 1351,
+      "walking_steadiness": 113,
+      "weight": 2
+    },
+    "coverage_months": {
+      "double_support": {
+        "first_month": "2022-12",
+        "last_month": "2026-09"
+      },
+      "heart_rate": {
+        "first_month": "2026-06",
+        "last_month": "2026-09"
+      },
+      "hrv": {
+        "first_month": "2026-06",
+        "last_month": "2026-09"
+      },
+      "respiratory": {
+        "first_month": "2026-06",
+        "last_month": "2026-09"
+      },
+      "rhr": {
+        "first_month": "2026-06",
+        "last_month": "2026-09"
+      },
+      "sleep": {
+        "first_month": "2026-06",
+        "last_month": "2026-09"
+      },
+      "spo2": {
+        "first_month": "2026-06",
+        "last_month": "2026-09"
+      },
+      "step_length": {
+        "first_month": "2022-12",
+        "last_month": "2026-09"
+      },
+      "steps": {
+        "first_month": "2022-12",
+        "last_month": "2026-09"
+      },
+      "walking_asymmetry": {
+        "first_month": "2022-12",
+        "last_month": "2026-09"
+      },
+      "walking_speed": {
+        "first_month": "2022-12",
+        "last_month": "2026-09"
+      },
+      "walking_steadiness": {
+        "first_month": "2024-07",
+        "last_month": "2026-09"
+      },
+      "weight": {
+        "first_month": "2022-09",
+        "last_month": "2023-05"
+      }
+    },
+    "source_categories": {
+      "manual": 1,
+      "phone": 6,
+      "wearable": 6
+    },
+    "alternate_sources_dropped_by_metric": {
+      "double_support": 1,
+      "heart_rate": 0,
+      "hrv": 0,
+      "respiratory": 0,
+      "rhr": 0,
+      "sleep": 0,
+      "spo2": 0,
+      "step_length": 2,
+      "steps": 3,
+      "walking_asymmetry": 2,
+      "walking_speed": 2,
+      "walking_steadiness": 0,
+      "weight": 1
+    },
+    "dropped": {
+      "double_support_rescaled_fraction": 1,
+      "other_type": 214601,
+      "sleep_non_asleep": 4274,
+      "walking_asymmetry_rescaled_fraction": 1,
+      "walking_steadiness_rescaled_fraction": 1
+    },
+    "parse_seconds": 4.85,
+    "events_emitted": 22033,
+    "read_seconds": 4.9,
+    "normalized_events": 22033
+  },
+  "programs": {
+    "post_abdominal_surgery": {
+      "events_used": 5942,
+      "latest": {
+        "application_state": "monitoring",
+        "state": "quiet",
+        "is_anomalous": false,
+        "rule_coordinated": false,
+        "anomaly_score": 0.095,
+        "analyzed_through_month": "2026-09",
+        "data_quality": {
+          "status": "sufficient",
+          "coverage": 1.0,
+          "core_metrics_ready": 5,
+          "core_metrics_total": 5,
+          "missing_core": [],
+          "cadence_hours": 6.0,
+          "windows_total": 5439,
+          "windows_recent": 7,
+          "windows_history": 5432
+        },
+        "missing_signals": [
+          {
+            "metric": "temperature",
+            "reason": "no_data"
+          },
+          {
+            "metric": "glucose",
+            "reason": "no_data"
+          }
+        ],
+        "contributors": [
+          {
+            "metric": "spo2",
+            "direction": "below_baseline",
+            "robust_deviation": -2.37,
+            "persistence_windows": 2
+          }
+        ],
+        "signals": {
+          "rhr": {
+            "quality": "Available",
+            "baseline_count": 19,
+            "flagged": false
+          },
+          "hrv": {
+            "quality": "Available",
+            "baseline_count": 37,
+            "flagged": false
+          },
+          "respiratory": {
+            "quality": "Available",
+            "baseline_count": 51,
+            "flagged": false
+          },
+          "sleep": {
+            "quality": "Available",
+            "baseline_count": 43,
+            "flagged": false
+          },
+          "glucose": {
+            "quality": "Insufficient baseline",
+            "baseline_count": 0,
+            "flagged": false
+          },
+          "spo2": {
+            "quality": "Available",
+            "baseline_count": 102,
+            "flagged": false
+          },
+          "steps": {
+            "quality": "Available",
+            "baseline_count": 95,
+            "flagged": false
+          },
+          "heart_rate": {
+            "quality": "Available",
+            "baseline_count": 102,
+            "flagged": false
+          }
+        },
+        "model": {
+          "status": "fitted",
+          "feature_columns": [
+            "dev:rhr",
+            "dev:hrv",
+            "dev:respiratory",
+            "dev:spo2",
+            "dev:sleep",
+            "dev:steps",
+            "dev:heart_rate",
+            "dev:temperature",
+            "dev:glucose",
+            "coverage",
+            "n_fresh",
+            "n_deviating_core",
+            "mean_abs_dev_core"
+          ],
+          "history_rows": 5432,
+          "usable_history_rows": 333,
+          "feature_dim_in": 13,
+          "history_rows_without_core_signals": 5099,
+          "n_train": 200,
+          "n_val": 67,
+          "n_test": 66,
+          "feature_dim_model": 19,
+          "threshold_raw": 0.1421,
+          "score_scale_raw": 0.1006,
+          "val_exceed_rate": 0.06,
+          "test_exceed_rate": 0.0,
+          "quantile": 0.95,
+          "n_estimators": 200,
+          "seed": 0,
+          "elapsed_seconds": 0.531
+        }
+      },
+      "latest_score_seconds": 0.532,
+      "backtest": {
+        "analysis_points": 61,
+        "application_states": {
+          "monitoring": 48,
+          "insufficient_data": 13
+        },
+        "data_quality_status": {
+          "sufficient": 43,
+          "partial": 5,
+          "insufficient": 13
+        },
+        "model_status": {
+          "fitted": 61
+        },
+        "anomaly_score_quantiles": {
+          "0.5": 0.094,
+          "0.9": 0.282,
+          "0.95": 0.359,
+          "0.99": 0.596
+        },
+        "share_is_anomalous_points": 0.0,
+        "flagged_signal_counts": {
+          "steps": 3
+        },
+        "mean_score_seconds": 0.278
+      }
+    },
+    "stroke_rehabilitation": {
+      "events_used": 20945,
+      "latest": {
+        "application_state": "monitoring",
+        "state": "quiet",
+        "is_anomalous": false,
+        "rule_coordinated": false,
+        "anomaly_score": 0.105,
+        "analyzed_through_month": "2026-09",
+        "data_quality": {
+          "status": "sufficient",
+          "coverage": 1.0,
+          "core_metrics_ready": 5,
+          "core_metrics_total": 5,
+          "missing_core": [],
+          "cadence_hours": 6.0,
+          "windows_total": 5438,
+          "windows_recent": 7,
+          "windows_history": 5431
+        },
+        "missing_signals": [
+          {
+            "metric": "walking_steadiness",
+            "reason": "stale"
+          }
+        ],
+        "contributors": [],
+        "signals": {
+          "rhr": {
+            "quality": "Insufficient baseline",
+            "baseline_count": 0,
+            "flagged": false
+          },
+          "hrv": {
+            "quality": "Insufficient baseline",
+            "baseline_count": 0,
+            "flagged": false
+          },
+          "respiratory": {
+            "quality": "Insufficient baseline",
+            "baseline_count": 0,
+            "flagged": false
+          },
+          "sleep": {
+            "quality": "Insufficient baseline",
+            "baseline_count": 0,
+            "flagged": false
+          },
+          "glucose": {
+            "quality": "Insufficient baseline",
+            "baseline_count": 0,
+            "flagged": false
+          },
+          "spo2": {
+            "quality": "Insufficient baseline",
+            "baseline_count": 0,
+            "flagged": false
+          },
+          "walking_speed": {
+            "quality": "Available",
+            "baseline_count": 92,
+            "flagged": false
+          },
+          "step_length": {
+            "quality": "Available",
+            "baseline_count": 92,
+            "flagged": false
+          },
+          "walking_asymmetry": {
+            "quality": "Available",
+            "baseline_count": 88,
+            "flagged": false
+          },
+          "double_support": {
+            "quality": "Available",
+            "baseline_count": 91,
+            "flagged": false
+          },
+          "walking_steadiness": {
+            "quality": "Insufficient baseline",
+            "baseline_count": 4,
+            "flagged": false
+          },
+          "steps": {
+            "quality": "Available",
+            "baseline_count": 95,
+            "flagged": false
+          }
+        },
+        "model": {
+          "status": "fitted",
+          "feature_columns": [
+            "dev:walking_speed",
+            "dev:step_length",
+            "dev:walking_asymmetry",
+            "dev:double_support",
+            "dev:walking_steadiness",
+            "dev:steps",
+            "coverage",
+            "n_fresh",
+            "n_deviating_core",
+            "mean_abs_dev_core"
+          ],
+          "history_rows": 5431,
+          "usable_history_rows": 5412,
+          "feature_dim_in": 10,
+          "history_rows_without_core_signals": 19,
+          "n_train": 3247,
+          "n_val": 1082,
+          "n_test": 1083,
+          "feature_dim_model": 14,
+          "threshold_raw": 0.0672,
+          "score_scale_raw": 0.0888,
+          "val_exceed_rate": 0.024,
+          "test_exceed_rate": 0.026,
+          "quantile": 0.95,
+          "n_estimators": 200,
+          "seed": 0,
+          "elapsed_seconds": 0.777
+        }
+      },
+      "latest_score_seconds": 0.778,
+      "backtest": {
+        "analysis_points": 61,
+        "application_states": {
+          "monitoring": 61
+        },
+        "data_quality_status": {
+          "sufficient": 61
+        },
+        "model_status": {
+          "fitted": 61
+        },
+        "anomaly_score_quantiles": {
+          "0.5": 0.13,
+          "0.9": 0.286,
+          "0.95": 0.309,
+          "0.99": 0.36
+        },
+        "share_is_anomalous_points": 0.0,
+        "flagged_signal_counts": {},
+        "mean_score_seconds": 0.764
+      }
+    }
+  },
+  "total_seconds": 69.82
+}
