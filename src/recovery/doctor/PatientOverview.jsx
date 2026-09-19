@@ -29,10 +29,13 @@ export default function PatientOverview({ id }) {
   const asked = p.answered
     ? (p.questions || p.profile.questions).filter((q) => p.answered.answers[q])
     : [];
-  const activeDevices = Object.values(p.devices).filter(
-    (d) => d.sharing,
-  ).length;
-  const totalDevices = Object.values(p.devices).length;
+  // Sharing is on by default for every device the profile defines, so counting
+  // it said 4/4 for everyone while the data-coverage note directly below named
+  // two of them as not connected. Connection is what the note counts, so it is
+  // what this counts.
+  const usable = Object.values(p.devices).filter((d) => d.connected !== false);
+  const activeDevices = usable.filter((d) => d.sharing).length;
+  const totalDevices = usable.length;
   // p.moved is in profile order, so taking the first named whichever signal the
   // program happens to list first rather than the one furthest from usual. The
   // distance is measured in that signal's own trigger steps, which is the same
@@ -52,7 +55,7 @@ export default function PatientOverview({ id }) {
           <div>
             <h1>{p.name}</h1>
             <p>
-              {p.age} years old. Discharged with {p.profile.after}, day{" "}
+              {p.age} years old. Discharged after {p.profile.after}, day{" "}
               {p.dayHome} of {p.windowDays} at home.
             </p>
           </div>

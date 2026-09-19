@@ -1,9 +1,16 @@
-import { Activity, House, ListChecks, SlidersHorizontal } from "lucide-react";
+import {
+  Activity,
+  House,
+  ListChecks,
+  ShieldCheck,
+  SlidersHorizontal,
+} from "lucide-react";
 import DoctorHome from "./DoctorHome.jsx";
 import IntendedUse from "./IntendedUse.jsx";
 import Watchlist from "./Watchlist.jsx";
 import PatientOverview from "./PatientOverview.jsx";
 import Profiles from "./Profiles.jsx";
+import Assurance from "./Assurance.jsx";
 
 export default function DoctorApp({ route, cohort, sourceLabel }) {
   const page =
@@ -13,7 +20,9 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
         ? "profiles"
         : route[1] === "watchlist"
           ? "watchlist"
-          : "home";
+          : route[1] === "assurance"
+            ? "assurance"
+            : "home";
   const reviewCount = cohort.filter((p) => p.group === "review").length;
   return (
     <div className="rx-doctor">
@@ -58,11 +67,22 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
             <SlidersHorizontal size={16} aria-hidden="true" /> Watch profiles
           </span>
         </a>
+        <a
+          className="rx-navlink"
+          href="#/doctor/assurance"
+          aria-current={page === "assurance" ? "page" : undefined}
+        >
+          <span className="rx-navlink-label">
+            <ShieldCheck size={16} aria-hidden="true" /> Security
+          </span>
+        </a>
       </nav>
       <main className="rx-main" id="rx-main" tabIndex={-1}>
         <IntendedUse />
         {page === "patient" ? (
           <PatientOverview key={route[2]} id={route[2]} />
+        ) : page === "assurance" ? (
+          <Assurance />
         ) : page === "profiles" ? (
           <Profiles />
         ) : page === "watchlist" ? (

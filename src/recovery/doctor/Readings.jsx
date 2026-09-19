@@ -133,8 +133,8 @@ export function SignalChart({
     d.v === null
       ? null
       : s.thr.abs !== undefined
-        ? `${d.v - s.usual >= 0 ? "+" : "−"}${Math.abs(d.v - s.usual).toFixed(s.digits || 1)} ${s.unit === "%" ? "points" : s.unit}`
-        : `${d.v - s.usual >= 0 ? "+" : "−"}${Math.round((Math.abs(d.v - s.usual) / Math.abs(s.usual)) * 100)}%`;
+        ? `${d.v - s.usual >= 0 ? "+" : "-"}${Math.abs(d.v - s.usual).toFixed(s.digits || 1)} ${s.unit === "%" ? "points" : s.unit}`
+        : `${d.v - s.usual >= 0 ? "+" : "-"}${Math.round((Math.abs(d.v - s.usual) / Math.abs(s.usual)) * 100)}%`;
   const tipLeft = hovered ? Math.min(Math.max(hovered.x, 90), width - 90) : 0;
   return (
     <div className="rx-plot-wrap">
@@ -671,9 +671,11 @@ export default function Readings({ patient: p }) {
           <span className="rx-home-kicker">Evidence behind this review</span>
           <h2>Wearable readings</h2>
           <p className="rx-readings-intro">
-            {p.moved.length
-              ? `${numberWord(p.moved.length, true)} signals moved far enough from ${p.first}'s usual range to contribute to this review.`
-              : `No watched signal has produced a persistent change.`}{" "}
+            {p.status === "nodata"
+              ? `There are too few readings to compare with ${p.first}'s usual yet, so nothing here is a finding.`
+              : p.moved.length
+                ? `${numberWord(p.moved.length, true)} ${p.moved.length === 1 ? "signal" : "signals"} moved far enough from ${p.first}'s usual range to contribute to this review.`
+                : `No watched signal has produced a persistent change.`}{" "}
             Select a reading to see the evidence over the last {shownDays}{" "}
             {shownDays === 1 ? "day" : "days"} at home.
           </p>

@@ -77,6 +77,14 @@ function crossCheck(p) {
   };
 }
 
+// The cohort percentiles happen to all end in 0 today, so hardcoding "th" has
+// not shown yet. It would.
+const ordinal = (n) => {
+  const tens = n % 100;
+  if (tens >= 11 && tens <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10] || "th"}`;
+};
+
 const list = (items) =>
   items.length < 2
     ? items[0] || ""
@@ -218,7 +226,7 @@ export default function ModelCard({ patient: p }) {
                       usually <strong>{s.baseline.median}</strong> {s.unit}
                       {s.cohort.patient_percentile === null
                         ? ""
-                        : `, ${s.cohort.patient_percentile}th percentile among ${s.cohort.subjects} others`}
+                        : `, ${ordinal(s.cohort.patient_percentile)} percentile among ${s.cohort.subjects} others`}
                     </span>
                   </li>
                 ))}

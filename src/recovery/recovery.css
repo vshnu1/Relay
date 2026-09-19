@@ -6790,3 +6790,162 @@ p.rx-row-summary {
 .rx-cohort-fact strong {
   color: var(--ink);
 }
+
+/* Security and compliance page. The safeguard rows that fail are the reason
+   the page exists, so they are marked as clearly as the ones that pass. */
+.rx-assurance h1 {
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 4px;
+}
+.rx-assurance-sub {
+  margin: 8px 0 0;
+  max-width: 68ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.rx-assurance h2 small {
+  font-size: 12px;
+  font-weight: 500;
+  color: #5a6862;
+}
+.rx-assurance-count {
+  margin: 6px 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.rx-assurance-count strong {
+  color: #8a5a2b;
+}
+.rx-safeguards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rx-safeguards li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) minmax(0, max-content);
+  align-items: start;
+  gap: 4px 14px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+.rx-safeguards li:first-child {
+  border-top: 0;
+}
+.rx-safeguard-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  margin-top: 1px;
+}
+.rx-safeguards .built .rx-safeguard-mark {
+  background: #e4efe3;
+  color: #2f5d3a;
+}
+.rx-safeguards .partial .rx-safeguard-mark {
+  background: #fbf0d8;
+  color: #7a5a1c;
+}
+.rx-safeguards .not-met .rx-safeguard-mark {
+  background: #f6e0dc;
+  color: #8a3423;
+}
+.rx-safeguard-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.rx-safeguard-name em {
+  font-style: normal;
+  font-weight: 500;
+  color: #8a3423;
+}
+.rx-safeguard-note {
+  margin: 2px 0 0;
+  max-width: 76ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.rx-safeguards code {
+  font-size: 11.5px;
+  color: #5a6862;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+.rx-assurance-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.rx-audit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+}
+.rx-audit-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 9ch) minmax(0, 1fr) minmax(0, max-content);
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  align-items: baseline;
+}
+.rx-audit-list li:first-child {
+  border-top: 0;
+}
+.rx-audit-actor {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.rx-audit-actor.clinician {
+  color: #2f5d3a;
+}
+.rx-audit-actor.patient {
+  color: #7a5a1c;
+}
+.rx-audit-actor.system {
+  color: #5a6862;
+}
+.rx-audit-list time {
+  color: #5a6862;
+  font-variant-numeric: tabular-nums;
+}
+.rx-assurance-dl {
+  margin: 12px 0 0;
+  display: grid;
+  gap: 14px;
+}
+.rx-assurance-dl.wide {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px 32px;
+}
+.rx-assurance-dl dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5a6862;
+  margin-bottom: 3px;
+}
+.rx-assurance-dl dd {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.rx-assurance-dl dd strong {
+  color: var(--ink);
+}

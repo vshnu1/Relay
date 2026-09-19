@@ -349,7 +349,7 @@ export function derive(p, now) {
       d.live
         ? `${d.name} is live`
         : d.lastSync
-          ? `${d.name} synced ${ago(now - d.lastSync)} ago`
+          ? `${d.name} synced ${ago(now - d.lastSync)}`
           : `${d.name} is connected`,
     );
   findings.push({
