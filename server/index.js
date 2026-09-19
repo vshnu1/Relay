@@ -98,7 +98,18 @@ function audit(action, patientId = null, detail = "") {
       // clinician opened a record and never which clinician.
       actorId: who.userId ?? null,
       actorEmail: who.email ?? null,
-      onBehalfOf: who.emergency ? "break-glass" : null,
+      // Marked when the access only happened because an emergency grant was open:
+      // a ward-wide grant, or a record outside the actor's care team.
+      onBehalfOf:
+        who.emergency ||
+        (patientId &&
+          who.userId &&
+          who.careTeam &&
+          who.careTeam !== WARD_WIDE &&
+          !onTeam(who.careTeam, patientId) &&
+          hasGrant(who.userId, patientId))
+          ? "break-glass"
+          : null,
       action,
       patientId,
       detail,
@@ -114,14 +125,12 @@ function audit(action, patientId = null, detail = "") {
 const accounts = createAccountStore(dataDir);
 const REQUIRE_ACCOUNTS = process.env.RELAY_REQUIRE_ACCOUNTS === "true";
 
-// Break-glass, and an honest note about what it currently is.
-//
-// It records an auditable declaration: who, why, which record, for fifteen
-// minutes, shown on the security page while open. What it does not do is widen
-// access, because clinician access here is not partitioned in the first place.
-// A safeguard that grants what you already had is theatre, so the security page
-// marks this Partial rather than Built and says exactly this. Scoping clinicians
-// to a care team is what would make it real, and is the next thing to build.
+// Break-glass. A clinician account assigned to a care team reaches that team's
+// records and no others (canReach, below). Declaring an emergency is what lifts
+// that for one record: who, why, which record, for fifteen minutes, written to
+// the audit chain and shown on the security page while open. Before accounts were
+// scoped this recorded a declaration and widened nothing, which is why the page
+// marked it Partial.
 const EMERGENCY_MS = 15 * 60 * 1000;
 const grants = [];
 const openGrants = () => {
@@ -282,6 +291,7 @@ app.use("/api", (req, res, next) => {
       role: req.role,
       userId: req.user?.id ?? null,
       email: req.user?.email ?? null,
+      careTeam: req.user?.careTeam ?? null,
       emergency: req.user ? hasGrant(req.user.id, null) : false,
     },
     next,
@@ -305,6 +315,9 @@ const PUBLIC_ROUTES = new Set([
 // Patient id -> the name and code the roster gives them, for standing accounts and
 // for handing a signed-in patient their own record.
 const ROSTER = new Map();
+// Patient id -> the care unit responsible for them, as the roster names it. This is
+// what a clinician account's care team is matched against.
+const CARE_UNIT = new Map();
 const DISCHARGE_CODES = (() => {
   const byCode = new Map();
   try {
@@ -314,6 +327,7 @@ const DISCHARGE_CODES = (() => {
           if (p.code) {
             byCode.set(p.code, p.id);
             ROSTER.set(p.id, { name: p.name, code: p.code });
+            if (p.hospital) CARE_UNIT.set(p.id, p.hospital);
           }
       },
       readings() {},
@@ -351,6 +365,40 @@ const provenPatient = (req) => {
   const supplied = req.headers["x-relay-discharge"];
   if (typeof supplied !== "string" || !supplied) return null;
   return DISCHARGE_CODES.get(supplied.trim().toUpperCase()) || null;
+};
+
+// Which records a clinician may reach. An account assigned to a care team reaches
+// the patients that unit is responsible for; any other record is refused until the
+// clinician declares an emergency for it (POST /api/emergency-access), which is
+// the restriction break-glass lifts. Ward-wide is an explicit assignment, held by
+// the demo identities so a visitor sees the whole ward. A shared role code names
+// no person and an account from before assignment has no team, so neither can be
+// scoped: they keep the ward-wide access they had, and the security page counts them.
+const WARD_WIDE = "*";
+// A team is a unit ("Bayfront Health, Respiratory Unit") or the hospital it belongs
+// to ("Bayfront Health"), which covers every unit there.
+const CARE_UNITS = new Set(CARE_UNIT.values());
+const HOSPITALS = new Set([...CARE_UNITS].map((unit) => unit.split(", ")[0]));
+const validCareTeam = (team) =>
+  team === WARD_WIDE || CARE_UNITS.has(team) || HOSPITALS.has(team);
+const onTeam = (team, patientId) => {
+  const unit = CARE_UNIT.get(patientId);
+  return !!unit && (unit === team || unit.startsWith(`${team}, `));
+};
+const isScoped = (user) =>
+  user?.role === "clinician" && !!user.careTeam && user.careTeam !== WARD_WIDE;
+const canReach = (req, patientId) => {
+  if (req.role !== "clinician" || !isScoped(req.user)) return true;
+  if (patientId && onTeam(req.user.careTeam, patientId)) return true;
+  return hasGrant(req.user.id, patientId);
+};
+const refuse = (req, res, patientId) => {
+  audit("access.refused", patientId, `outside ${req.user.careTeam}`);
+  return res.status(403).json({
+    error:
+      "This record is outside your care team. Declare emergency access to open it.",
+    code: "OUTSIDE_CARE_TEAM",
+  });
 };
 
 const PATIENT_ROUTES = new Set([
@@ -399,7 +447,20 @@ const STANDING_ACCOUNTS = [
     email: "elena.alvarez@bayfront.example",
     role: "clinician",
     name: "Dr. Elena Alvarez",
+    careTeam: WARD_WIDE,
   },
+  // Assigned to one unit, so there is a standing account that break-glass means
+  // something for. The roster ids are load-bearing here as they are below.
+  ...(CARE_UNIT.has("daniel")
+    ? [
+        {
+          email: "naomi.park@tampageneral.example",
+          role: "clinician",
+          name: "Dr. Naomi Park",
+          careTeam: CARE_UNIT.get("daniel"),
+        },
+      ]
+    : []),
   ...["maya", "priya"]
     .filter((id) => ROSTER.has(id))
     .map((id) => ({
@@ -414,12 +475,20 @@ if (DEMO_PASSWORD && DEMO_PASSWORD.length >= 10)
     accounts.ensureAccount({ ...account, password: DEMO_PASSWORD });
 
 app.post("/api/auth/register", (req, res) => {
-  const { email, password, invite, name, dischargeCode } = req.body || {};
+  const { email, password, invite, name, dischargeCode, careTeam } =
+    req.body || {};
   const role = roleFromInvite(invite);
   if (!role)
     return res
       .status(403)
       .json({ error: "That access code was not recognised." });
+  // A clinician account is for one care team, or explicitly for the whole ward.
+  // Who is on which team is an administrator's decision in a hospital; here the
+  // person signing up says, which is the same limit as the name they give.
+  if (role === "clinician" && careTeam != null && !validCareTeam(careTeam))
+    return res
+      .status(400)
+      .json({ error: "That care team was not recognised." });
   let patientId = null;
   if (role === "patient" && dischargeCode) {
     patientId =
@@ -435,6 +504,7 @@ app.post("/api/auth/register", (req, res) => {
     role,
     name,
     patientId,
+    careTeam: role === "clinician" ? (careTeam ?? null) : null,
   });
   if (result.error) return res.status(400).json({ error: result.error });
   const token = accounts.openSession(result.user.id);
@@ -472,7 +542,7 @@ app.post("/api/auth/demo", (req, res) => {
           name: ROSTER.get(DEMO_PATIENT.patientId)?.name,
           patientId: DEMO_PATIENT.patientId,
         }
-      : { name: "Demo clinician" },
+      : { name: "Demo clinician", careTeam: WARD_WIDE },
   );
   const token = accounts.openSession(user.id);
   requestContext.run({ role, userId: user.id, email: user.email }, () =>
@@ -529,7 +599,27 @@ app.post("/api/emergency-access", (req, res) => {
     expiresAt: now + EMERGENCY_MS,
   });
   audit("emergency.access_opened", patientId, reason);
-  res.json({ ok: true, expiresAt: new Date(now + EMERGENCY_MS).toISOString() });
+  res.json({
+    ok: true,
+    patientId,
+    expiresAt: new Date(now + EMERGENCY_MS).toISOString(),
+  });
+});
+
+// The caller's own open grants, so the app can show which records are open under
+// emergency access, and until when, after a reload.
+app.get("/api/emergency-access", (req, res) => {
+  if (req.role !== "clinician" || !req.user) return res.json({ open: [] });
+  const now = Date.now();
+  res.json({
+    open: grants
+      .filter((g) => g.userId === req.user.id && g.expiresAt > now)
+      .map((g) => ({
+        patientId: g.patientId,
+        reason: g.reason,
+        expiresAt: new Date(g.expiresAt).toISOString(),
+      })),
+  });
 });
 
 // Exchange an access code for a role. The client keeps the code and sends it
@@ -568,9 +658,10 @@ app.get("/api/patients", (req, res) => {
       .status(403)
       .json({ error: "The patient view cannot list other patients." });
   // A read of the whole ward is an access to every record in it.
-  audit("roster.view", null, `${patients.length} records`);
+  const reachable = patients.filter((p) => canReach(req, p.id));
+  audit("roster.view", null, `${reachable.length} records`);
   res.json(
-    patients.map(({ events, ...p }) => ({
+    reachable.map(({ events, ...p }) => ({
       ...p,
       measurementCount: events.length,
     })),
@@ -580,6 +671,7 @@ app.param("id", (req, res, next, id) => {
   req.patient = patients.find((p) => p.id === id);
   if (!req.patient)
     return res.status(404).json({ error: "Patient not found." });
+  if (!canReach(req, id)) return refuse(req, res, id);
   next();
 });
 app.get("/api/patients/:id", (req, res) => {
@@ -768,6 +860,13 @@ app.get("/api/safeguards", (req, res) => {
     // key that cannot open what was written before it, which is worth saying out
     // loud rather than discovering through an empty roster.
     unreadableFiles: unreadable,
+    // Whether clinician access is actually partitioned on this process, which is
+    // what decides whether emergency access lifts anything.
+    accessScoping: {
+      careTeams: CARE_UNITS.size,
+      ...accounts.clinicianScopes(),
+      sharedCodesAccepted: !REQUIRE_ACCOUNTS && ROLE_CODES().length > 0,
+    },
     emergencyAccess: {
       available: true,
       open: openGrants(),
@@ -1095,8 +1194,16 @@ app.get("/api/recovery/events", (req, res) => {
     if (provenPatient(req) !== patientId)
       return res.status(403).json({ error: "That is not your record." });
   }
+  // A clinician on a care team reads that team's records, and any they hold an
+  // open emergency grant for. Asking for one record outside that is refused and
+  // recorded; the ward-wide poll simply leaves those records out.
+  if (patientId && !canReach(req, patientId))
+    return refuse(req, res, patientId);
   const events = recoveryEvents.filter(
-    (e) => e.seq > after && (!patientId || e.patientId === patientId),
+    (e) =>
+      e.seq > after &&
+      (!patientId || e.patientId === patientId) &&
+      canReach(req, e.patientId),
   );
   // Audit controls, 45 CFR 164.312(b). This route returns a patient's
   // check-ins, notes and model results, so reaching it is an access to the
@@ -1136,6 +1243,8 @@ app.post("/api/recovery/events", (req, res) => {
     // clinician may write to any, which is the job.
     if (req.role === "patient" && provenPatient(req) !== e.patientId) continue;
     if (req.role === "patient" && CLINICIAN_ONLY_EVENTS.has(e.type)) continue;
+    // Nor may a clinician write to a record outside their care team.
+    if (!canReach(req, e.patientId)) continue;
     if (
       e.type === "message" &&
       (typeof e.text !== "string" || !e.text.trim() || e.text.length > 2000)

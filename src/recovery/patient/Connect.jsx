@@ -3,6 +3,7 @@ import { CheckCircle2, Smartphone, Upload, Watch } from "lucide-react";
 import { actions } from "../useRecovery.js";
 import { SIGNALS } from "../model/profiles.js";
 import { ago, list, numberWord } from "../format.js";
+import RecordCopy from "./RecordCopy.jsx";
 
 const WEARABLES = [
   {
@@ -277,6 +278,7 @@ export default function Connect({ patient: p }) {
         })}
       </div>
       <HealthImport patient={p} />
+      <RecordCopy patient={p} />
       <p className="rx-p-fine">
         Only your care team at {p.hospital} can see this. Sharing stops by
         itself on day {p.windowDays}.

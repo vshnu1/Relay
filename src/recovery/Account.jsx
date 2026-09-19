@@ -2,6 +2,8 @@ import { rememberUser } from "./model/currentUser.js";
 import { useState } from "react";
 import { Activity, ArrowRight } from "lucide-react";
 import { signIn as openPatientProfile } from "./patient/session.js";
+import { useRoster } from "./useRecovery.js";
+import { careTeamsOf, WARD_WIDE } from "./model/careTeam.js";
 import { LANDING_URL } from "./landingUrl.js";
 
 // Signing in as a person, where the product used to sign you in as a role.
@@ -96,6 +98,9 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
   const [name, setName] = useState("");
   const [invite, setInvite] = useState("");
   const [dischargeCode, setDischargeCode] = useState("");
+  // A clinician account is for one care team, or explicitly for the whole ward.
+  const [careTeam, setCareTeam] = useState("");
+  const careTeams = careTeamsOf(useRoster());
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -129,7 +134,7 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
                 password,
                 invite,
                 name,
-                ...(audience === "patient" ? { dischargeCode } : {}),
+                ...(audience === "patient" ? { dischargeCode } : { careTeam }),
               },
               setStatus,
             ),
@@ -279,6 +284,32 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
                     </small>
                   </label>
                 </>
+              )}
+
+              {mode === "register" && audience === "clinician" && (
+                <label className="rx-auth-label" htmlFor="rx-acct-team">
+                  Your care team
+                  <select
+                    id="rx-acct-team"
+                    required
+                    value={careTeam}
+                    onChange={(e) => setCareTeam(e.target.value)}
+                  >
+                    <option value="">Choose the team you work on</option>
+                    {careTeams.map((team) => (
+                      <option key={team} value={team}>
+                        {team}
+                      </option>
+                    ))}
+                    <option value={WARD_WIDE}>
+                      Whole ward (on call across units)
+                    </option>
+                  </select>
+                  <small>
+                    You see this team&apos;s patients. Any other record needs an
+                    emergency access declaration, which is recorded.
+                  </small>
+                </label>
               )}
 
               {mode === "register" && audience === "patient" && (

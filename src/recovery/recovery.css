@@ -3262,7 +3262,8 @@ p.rx-row-summary {
   font-size: 13px;
   font-weight: 600;
 }
-.rx-auth-label input {
+.rx-auth-label input,
+.rx-auth-label select {
   width: 100%;
   height: 45px;
   padding: 0 12px;
@@ -3271,7 +3272,8 @@ p.rx-row-summary {
   background: #fff;
   font-size: 15px;
 }
-.rx-auth-label input:focus {
+.rx-auth-label input:focus,
+.rx-auth-label select:focus {
   border-color: var(--pine);
   outline: 2px solid rgba(36, 73, 61, 0.16);
   outline-offset: 1px;

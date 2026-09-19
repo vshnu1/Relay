@@ -1,0 +1,11 @@
+/* The "copy of your record" card on Your data. Its own file, imported by
+   RecordCopy.jsx, so it adds nothing to recovery.css. */
+.rx .rx-record-copy {
+  margin-top: 16px;
+}
+.rx .rx-record-copy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 12px;
+}
