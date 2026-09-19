@@ -12,6 +12,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyze, simulate, normalize, fhirBundle } from "../shared/engine.js";
 import { scoreWithVesper } from "./vesper.js";
+import { guardEvidence } from "./languageGuard.js";
 try {
   process.loadEnvFile();
 } catch {}
@@ -523,10 +524,20 @@ app.post("/api/ml/score", async (req, res) => {
       patientId || null,
       `${events.length} events; ${evidence.application_state}`,
     );
+    // Every sentence the model wrote passes the clinical boundary before it
+    // leaves the server. A tripped sentence is replaced, not the whole result,
+    // and the redaction is its own audit event.
+    const guarded = guardEvidence(evidence);
+    if (guarded.guard.withheld.length)
+      audit(
+        "ml.guard",
+        patientId || null,
+        guarded.guard.withheld.map((w) => w.path).join(", "),
+      );
     // The patient view needs the decision and its explanation, not every raw event.
     res.json({
-      ...evidence,
-      signals: evidence.signals.map(({ recent, ...signal }) => ({
+      ...guarded,
+      signals: guarded.signals.map(({ recent, ...signal }) => ({
         ...signal,
         recentCount: recent?.length ?? 0,
       })),

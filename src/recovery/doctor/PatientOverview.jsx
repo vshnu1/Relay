@@ -1,6 +1,7 @@
 import { ArrowUp, ChevronDown, ChevronLeft } from "lucide-react";
 import { actions, usePatient } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
+import ModelCard from "./ModelCard.jsx";
 import { ago, clock, dateLong, list } from "../format.js";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";
@@ -238,6 +239,7 @@ export default function PatientOverview({ id }) {
             )}
           </section>
           <CareTeamPanel patient={p} />
+          <ModelCard patient={p} />
           <div className="rx-actions">
             <button
               type="button"
