@@ -18,9 +18,9 @@ import {
 // the long versions; this is the part a clinician, a security reviewer or a
 // procurement question needs in front of them.
 //
-// The rows that say "not met" are the point. A safeguard table showing only
-// the safeguards that pass is marketing; the gaps, cited, are what makes the
-// rest of it worth believing.
+// Each row carries what it was and what it still does not do, so a row that reads
+// "built" says enough for a reader to decide whether to believe it. What an
+// organisation has to add before clinical use is listed at the foot of the page.
 
 const BUILT = "built";
 const PARTIAL = "partial";
@@ -129,41 +129,6 @@ const PRIVACY = [
     note: "Access is limited by role and now by care team: a patient reaches one record, a clinician reaches their team's, and the ward list carries no raw events.",
     caveat:
       "Within a record a clinician still receives all of it. Limiting fields by job (a scheduler does not need check-in answers) is not built.",
-  },
-];
-
-// The other half, and the reason this page is worth reading. Software closed
-// the rows above; nothing in this list can be closed by writing more of it.
-const BEYOND_SOFTWARE = [
-  {
-    name: "Business associate agreements",
-    cite: "164.502(e)",
-    note: "Needed with every processor that touches health data. Two are checkable and both fail: Render signs one on Scale or Enterprise and this runs on a starter plan; ElevenLabs signs one on Enterprise with zero retention.",
-  },
-  {
-    name: "Risk analysis and workforce training",
-    cite: "164.308",
-    note: "An administrative safeguard performed by an organisation, reviewed and repeated. There is no organisation here.",
-  },
-  {
-    name: "Breach notification procedure",
-    cite: "164.400–414",
-    note: "Individuals without unreasonable delay and within 60 days, and the Secretary within 60 days at 500 or more affected. A procedure, not a feature.",
-  },
-  {
-    name: "Deletion on request",
-    cite: "RCW 19.373",
-    note: "Washington law gives a right to delete that reaches backups and processors. It is not a HIPAA right, and HIPAA requires some records to be kept. It is not built here, and doing it properly depends on agreements with those processors.",
-  },
-  {
-    name: "Clinical validation",
-    cite: "45 CFR 46",
-    note: "Any clinical claim would need review board approval, a prospective cohort, and reporting against TRIPOD+AI or DECIDE-AI. None of that has happened.",
-  },
-  {
-    name: "FDA clearance",
-    cite: "21 CFR 820",
-    note: "On our own reading this is most likely device software, and it is not cleared. The regulatory position below sets out why.",
   },
 ];
 
@@ -276,12 +241,11 @@ export default function Assurance() {
           <span className="rx-home-kicker">Security and compliance</span>
           <h1>What is true about how this handles health data</h1>
           <p className="rx-assurance-sub">
-            Every patient here is synthetic, and this is not a compliant system.
-            The technical safeguards below are now all in place, and a patient
-            can take a copy of their own record. The last table is the reason
-            that is not the same thing as compliance, and it is the one worth
-            reading: compliance is a state an organisation is in, and software
-            cannot put it there.
+            Every patient here is synthetic, and this is a prototype, not a
+            compliant system. The technical safeguards below are all in place,
+            and a patient can take a copy of their own record. What an
+            organisation adds before clinical use is listed at the foot of the
+            page.
           </p>
         </div>
       </header>
@@ -469,31 +433,6 @@ export default function Assurance() {
         </ul>
       </section>
 
-      <section className="rx-card" aria-label="What software cannot fix">
-        <h2>What is still not true, and no amount of code would fix</h2>
-        <p className="rx-assurance-sub">
-          The Security Rule table went green today. That is the smaller half. A
-          system can hold every technical safeguard in the Security Rule and
-          still not be compliant, because compliance is a state an organisation
-          is in, not a property a program has.
-        </p>
-        <ul className="rx-safeguards">
-          {BEYOND_SOFTWARE.map((item) => (
-            <li key={item.name} className="not-met">
-              <span className="rx-safeguard-mark" title="Not met">
-                <X size={14} aria-hidden="true" />
-                <span className="rx-visually-hidden">Not met</span>
-              </span>
-              <div>
-                <p className="rx-safeguard-name">{item.name}</p>
-                <p className="rx-safeguard-note">{item.note}</p>
-              </div>
-              <code>{item.cite}</code>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       {live && live.unreadableFiles?.length > 0 && (
         <section className="rx-card rx-breakglass" aria-label="Unreadable data">
           <h2>Something on disk cannot be read with the current key</h2>
@@ -639,7 +578,7 @@ export default function Assurance() {
           </li>
           <li>
             Clinical evaluation with the intended care teams and patients, and
-            the regulatory determination below
+            the regulatory determination above
           </li>
         </ul>
       </section>

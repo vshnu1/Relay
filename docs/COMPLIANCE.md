@@ -221,5 +221,6 @@ IRB, and FDA clearance.
 be compliant**, and that is now the more important half of this document rather
 than the caveat at the end of it. Holding every technical safeguard is a
 property of a program. Compliance is a state an organisation is in. The security
-page carries both tables for that reason: a page showing only the green one
-would be the kind of document this project was written to avoid.
+page says so in its first paragraph and lists, under "Before clinical use", what
+an organisation has to add. The cited table of what is not met lives in this
+document rather than on that page.
