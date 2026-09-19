@@ -1,0 +1,73 @@
+{
+  "program": "post_abdominal_surgery",
+  "injected_signals": [
+    "resting_heart_rate",
+    "hrv_sdnn",
+    "respiratory_rate",
+    "spo2"
+  ],
+  "onset_fraction": 0.7,
+  "ramp_days": 2.0,
+  "control": {
+    "effect_sd": 0.0,
+    "subjects_judged": 41,
+    "rule_detected": 22,
+    "rule_detection_pct": 53.7,
+    "rule_median_lag_days": 5.0,
+    "model_detected": 4,
+    "model_detection_pct": 9.8,
+    "model_median_lag_days": 2.5
+  },
+  "results": [
+    {
+      "effect_sd": 1.0,
+      "subjects_judged": 41,
+      "rule_detected": 31,
+      "rule_detection_pct": 75.6,
+      "rule_median_lag_days": 3,
+      "model_detected": 9,
+      "model_detection_pct": 22.0,
+      "model_median_lag_days": 2
+    },
+    {
+      "effect_sd": 1.5,
+      "subjects_judged": 41,
+      "rule_detected": 36,
+      "rule_detection_pct": 87.8,
+      "rule_median_lag_days": 2.5,
+      "model_detected": 14,
+      "model_detection_pct": 34.1,
+      "model_median_lag_days": 2.5
+    },
+    {
+      "effect_sd": 2.0,
+      "subjects_judged": 41,
+      "rule_detected": 40,
+      "rule_detection_pct": 97.6,
+      "rule_median_lag_days": 1.0,
+      "model_detected": 23,
+      "model_detection_pct": 56.1,
+      "model_median_lag_days": 3
+    },
+    {
+      "effect_sd": 2.5,
+      "subjects_judged": 41,
+      "rule_detected": 41,
+      "rule_detection_pct": 100.0,
+      "rule_median_lag_days": 1,
+      "model_detected": 30,
+      "model_detection_pct": 73.2,
+      "model_median_lag_days": 3.0
+    },
+    {
+      "effect_sd": 3.0,
+      "subjects_judged": 41,
+      "rule_detected": 41,
+      "rule_detection_pct": 100.0,
+      "rule_median_lag_days": 1,
+      "model_detected": 32,
+      "model_detection_pct": 78.0,
+      "model_median_lag_days": 2.0
+    }
+  ]
+}

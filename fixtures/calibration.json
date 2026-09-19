@@ -40,6 +40,7 @@
     {
       "threshold_sd": 1.0,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 957,
@@ -48,6 +49,7 @@
     {
       "threshold_sd": 1.0,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 447,
@@ -56,6 +58,7 @@
     {
       "threshold_sd": 1.5,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 306,
@@ -64,6 +67,7 @@
     {
       "threshold_sd": 1.5,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 104,
@@ -72,6 +76,7 @@
     {
       "threshold_sd": 1.7,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 178,
@@ -80,6 +85,7 @@
     {
       "threshold_sd": 1.7,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 58,
@@ -88,6 +94,7 @@
     {
       "threshold_sd": 1.75,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 148,
@@ -96,6 +103,7 @@
     {
       "threshold_sd": 1.75,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 48,
@@ -104,6 +112,7 @@
     {
       "threshold_sd": 1.8,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 136,
@@ -112,6 +121,7 @@
     {
       "threshold_sd": 1.8,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 42,
@@ -120,6 +130,7 @@
     {
       "threshold_sd": 2.0,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 87,
@@ -128,6 +139,7 @@
     {
       "threshold_sd": 2.0,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 21,
@@ -136,6 +148,7 @@
     {
       "threshold_sd": 2.5,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 24,
@@ -144,6 +157,7 @@
     {
       "threshold_sd": 2.5,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 7,
@@ -152,6 +166,7 @@
     {
       "threshold_sd": 3.0,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 6,
@@ -160,10 +175,20 @@
     {
       "threshold_sd": 3.0,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 1,
       "rate_pct": 0.02
+    },
+    {
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "baseline": "trailing",
+      "subjects": 66,
+      "subject_days": 3477,
+      "fired": 210,
+      "rate_pct": 6.04
     }
   ]
 }
