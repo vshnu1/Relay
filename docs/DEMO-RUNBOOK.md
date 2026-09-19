@@ -50,7 +50,8 @@ demo-ready, not theoretical.**
 
 ## The click path
 
-Roughly 100 seconds of screen time against a 2:07 script. Rehearse it twice.
+Recovery watch, at the root URL. About 100 seconds of screen time against the
+2:11 script. Rehearse twice.
 
 **Before recording**
 
@@ -60,41 +61,47 @@ curl -s localhost:3001/api/status # confirm what to say about voice
 ```
 
 If `voice` is `false`, say "a short consented check-in" and never "voice".
-If `render` is `false`, do not linger on the "Local engine" label beside the
-Simulate button.
 
-Reset to the unanswered state so the check-in is available:
+**1. The watchlist, about 15 seconds.** Open the root URL. Four sections, and
+name all four: *needs your review* (2), *waiting on the patient* (2),
+*nothing new* (3), *not enough data* (1).
 
-```bash
-curl -s -X POST localhost:3001/api/patients/demo-01/scenario \
-  -H 'content-type: application/json' -d '{"scenario":"ambiguous"}'
-```
+Say the line that does the work: **most monitoring tools cannot tell you the
+difference between the last two.** One is a quiet patient, the other is one
+nobody can see.
 
-**1. Dashboard, about 10 seconds.** Four tiles: 3 monitored, 1 ready for
-review, 1 awaiting context, 3 of 3 consented. Then the triage list — Alex
-Morgan "Context needed", Jordan Lee "No review trigger", Sam Rivera "Ready
-for review". Say: a nurse knows who to look at in two seconds.
+Point out the signal counts — "4 of 4 signals", "2 of 4 signals" — and that
+eight patients span six recovery programs.
 
-**2. The timeline, about 40 seconds. This is the demo.** Scroll to resting
-heart rate. Point at the dotted `BASELINE 64.0` line: *that is his normal,
-not a threshold.* Then run down the five charts — HRV -24.1%, respiratory
-+16.8%, sleep -22%, glucose +19.1%. Say the line that matters: **none of
-these is abnormal on its own. 73 bpm is a healthy resting heart rate.**
+**2. Maya Okafor, about 40 seconds. This is the demo.** Click Open.
 
-Mention `Available · 56 baseline samples` under a chart — the evidence behind
-the baseline is on screen.
+Read "What the data shows" down the left: *settled by day three, drifting on
+day seven, all four signals past threshold together for thirty-eight hours,
+no workout recorded that would explain it.*
 
-**3. The evidence sheet, about 20 seconds.** Read the generated summary
-aloud, then say what it does *not* contain: no condition, no risk score, no
-urgency. Point at "Contributing signals".
+Then stop on **Also recorded — sleep is 5.9 hours against a usual 7.2, not
+counted for pneumonia.** Say why that sentence matters: the system is telling
+you what it is deliberately ignoring.
 
-**4. The check-in, about 20 seconds.** Click **Gather patient context**.
-Consent first, then the structured questions. Answer them, save, and show the
-state move to "Ready for review" with the patient's answers folded into the
-summary.
+Then **Data coverage** — which device synced, and when.
 
-**5. Close, about 10 seconds.** **View mock FHIR handoff.** Then the line
-that ends the pitch: Relay never says what is wrong.
+**3. Her answers, about 20 seconds.** The right panel: breathing harder, *a
+lot*. Fever, *not sure*. Medicines, *no*. More active than usual, *no* — that
+is what rules out exertion. Then her own words: *"I get out of breath walking
+to the kitchen, and the cough is worse at night."*
+
+**4. The squares, about 15 seconds.** Scroll to "Readings, day by day". One
+square per day against her own usual, from the hospital stay through day
+nine. Hatched squares are days with no reading. Note the footer: *thresholds
+are demo settings, not clinically validated.*
+
+**5. Close, about 10 seconds.** **Export handoff**, then the closing line:
+Relay never says what is wrong.
+
+**Optional, if there is time:** the Patient view toggle. Day 6 of 30, "your
+care team has a few questions", and the line that keeps the boundary —
+*feeling very unwell? Follow the emergency instructions in your discharge
+papers.*
 
 ## Do not show
 

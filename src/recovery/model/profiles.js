@@ -186,6 +186,43 @@ export const QUESTIONS = {
   },
 };
 
+// These links make the patient check-in follow the model's observed contributors.
+// They are relevance hints only: a matching wearable signal does not prove that a
+// symptom caused it. Questions with no direct wearable counterpart (for example
+// medicine adherence or wound pain) remain in every program as patient context.
+export const QUESTION_SIGNAL_MAP = {
+  pneumonia: {
+    breathing: ["breathing", "oxygen"],
+    fever: ["skinTemp"],
+    medicine: [],
+    activity: ["walkingHr"],
+  },
+  heartFailure: {
+    breathing: ["breathing", "oxygen"],
+    swelling: [],
+    medicine: [],
+    activity: ["walkingHr", "sleep"],
+  },
+  abdominalSurgery: {
+    pain: [],
+    fever: ["skinTemp"],
+    medicine: [],
+    activity: ["walkingHr"],
+  },
+  copd: {
+    breathing: ["breathing", "oxygen"],
+    cough: ["breathing", "oxygen"],
+    medicine: [],
+    activity: ["walkingHr"],
+  },
+  afib: {
+    racing: ["restingHr", "avgHr", "hrv"],
+    breathing: ["breathing"],
+    medicine: [],
+    activity: ["walkingHr", "avgHr"],
+  },
+};
+
 const counted = (signal, over = {}) => ({
   signal,
   dir: SIGNALS[signal].dir,

@@ -51,6 +51,17 @@ function Home({ patient: p }) {
           />
         </div>
       </div>
+      <section className="rx-p-card rx-p-context" aria-label="Your recovery plan">
+        <span className="rx-p-eyebrow">Your recovery plan</span>
+        <p>
+          You are home after {p.profile.after}. Your care team is watching your
+          usual {p.counted.map((signal) => signal.plain.toLowerCase()).join(", ")}.
+        </p>
+        <small>
+          Relay looks for a pattern across readings. One unusual reading alone
+          does not tell us what is happening.
+        </small>
+      </section>
       <section className="rx-p-card" aria-label="Today">
         {p.pending ? (
           <>

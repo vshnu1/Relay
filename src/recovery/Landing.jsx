@@ -7,6 +7,14 @@ import {
   Sparkles,
   Watch,
 } from "lucide-react";
+import { go } from "./useRecovery.js";
+
+export const ROLE_KEY = "rx-role";
+
+function choose(role) {
+  sessionStorage.setItem(ROLE_KEY, role);
+  go(`/${role}`);
+}
 
 const PREVIEW_PATIENTS = [
   {
@@ -47,7 +55,11 @@ export default function Landing() {
           <a href="#rx-care">For care teams</a>
           <a href="#rx-patient">For patients</a>
         </div>
-        <a className="rx-btn primary" href="#/doctor">
+        <a
+          className="rx-btn primary"
+          href="#/doctor"
+          onClick={() => choose("doctor")}
+        >
           Open demo <ArrowRight size={16} />
         </a>
       </nav>
@@ -67,10 +79,18 @@ export default function Landing() {
             check-in; care teams get the context they need to follow up.
           </p>
           <div className="rx-landing-actions">
-            <a className="rx-btn primary tall" href="#/doctor">
+            <a
+              className="rx-btn primary tall"
+              href="#/doctor"
+              onClick={() => choose("doctor")}
+            >
               Start the care team demo <ArrowRight size={17} />
             </a>
-            <a className="rx-btn tall" href="#/patient">
+            <a
+              className="rx-btn tall"
+              href="#/patient"
+              onClick={() => choose("patient")}
+            >
               See the patient journey
             </a>
           </div>

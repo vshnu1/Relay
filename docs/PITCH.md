@@ -47,7 +47,7 @@ Three notes on delivery:
 
 Timings are measured, not estimated: 2.68 words per second, the pace of the
 thirty-second version. Every beat is within a second of its label. Total
-**2:07**; dropping the sentence marked `[CUT FIRST]` gives **2:04**.
+**2:11**; dropping the sentence marked `[CUT FIRST]` gives **2:08**.
 
 If your slot hard-stops at 2:00, cut the whole anomaly-model paragraph — it
 is the newest material and the only one that survives as a Q&A answer rather
@@ -71,19 +71,21 @@ than needing to be said. Everything else is load-bearing.
 > day to day. A reading of 74 is a marked excursion for one person and a
 > Tuesday for another. That is a measurement, not a design opinion.
 
-**The product — 35 seconds**
+**The product — 39 seconds**
 
-> Relay puts every signal on one timeline against that patient's own baseline,
-> and looks for changes that move together and persist.
+> Relay opens on one screen, sorted into four states: needs your review,
+> waiting on the patient, nothing new, and not enough data. That last one
+> matters — it admits when it cannot see, instead of reporting calm.
 >
-> When the data is ambiguous, it does something most monitoring tools cannot:
-> it asks. A short consented check-in collects what no sensor can measure — did
-> you exercise, has your pain changed, did you miss a dose. Those answers come
-> back as structured fields, the analysis runs again, and the clinician gets one
-> evidence packet: what changed, by how much, over how long, what the patient
-> said, and every timestamp behind it.
+> Open a patient and you get the story, not a chart. Settled by day three.
+> Drifting on day seven. All four signals counted for pneumonia past threshold
+> together for thirty-eight hours, with no workout recorded to explain it.
+> Sleep is down too, and it tells you sleep is not counted here.
 >
-> *[demo: Alex Morgan, Context needed → check-in → Ready for review]*
+> When context is missing it asks, and the patient's own words come back into
+> the evidence.
+>
+> *[demo: watchlist → Maya Okafor → day-by-day squares → her check-in answers]*
 
 **The honesty — 29 seconds**
 
@@ -102,6 +104,29 @@ than needing to be said. Everything else is load-bearing.
 > Relay never says what is wrong. It says what changed, by how much, and what
 > the patient reported. The clinician makes every medical judgment — and that
 > constraint is enforced in code, not just in intent.
+
+### Which app the demo shows
+
+Recovery watch, the default at the root URL. Not the earlier workspace, which
+now lives at `#/classic`.
+
+That is a change of plan made deliberately: the new interface is better on
+every axis this pitch depends on. The four application states are its primary
+structure rather than badges on a list, so "nothing new" and "not enough
+data" are visible sections a judge can see. It states what it is *not*
+counting — sleep is down, and it says sleep is not counted for pneumonia. It
+shows which device last synced and when. It covers eight patients across six
+recovery programs instead of three synthetic cases. And the patient side
+exists, with its own consent and check-in.
+
+The day-by-day squares also tell a longer story than a 36-hour window could:
+raised in hospital, settled by day three, diverging from day seven. That arc
+is the product's argument, and the earlier timeline could not show it.
+
+What was lost: the dotted baseline line with shaded deviation was more
+immediately striking than a green band and a row of squares. If the video
+needs one dramatic frame, `#/classic` still has it — but do not cut between
+the two on camera.
 
 ### What changed and why
 

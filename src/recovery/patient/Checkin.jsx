@@ -7,7 +7,7 @@ import { QUESTIONS } from "../model/profiles.js";
 // so skipping the free-text step never loses them.
 export default function Checkin({ patient: p }) {
   const { capabilities } = useRecovery();
-  const questions = p.profile.questions;
+  const questions = p.questions || p.profile.questions;
   const [mode, setMode] = useState("question");
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -56,7 +56,8 @@ export default function Checkin({ patient: p }) {
         <h1 className="rx-p-question">{QUESTIONS[id].text}</h1>
         {step === 0 && (
           <p className="rx-p-question-help">
-            These answers give your care team context for the readings they see.
+            {p.questionReason ||
+              "These answers give your care team context for the readings they see."}
           </p>
         )}
         <div className="rx-p-options" role="group" aria-label="Your answer">

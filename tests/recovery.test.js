@@ -71,6 +71,25 @@ test("a patient's answers move them from waiting to review, and a note attaches 
   store.destroy();
 });
 
+test("check-in questions follow the signals that moved for the discharge program", async () => {
+  const { store, views } = await cohort();
+  const priya = views().priya;
+  assert.deepEqual(
+    priya.questions,
+    ["fever", "pain", "medicine", "activity"],
+    "skin temperature movement puts the fever question first for abdominal recovery",
+  );
+  assert.match(priya.questionReason, /skin temperature/i);
+
+  const aisha = views().aisha;
+  assert.deepEqual(
+    aisha.questions,
+    aisha.profile.questions,
+    "without a persistent change, the program's normal context order is kept",
+  );
+  store.destroy();
+});
+
 // A hand-driven source: the same contract a hardware or server feed would implement.
 function manualSource() {
   let roster;
