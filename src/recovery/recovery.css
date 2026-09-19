@@ -4706,6 +4706,157 @@ p.rx-row-summary {
   color: var(--pine);
 }
 
+/* Responsive application canvases. Keep both workspaces useful from a phone
+   through a presentation display without pinning content to the left edge. */
+.rx-page {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+}
+.rx-pweb .rx-main {
+  display: flex;
+  justify-content: center;
+}
+.rx-pweb .rx-p-screen {
+  width: 100%;
+  max-width: 1500px;
+  margin-inline: auto;
+  padding-inline: clamp(24px, 3vw, 52px);
+}
+.rx-pweb .rx-p-home {
+  grid-template-columns: minmax(360px, 1fr) minmax(400px, 0.9fr);
+  gap: clamp(20px, 2.4vw, 38px);
+}
+.rx-pweb .rx-p-col,
+.rx-pweb .rx-p-card,
+.rx-pweb .rx-p-action,
+.rx-pweb .rx-p-signal,
+.rx-pweb .rx-p-entryrow {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .rx-pweb .rx-p-home {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rx-pweb .rx-p-col {
+    width: 100%;
+  }
+  .rx-pweb .rx-p-col:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 900px) {
+  .rx-doctor:not(.rx-pweb) {
+    flex-direction: column;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-side {
+    position: relative;
+    top: auto;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 3px;
+    overflow-x: auto;
+    padding: 9px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rx-doctor:not(.rx-pweb) .rx-brand {
+    flex: 0 0 auto;
+    padding: 0 8px 0 0;
+    font-size: 21px;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-navlink {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-side-foot {
+    display: none;
+  }
+  .rx-page {
+    padding: 24px clamp(16px, 3vw, 28px) 40px;
+  }
+
+  .rx-pweb .rx-side {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .rx-pweb .rx-side .rx-brand {
+    width: auto;
+    flex: 0 0 auto;
+    padding: 0 12px 0 4px;
+  }
+  .rx-pweb .rx-side-foot {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .rx-pweb .rx-p-screen {
+    padding: 20px 16px 36px;
+  }
+  .rx-pweb .rx-p-col:last-child {
+    display: flex;
+  }
+  .rx-pweb .rx-p-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rx-pweb .rx-p-hello {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .rx-pagehead,
+  .rx-patienthead {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .rx-patienthead .rx-state {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .rx-pweb .rx-p-grid {
+    grid-template-columns: 1fr;
+  }
+  .rx-pweb .rx-p-action {
+    min-height: 74px;
+  }
+  .rx-pweb .rx-p-card {
+    padding: 17px 16px;
+  }
+  .rx-pweb .rx-p-signal > div:first-child {
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .rx-pweb .rx-p-chip {
+    flex-shrink: 0;
+  }
+  .rx-readings {
+    padding: 20px 14px 16px;
+  }
+  .rx-signal {
+    padding: 16px 12px 12px;
+  }
+  .rx-signal > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .rx-signal-side {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
 /* ---------- Voice call controls ---------- */
 .rx-p-call {
   display: flex;

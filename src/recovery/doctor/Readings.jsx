@@ -381,40 +381,26 @@ function summaryLine(s, profile) {
   return `Inside the usual range: ${s.fmt(s.today)} ${unitWord(s)} today, usual ${s.fmt(s.usual)}.`;
 }
 
-// The plain description under the chart: exactly what is drawn, in order.
+// A compact chart caption with only the facts needed to interpret the signal.
 function describe(s, p, homeFrom) {
   const shownDays = p.dayHome + 1 - homeFrom;
   const missing = s.home.slice(homeFrom).filter((d) => d.v === null).length;
-  const parts = [
-    `${s.name}, one reading per day: the seven days before admission on the left, the hospital stay hatched, then the last ${numberWord(shownDays)} ${shownDays === 1 ? "day" : "days"} at home.`,
-  ];
-  if (s.usual === null)
+  const parts = [];
+  if (s.usual === null) parts.push("No pre-admission baseline is available.");
+  else if (s.today === null) parts.push(`Usual: ${s.fmt(s.usual)} ${unitWord(s)}. No reading today.`);
+  else if (s.counted && s.threshold !== null)
     parts.push(
-      "There were no readings before admission, so there is no usual range to compare with.",
+      `Usual ${s.fmt(s.usual)} · trigger ${s.fmt(s.threshold)} · today ${s.fmt(s.today)} ${unitWord(s)}.`,
+      s.moved
+        ? `Past the trigger since day ${s.runStart}.`
+        : `${s.change} from usual; ${s.towardDays > 0 ? `moving ${dirWord(s)}, below the trigger` : "inside the usual range"}.`,
     );
-  else {
+  else
     parts.push(
-      `The green band is ${p.first}'s usual range before admission, around ${s.fmt(s.usual)} ${unitWord(s)}.`,
+      `Usual ${s.fmt(s.usual)} · today ${s.fmt(s.today)} ${unitWord(s)}. Recorded for context only.`,
     );
-    if (s.counted && s.threshold !== null)
-      parts.push(
-        `The amber dashed line is where a change starts to count: ${s.fmt(s.threshold)} ${unitWord(s)} or ${s.watchDir > 0 ? "more" : "less"}, held for 24 hours.`,
-      );
-    else parts.push(`It is recorded but not counted for ${p.profile.after}.`);
-    if (s.today !== null)
-      parts.push(
-        s.moved
-          ? `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual, and the amber shading shows it has been past the line since day ${s.runStart}.`
-          : s.towardDays > 0
-            ? `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual: moving ${dirWord(s)} but not past the line.`
-            : `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual, inside the band.`,
-      );
-    else parts.push("There is no reading for today.");
-  }
   if (missing > 0)
-    parts.push(
-      `${numberWord(missing, true)} of the ${numberWord(shownDays)} days at home ${missing === 1 ? "has" : "have"} no reading; the line breaks there.`,
-    );
+    parts.push(`${missing} of ${shownDays} home days ${missing === 1 ? "is" : "are"} missing.`);
   return parts.join(" ");
 }
 
