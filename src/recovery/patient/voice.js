@@ -181,10 +181,16 @@ export async function startPatientVoiceSession({
   const body = await res.json().catch(() => ({}));
   if (!res.ok || !body.signed_url)
     throw new Error(body.error || "Voice is not available right now.");
-  const [{ Conversation }, { default: rawAudioProcessorUrl }] =
-    await Promise.all([
+  const [
+    { Conversation },
+    { default: rawAudioProcessorUrl },
+    { default: audioConcatProcessorUrl },
+  ] = await Promise.all([
       import("@elevenlabs/client"),
       import("@elevenlabs/client/worklets/rawAudioProcessor.js?url&no-inline"),
+      import(
+        "@elevenlabs/client/worklets/audioConcatProcessor.js?url&no-inline"
+      ),
     ]);
   const status = recoveryStatus(p, questions, {
     analysis,
@@ -196,9 +202,12 @@ export async function startPatientVoiceSession({
   return Conversation.startSession({
     signedUrl: body.signed_url,
     connectionType: "websocket",
-    // Render applies a strict CSP that correctly blocks generated blob/data
-    // worklet modules. Serve the SDK's processor as a same-origin build asset.
-    workletPaths: { rawAudioProcessor: rawAudioProcessorUrl },
+    // Render's strict CSP blocks generated blob/data worklet modules. Serve
+    // both microphone and playback processors as same-origin build assets.
+    workletPaths: {
+      rawAudioProcessor: rawAudioProcessorUrl,
+      audioConcatProcessor: audioConcatProcessorUrl,
+    },
     dynamicVariables: {
       patient_name: p.first,
       program: p.profile.name,
