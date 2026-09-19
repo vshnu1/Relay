@@ -132,54 +132,94 @@ export default function ModelCard({ patient: p }) {
             )}
           </div>
 
-          {a.contributors?.length > 0 && (
-            <>
-              <h3>What moved most</h3>
-              <ul className="rx-model-list">
-                {a.contributors.slice(0, 4).map((c) => (
-                  <li key={c.metric}>
-                    <span>{c.label}</span>
-                    <span className="rx-model-dir">
-                      {c.direction === "above_baseline" ? "above" : "below"}{" "}
-                      usual
-                      {typeof c.robust_deviation === "number" &&
-                        ` · ${c.robust_deviation > 0 ? "+" : ""}${c.robust_deviation.toFixed(1)}`}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+          <div className="rx-model-tables">
+            {a.contributors?.length > 0 && (
+              <div className="rx-model-block">
+                <h3>What moved most</h3>
+                <table className="rx-mtable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Signal</th>
+                      <th scope="col">Against their own usual</th>
+                      <th scope="col" className="num">
+                        Spreads
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {a.contributors.slice(0, 4).map((c) => (
+                      <tr key={c.metric}>
+                        <th scope="row">{c.label}</th>
+                        <td>
+                          {c.direction === "above_baseline" ? "above" : "below"}{" "}
+                          usual
+                        </td>
+                        <td className="num">
+                          {typeof c.robust_deviation === "number"
+                            ? `${c.robust_deviation > 0 ? "+" : "−"}${Math.abs(c.robust_deviation).toFixed(1)}`
+                            : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="rx-model-fine">
+                  One spread is how far this patient usually varies from day to
+                  day, so +4 means four of their own normal days&apos; worth of
+                  change, not four of anyone else&apos;s.
+                </p>
+              </div>
+            )}
 
-          {cohortRows.length > 0 && (
-            <>
-              <h3>This patient among others</h3>
-              <ul className="rx-model-list rx-cohort">
-                {cohortRows.slice(0, 4).map((s) => (
-                  <li key={s.metric}>
-                    <span className="rx-cohort-name">{s.label}</span>
-                    <span className="rx-cohort-own">
-                      <em>{s.baseline.median}</em> {s.unit}
-                    </span>
-                    <span className="rx-cohort-range">
-                      {s.cohort.subjects} others: {s.cohort.lowest_baseline}–
-                      {s.cohort.highest_baseline}
-                    </span>
-                    <span className="rx-cohort-pct">
-                      {s.cohort.patient_percentile === null
-                        ? ""
-                        : `${s.cohort.patient_percentile}th pct`}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="rx-model-fine">
-                Where people differ from each other more than they vary day to
-                day, one shared threshold cannot serve them all. That is why the
-                baseline is this patient&apos;s own.
-              </p>
-            </>
-          )}
+            {cohortRows.length > 0 && (
+              <div className="rx-model-block">
+                <h3>This patient among others</h3>
+                <table className="rx-mtable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Signal</th>
+                      <th scope="col" className="num">
+                        Their usual
+                      </th>
+                      <th scope="col" className="num">
+                        Range across others
+                      </th>
+                      <th scope="col" className="num">
+                        Others
+                      </th>
+                      <th scope="col" className="num">
+                        Percentile
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cohortRows.slice(0, 4).map((s) => (
+                      <tr key={s.metric}>
+                        <th scope="row">{s.label}</th>
+                        <td className="num strong">
+                          {s.baseline.median} {s.unit}
+                        </td>
+                        <td className="num">
+                          {s.cohort.lowest_baseline}–{s.cohort.highest_baseline}
+                        </td>
+                        <td className="num">{s.cohort.subjects}</td>
+                        <td className="num">
+                          {s.cohort.patient_percentile === null
+                            ? "—"
+                            : `${s.cohort.patient_percentile}th`}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="rx-model-fine">
+                  Where people differ from each other more than they vary day to
+                  day, one shared threshold cannot serve them all. That is why
+                  the baseline is this patient&apos;s own.
+                </p>
+              </div>
+            )}
+          </div>
 
           {a.restraint && (
             <>
