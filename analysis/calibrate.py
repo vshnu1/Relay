@@ -20,9 +20,12 @@ import statistics
 from collections import defaultdict
 
 from baseline import MIN_OBSERVATIONS
-from detect import SIGNALS
+from detect import SIGNALS, THRESHOLD_SD
 
-DEFAULT_SD = 1.5
+# Taken from detect.py rather than restated, so this tool always measures the
+# setting the product actually ships. They were allowed to drift apart once:
+# the rule moved to 1.75 and the measurement kept reporting 1.5.
+DEFAULT_SD = THRESHOLD_SD
 DEFAULT_MIN_SIGNALS = 2
 
 
@@ -75,10 +78,55 @@ def fire_rate(rows, threshold_sd, min_signals):
     return fired, len(rows), stats
 
 
-def run(subjects, threshold_sd, min_signals):
+def trailing_fire_rate(rows, threshold_sd, min_signals):
+    """The same rule, but judging each day only against the days before it.
+
+    fire_rate above builds one baseline from the subject's whole series and
+    tests every day against it, including the day itself and every later day.
+    That is hindsight a deployment does not have: detect.py builds the
+    baseline from history before the day under test. The difference is not
+    small, so both are reported rather than one standing for the other.
+    """
+    values = {}
+    for signal in SIGNALS:
+        points = numeric(rows, signal)
+        if len(points) >= MIN_OBSERVATIONS:
+            values[signal] = {
+                i: v
+                for i, v in zip(
+                    [i for i, row in enumerate(rows) if row.get(signal) not in ("", None)],
+                    points,
+                )
+            }
+    if not values:
+        return None
+    fired = judged = 0
+    for day in range(len(rows)):
+        deviating = 0
+        scored = False
+        for by_day in values.values():
+            if day not in by_day:
+                continue
+            history = [v for i, v in by_day.items() if i < day]
+            if len(history) < MIN_OBSERVATIONS:
+                continue
+            sd = statistics.pstdev(history)
+            if sd == 0:
+                continue
+            scored = True
+            if abs((by_day[day] - statistics.mean(history)) / sd) >= threshold_sd:
+                deviating += 1
+        if scored:
+            judged += 1
+            fired += deviating >= min_signals
+    return (fired, judged, values) if judged else None
+
+
+def run(subjects, threshold_sd, min_signals, trailing=False):
     fired = days = usable = 0
+    measure = trailing_fire_rate if trailing else fire_rate
     for rows in subjects.values():
-        result = fire_rate(rows, threshold_sd, min_signals)
+        result = measure(rows, threshold_sd, min_signals)
         if result is None:
             continue
         f, n, _ = result
@@ -86,6 +134,7 @@ def run(subjects, threshold_sd, min_signals):
         days += n
         usable += 1
     return {"threshold_sd": threshold_sd, "min_signals": min_signals,
+            "baseline": "trailing" if trailing else "whole-series",
             "subjects": usable, "subject_days": days, "fired": fired,
             "rate_pct": round(100 * fired / days, 2) if days else None}
 
@@ -125,7 +174,11 @@ def main():
     if args.sweep:
         print(f"\nfire rate on a non-deteriorating cohort (every trigger is a false alarm)")
         print(f"  {'sd':>5}{'signals':>9}{'subjects':>10}{'days':>8}{'fired':>8}{'rate':>8}")
-        for sd in (1.0, 1.5, 2.0, 2.5, 3.0):
+        # The grid has to contain the setting the product actually ships, or
+        # the number quoted in the README cannot be reproduced from this file.
+        # 1.7 and 1.8 bracket it: 1.8 is where the one real coordinated event
+        # in our own data stops being caught.
+        for sd in (1.0, 1.5, 1.7, DEFAULT_SD, 1.8, 2.0, 2.5, 3.0):
             for ms in (2, 3):
                 r = run(subjects, sd, ms)
                 results.append(r)
@@ -135,6 +188,14 @@ def main():
         results.append(r)
         print(f"\nat {DEFAULT_SD} sd and {DEFAULT_MIN_SIGNALS}+ signals: fired on {r['fired']} of "
               f"{r['subject_days']} subject-days ({r['rate_pct']}%) across {r['subjects']} subjects")
+
+    trailing = run(subjects, DEFAULT_SD, DEFAULT_MIN_SIGNALS, trailing=True)
+    results.append(trailing)
+    print(f"\nthe same rule judging each day only against the days before it, which is what"
+          f"\ndetect.py does: fired on {trailing['fired']} of {trailing['subject_days']} "
+          f"subject-days ({trailing['rate_pct']}%) across {trailing['subjects']} subjects.")
+    print("a whole-series baseline includes the day being judged and every later day, so it"
+          "\nreads lower than the rule behaves in a deployment.")
 
     if args.json:
         with open(args.json, "w", encoding="utf-8") as handle:

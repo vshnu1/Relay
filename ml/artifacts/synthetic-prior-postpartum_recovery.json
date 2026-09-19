@@ -1,0 +1,33 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "program": "postpartum_recovery",
+  "training_data": "synthetic",
+  "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+  "n_patients": 40,
+  "core_metrics": [
+    "rhr",
+    "respiratory",
+    "sleep",
+    "temperature"
+  ],
+  "patients_train_val_test": [
+    24,
+    8,
+    8
+  ],
+  "rows_train_val_test": [
+    1542,
+    474,
+    483
+  ],
+  "feature_dim_in": 11,
+  "feature_dim_model": 18,
+  "threshold_raw": 0.0358,
+  "score_scale_raw": 0.0466,
+  "val_exceed_rate": 0.051,
+  "test_exceed_rate": 0.052,
+  "quantile": 0.95,
+  "n_estimators": 200,
+  "seed": 0,
+  "train_seconds": 0.71
+}

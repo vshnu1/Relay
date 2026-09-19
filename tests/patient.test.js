@@ -16,8 +16,14 @@ const { createSimulatedSource } =
 const { derive } = await import("../src/recovery/model/derive.js");
 const { PROFILES, QUESTIONS, isScheduledDay, toModelContext } =
   await import("../src/recovery/model/profiles.js");
-const { checkinDue, checkinWhy, insight, notifications, buildReport } =
-  await import("../src/recovery/model/schedule.js");
+const {
+  checkinDue,
+  checkinWhy,
+  checkinTriggerKey,
+  insight,
+  notifications,
+  buildReport,
+} = await import("../src/recovery/model/schedule.js");
 const { importHealthFile, createScanner } =
   await import("../src/recovery/model/healthImport.js");
 const { readLog, clearLog } = await import("../src/recovery/model/persist.js");
@@ -116,8 +122,20 @@ test("due, insight and notifications follow the readings and the answers", async
   const maya = view("maya");
   assert.equal(
     checkinDue(maya).reason,
+    "readings",
+    "a model finding can open a focused check-in even after the daily one",
+  );
+  const answeredForThisFinding = {
+    ...maya,
+    checkins: [
+      ...maya.checkins,
+      { answeredAt: Date.now(), triggerKey: checkinTriggerKey(maya) },
+    ],
+  };
+  assert.equal(
+    checkinDue(answeredForThisFinding).reason,
     "answered",
-    "answered today, so not due again",
+    "the same model finding does not reopen after the focused check-in",
   );
   const i = insight(maya);
   assert.equal(i.level, "send");

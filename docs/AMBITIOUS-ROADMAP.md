@@ -140,7 +140,7 @@ Not a risk prediction; a description of the work.
 
 ### 9. Make the test rigour visible
 
-Gajjar is a Senior Test Manager. 30 JS tests, 53 ML tests, an API
+Gajjar is a Senior Test Manager. 32 JS tests, 53 ML tests, an API
 integration suite, Python converter tests, a guard-parity check, and a
 false-alarm rate measured on 71 real subjects. A validation section in the
 README, with the numbers. *Effort:* 20 min.

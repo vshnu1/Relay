@@ -36,6 +36,12 @@ const LIMIT = {
   heart_rate: [0, 300],
   weight: [0, 500],
   temperature: [0, 60],
+  walking_speed: [0, 10],
+  step_length: [0, 200],
+  walking_asymmetry: [0, 100],
+  double_support: [0, 100],
+  walking_steadiness: [0, 100],
+  steps: [0, 200000],
 };
 
 export function toModelEvents(readings) {
@@ -45,7 +51,12 @@ export function toModelEvents(readings) {
     const map = METRIC_MAP[signal];
     if (!map) continue;
     const [metric, unit] = map;
-    const [lo, hi] = LIMIT[metric];
+    // A metric added to METRIC_MAP without a plausible range is a mistake, but
+    // it must not take the whole request down with it: drop the signal and let
+    // the rest of the readings be scored.
+    const range = LIMIT[metric];
+    if (!range) continue;
+    const [lo, hi] = range;
     for (const r of list) {
       const ms = Math.round(r.t);
       const key = `${metric}:${ms}`;

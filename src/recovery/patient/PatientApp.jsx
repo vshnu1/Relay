@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Activity,
   CalendarDays,
@@ -58,6 +59,11 @@ const when = (t) =>
 function Home({ patient: p }) {
   const notes = notifications(p);
   const { run, busy, error } = useAnalysis(p);
+  useEffect(() => {
+    // Score the patient's own recent readings when their home screen opens, so
+    // a model-triggered focused check-in is visible before they start one.
+    if (!p.analysis) void run();
+  }, [p.id]);
   const due = checkinDue(p);
   const next = nextScheduledDay(p.dayHome);
   const connected = Object.entries(p.devices).filter(
@@ -92,7 +98,11 @@ function Home({ patient: p }) {
           </div>
           <small>
             {due.due
-              ? "A check-in is due today."
+              ? due.reason === "readings"
+                ? "Relay noticed a change. A focused check-in is ready."
+                : due.reason === "asked"
+                  ? "Your care team requested a check-in."
+                  : "Your daily check-in is ready."
               : next
                 ? `Next check-in on day ${next}.`
                 : "Check-ins complete."}
@@ -203,9 +213,11 @@ function Home({ patient: p }) {
             <div className="rx-p-row model">
               <span>Relay's model</span>
               <p>
-                {p.analysis
-                  ? describeAnalysis(p.analysis, p.profile)
-                  : "Not scored yet. Scoring compares your recent readings with your own usual."}
+                {busy && !p.analysis
+                  ? "Comparing your recent readings with your usual…"
+                  : p.analysis
+                    ? describeAnalysis(p.analysis, p.profile)
+                    : "Not scored yet. Scoring compares your recent readings with your own usual."}
               </p>
               <button
                 type="button"

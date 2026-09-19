@@ -1,34 +1,184 @@
 {
-  "program": "post_abdominal_surgery",
-  "subjects_scored": 64,
-  "states": {
-    "monitoring": 49,
-    "context_needed": 3,
-    "insufficient_data": 12
+  "cohort": {
+    "file": "fixtures/lifesnaps_daily.csv",
+    "subjects": 71,
+    "min_days": 21,
+    "metrics_available": [
+      "hrv",
+      "respiratory",
+      "rhr",
+      "sleep",
+      "spo2",
+      "steps"
+    ]
   },
-  "judged": 52,
-  "false_alarms": 3,
-  "false_positive_rate_pct": 5.77,
-  "escalations": [
-    {
-      "subject": "621e2f9167b776a240011ccb",
-      "state": "context_needed",
-      "anomaly_score": 0.756,
-      "flagged": [
-        "rhr"
+  "not_calibratable": [
+    "heart_failure_recovery",
+    "sepsis_watch",
+    "respiratory_infection",
+    "asthma_recovery",
+    "pulmonary_embolism_recovery",
+    "postpartum_recovery",
+    "joint_replacement_recovery",
+    "post_chemotherapy",
+    "stroke_rehabilitation"
+  ],
+  "programs": {
+    "post_abdominal_surgery": {
+      "program": "post_abdominal_surgery",
+      "subjects_scored": 65,
+      "skipped": 6,
+      "errors": 0,
+      "states": {
+        "monitoring": 49,
+        "context_needed": 3,
+        "insufficient_data": 13
+      },
+      "judged": 52,
+      "false_alarms": 3,
+      "false_positive_rate_pct": 5.77,
+      "escalations": [
+        {
+          "subject": "621e2f9167b776a240011ccb",
+          "state": "context_needed",
+          "anomaly_score": 0.756,
+          "flagged": [
+            "rhr"
+          ]
+        },
+        {
+          "subject": "621e312a67b776a240164d59",
+          "state": "context_needed",
+          "anomaly_score": 0.509,
+          "flagged": []
+        },
+        {
+          "subject": "621e375b67b776a240290cdc",
+          "state": "context_needed",
+          "anomaly_score": 0.594,
+          "flagged": []
+        }
       ]
     },
-    {
-      "subject": "621e312a67b776a240164d59",
-      "state": "context_needed",
-      "anomaly_score": 0.51,
-      "flagged": []
+    "copd_recovery": {
+      "program": "copd_recovery",
+      "subjects_scored": 65,
+      "skipped": 6,
+      "errors": 0,
+      "states": {
+        "monitoring": 50,
+        "insufficient_data": 13,
+        "context_needed": 2
+      },
+      "judged": 52,
+      "false_alarms": 2,
+      "false_positive_rate_pct": 3.85,
+      "escalations": [
+        {
+          "subject": "621e30e467b776a240e817c7",
+          "state": "context_needed",
+          "anomaly_score": 0.587,
+          "flagged": []
+        },
+        {
+          "subject": "621e375b67b776a240290cdc",
+          "state": "context_needed",
+          "anomaly_score": 0.615,
+          "flagged": []
+        }
+      ]
     },
-    {
-      "subject": "621e375b67b776a240290cdc",
-      "state": "context_needed",
-      "anomaly_score": 0.585,
-      "flagged": []
+    "pneumonia_recovery": {
+      "program": "pneumonia_recovery",
+      "subjects_scored": 65,
+      "skipped": 6,
+      "errors": 0,
+      "states": {
+        "monitoring": 50,
+        "insufficient_data": 13,
+        "context_needed": 2
+      },
+      "judged": 52,
+      "false_alarms": 2,
+      "false_positive_rate_pct": 3.85,
+      "escalations": [
+        {
+          "subject": "621e30e467b776a240e817c7",
+          "state": "context_needed",
+          "anomaly_score": 0.568,
+          "flagged": []
+        },
+        {
+          "subject": "621e375b67b776a240290cdc",
+          "state": "context_needed",
+          "anomaly_score": 0.586,
+          "flagged": []
+        }
+      ]
+    },
+    "sleep_apnoea_titration": {
+      "program": "sleep_apnoea_titration",
+      "subjects_scored": 65,
+      "skipped": 6,
+      "errors": 0,
+      "states": {
+        "monitoring": 49,
+        "insufficient_data": 13,
+        "context_needed": 3
+      },
+      "judged": 52,
+      "false_alarms": 3,
+      "false_positive_rate_pct": 5.77,
+      "escalations": [
+        {
+          "subject": "621e30e467b776a240e817c7",
+          "state": "context_needed",
+          "anomaly_score": 0.57,
+          "flagged": []
+        },
+        {
+          "subject": "621e312a67b776a240164d59",
+          "state": "context_needed",
+          "anomaly_score": 0.558,
+          "flagged": []
+        },
+        {
+          "subject": "621e375b67b776a240290cdc",
+          "state": "context_needed",
+          "anomaly_score": 0.557,
+          "flagged": []
+        }
+      ]
+    },
+    "cardiac_recovery": {
+      "program": "cardiac_recovery",
+      "subjects_scored": 65,
+      "skipped": 6,
+      "errors": 0,
+      "states": {
+        "monitoring": 51,
+        "context_needed": 2,
+        "insufficient_data": 12
+      },
+      "judged": 53,
+      "false_alarms": 2,
+      "false_positive_rate_pct": 3.77,
+      "escalations": [
+        {
+          "subject": "621e2f9167b776a240011ccb",
+          "state": "context_needed",
+          "anomaly_score": 0.877,
+          "flagged": [
+            "rhr"
+          ]
+        },
+        {
+          "subject": "621e375b67b776a240290cdc",
+          "state": "context_needed",
+          "anomaly_score": 0.595,
+          "flagged": []
+        }
+      ]
     }
-  ]
+  }
 }

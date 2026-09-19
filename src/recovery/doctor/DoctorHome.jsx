@@ -100,11 +100,15 @@ export default function DoctorHome({ cohort }) {
     .filter((patient) => patient.group === activeGroup)
     .slice(0, 4);
 
+  // The six conditions CMS measures. Cardiac recovery covers two of them at
+  // once, heart attack and bypass surgery, which is why four programs cover
+  // all six. Stroke is not among them and is deliberately absent.
   const HRRP = new Set([
     "heartFailure",
     "pneumonia",
     "copd",
     "jointReplacement",
+    "cardiacRecovery",
   ]);
   const hrrpCount = cohort.filter((patient) =>
     HRRP.has(patient.profileId),
@@ -163,11 +167,12 @@ export default function DoctorHome({ cohort }) {
             penalises for 30-day readmission.
           </h2>
           <p>
-            Heart failure, pneumonia, COPD and hip or knee replacement are four
-            of the six conditions in the Hospital Readmissions Reduction
-            Program. Relay&apos;s monitoring window is that programme&apos;s
-            window. About three quarters of eligible hospitals pay a penalty;
-            the statutory maximum is 3% of Medicare inpatient revenue.
+            Heart failure, pneumonia, COPD, hip or knee replacement, heart
+            attack and bypass surgery are the six conditions in the Hospital
+            Readmissions Reduction Program, and Relay has a program for each.
+            Relay&apos;s monitoring window is that programme&apos;s window.
+            About three quarters of eligible hospitals pay a penalty; the
+            statutory maximum is 3% of Medicare inpatient revenue.
           </p>
         </div>
         <dl className="rx-home-hrrp-ops">
