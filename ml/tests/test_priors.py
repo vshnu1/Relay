@@ -11,10 +11,10 @@ import unittest
 
 import numpy as np
 
-from vesper_ml.model import ModelResult, _score_with_prior, load_prior
-from vesper_ml.programs import PROGRAMS
-from vesper_ml.score import score_request
-from vesper_ml.synthetic import (
+from relay_ml.model import ModelResult, _score_with_prior, load_prior
+from relay_ml.programs import PROGRAMS
+from relay_ml.score import score_request
+from relay_ml.synthetic import (
     CADENCE,
     CLINICAL_LEVELS,
     GAIT_LEVELS,
@@ -22,7 +22,7 @@ from vesper_ml.synthetic import (
     SOURCE_OF,
     synthetic_patient,
 )
-from vesper_ml.train import levels_for
+from relay_ml.train import levels_for
 
 ANCHOR = 1789732800000
 

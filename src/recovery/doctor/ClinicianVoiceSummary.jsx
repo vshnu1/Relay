@@ -95,7 +95,7 @@ export default function ClinicianVoiceSummary({ patient }) {
       setAudioUrl(objectUrl);
       setMessage(
         fresh
-          ? "Fresh Vesper score included."
+          ? "Fresh Relay score included."
           : patient.analysis
             ? "Scoring was unavailable; the most recent model result is labeled in the summary."
             : "Scoring was unavailable; this summary uses the recovery watch readings only.",

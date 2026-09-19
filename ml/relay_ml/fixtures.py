@@ -1,6 +1,6 @@
 """Synthetic fixtures: one request per scenario plus the expected outcome.
 
-All fixtures are generated from `vesper_ml.synthetic` with a fixed anchor and
+All fixtures are generated from `relay_ml.synthetic` with a fixed anchor and
 seed. They contain no real measurements and are safe to commit.
 """
 

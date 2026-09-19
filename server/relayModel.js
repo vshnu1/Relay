@@ -6,11 +6,11 @@ const serverDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(serverDir, "..");
 
 /**
- * Run the versioned Vesper CLI without coupling the API to its Python
+ * Run the versioned Relay CLI without coupling the API to its Python
  * implementation. The caller can fall back to shared/engine.js when the
  * optional runtime is not installed or returns an invalid response.
  */
-export function scoreWithVesper(
+export function scoreWithRelay(
   {
     events,
     context = null,
@@ -31,7 +31,7 @@ export function scoreWithVesper(
   return new Promise((resolveResult, reject) => {
     const child = spawn(
       process.env.PYTHON_BIN || "python3",
-      ["-m", "vesper_ml", "score", "--compact"],
+      ["-m", "relay_ml", "score", "--compact"],
       {
         cwd: root,
         env: {
@@ -54,13 +54,13 @@ export function scoreWithVesper(
     };
     const timer = setTimeout(() => {
       child.kill("SIGTERM");
-      finish(reject, new Error("Vesper scoring timed out."));
+      finish(reject, new Error("Relay scoring timed out."));
     }, timeoutMs);
     child.stdout.on("data", (chunk) => {
       stdout += chunk;
       if (stdout.length > 5_000_000) {
         child.kill("SIGTERM");
-        finish(reject, new Error("Vesper scoring returned too much data."));
+        finish(reject, new Error("Relay scoring returned too much data."));
       }
     });
     child.stderr.on("data", (chunk) => {
@@ -72,9 +72,7 @@ export function scoreWithVesper(
       if (code !== 0)
         return finish(
           reject,
-          new Error(
-            `Vesper scoring exited with code ${code}: ${stderr.trim()}`,
-          ),
+          new Error(`Relay scoring exited with code ${code}: ${stderr.trim()}`),
         );
       try {
         const result = JSON.parse(stdout);
@@ -83,10 +81,10 @@ export function scoreWithVesper(
           typeof result !== "object" ||
           !Array.isArray(result.signals)
         )
-          throw new Error("Vesper response is missing signals.");
+          throw new Error("Relay response is missing signals.");
         finish(resolveResult, result);
       } catch (error) {
-        finish(reject, new Error(`Invalid Vesper response: ${error.message}`));
+        finish(reject, new Error(`Invalid Relay response: ${error.message}`));
       }
     });
     child.stdin.end(request);

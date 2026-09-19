@@ -143,7 +143,7 @@ export default function Metrics({ patient: p }) {
           </button>
         </header>
         <div className="rx-p-now">
-          <strong>{s.today === null ? "—" : s.fmt(s.today)}</strong>
+          <strong>{s.today === null ? "Not available" : s.fmt(s.today)}</strong>
           <span>{s.unit}</span>
           {s.usual !== null && <small>usual {s.fmt(s.usual)}</small>}
           {s.today !== null && s.usual !== null && (

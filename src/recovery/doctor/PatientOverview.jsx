@@ -100,7 +100,7 @@ export default function PatientOverview({ id }) {
           </span>
         </div>
         <div className="rx-patient-summary-stat">
-          <strong>{p.pattern ? `${p.hours}h` : "—"}</strong>
+          <strong>{p.pattern ? `${p.hours}h` : "Not available"}</strong>
           <span>Pattern duration</span>
         </div>
         <div className="rx-patient-summary-stat">

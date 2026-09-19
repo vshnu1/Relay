@@ -2,7 +2,7 @@
   "model_version": "baseline-iforest-v1",
   "program": "pulmonary_embolism_recovery",
   "training_data": "synthetic",
-  "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+  "label": "SYNTHETIC ONLY - trained on relay_ml.synthetic.population; contains no real measurements",
   "n_patients": 40,
   "core_metrics": [
     "respiratory",

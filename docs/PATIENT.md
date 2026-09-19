@@ -67,12 +67,12 @@ chooses to send.
 (`model/mlClient.js` maps app signals to the model's metrics). The patient can score
 from Home or the insight screen; a check-in re-scores with the answers as context.
 The model's state leads the insight, the notifications and the report. Requires
-`VESPER_ML_ENABLED=true` on the server.
+`RELAY_ML_ENABLED=true` on the server.
 
 ## Questions and the ML model
 
 Every question in `QUESTIONS` carries `ml` (the field name in
-`ml/vesper_ml/programs.py`) and `toModel` (option to model value). `toModelContext()`
+`ml/relay_ml/programs.py`) and `toModel` (option to model value). `toModelContext()`
 turns a check-in into the `context` object the ML CLI scores, and `buildReport()`
 includes it. Each watch profile names its ML program (`ml`) and, where relevant, the
 adherence field its medicine question also feeds.

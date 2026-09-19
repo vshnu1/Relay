@@ -5,9 +5,9 @@ import json
 import os
 import unittest
 
-from vesper_ml.fixtures import FIXTURE_DIR, load_fixture
-from vesper_ml.score import score_request
-from vesper_ml.synthetic import SCENARIOS
+from relay_ml.fixtures import FIXTURE_DIR, load_fixture
+from relay_ml.score import score_request
+from relay_ml.synthetic import SCENARIOS
 
 EXPECTED_STATES = {
     "ambiguous": ("context_needed", None),

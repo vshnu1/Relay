@@ -86,7 +86,7 @@ export default function Timeline({ patient, tab, setTab, onStartCheckin }) {
                     <small>{s.source}</small>
                   </div>
                   <div>
-                    <b>{s.current ?? "—"}</b> <small>{s.unit}</small>
+                    <b>{s.current ?? "Not available"}</b> <small>{s.unit}</small>
                     <span className={s.flagged ? "delta flagged" : "delta"}>
                       {s.delta === null
                         ? "No baseline"

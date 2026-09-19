@@ -62,7 +62,7 @@ export function buildClinicianSummary(
       readable(analysis.application_state) ||
       "state unavailable";
     parts.push(
-      `${fresh ? "Fresh Vesper model result" : "Most recent Vesper model result"}: ${modelState}.`,
+      `${fresh ? "Fresh Relay model result" : "Most recent Relay model result"}: ${modelState}.`,
     );
     if (typeof analysis.anomaly_score === "number")
       parts.push(`Model anomaly score: ${analysis.anomaly_score.toFixed(2)}.`);
@@ -77,7 +77,7 @@ export function buildClinicianSummary(
       parts.push(`Model contributors: ${contributors.join("; ")}.`);
   } else {
     parts.push(
-      "Vesper has not returned a score for this briefing. The summary is based on the recovery watch rules and readings only.",
+      "Relay has not returned a score for this briefing. The summary is based on the recovery watch rules and readings only.",
     );
   }
 

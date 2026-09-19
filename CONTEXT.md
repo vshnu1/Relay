@@ -1,7 +1,7 @@
 https://chatgpt.com/s/cx_6aadd3b42e2c8191a438c42558c7e200
 
 The idea
-Vesper helps care teams understand what is happening to patients recovering at home.
+Relay helps care teams understand what is happening to patients recovering at home.
 Patients already generate health data through:
 Apple Watch or WHOOP
 Continuous glucose monitors
@@ -10,7 +10,7 @@ Medication records
 Sleep and activity tracking
 Symptom check-ins
 The problem is that this information lives in separate places. Clinicians cannot constantly review every measurement from every patient.
-Vesper combines the information and answers:
+Relay combines the information and answers:
 What changed, how unusual is it for this patient, and what information does the clinician need to review?
 
 Who it is for
@@ -19,8 +19,8 @@ Patients during the first 14 days after major abdominal surgery.
 These patients may be stable enough to recover at home but still require monitoring for unexpected changes.
 We are using one specific scenario to make the demonstration believable. The larger product could eventually support other recovery and chronic-care programs.
 
-What Vesper does
-Vesper:
+What Relay does
+Relay:
 Receives data from simulated health devices.
 Creates a baseline for the individual patient.
 Looks for several measurements changing together.
@@ -30,18 +30,18 @@ Uses ElevenLabs to ask the patient focused questions.
 Reanalyzes the case with the patient’s answers.
 Creates one evidence packet for the clinician.
 Produces a mock EHR/FHIR handoff.
-Vesper does not diagnose the patient or recommend treatment.
+Relay does not diagnose the patient or recommend treatment.
 
 Example
 Maya is recovering at home six days after surgery.
-Vesper notices:
+Relay notices:
 Resting heart rate is rising.
 HRV is falling.
 Respiratory rate is elevated.
 Sleep is becoming fragmented.
 Glucose variability is increasing.
 The individual readings are not enough to explain what is happening.
-Vesper marks the case:
+Relay marks the case:
 Context needed
 An ElevenLabs voice assistant asks Maya a short set of questions:
 Did you exercise recently?
@@ -111,7 +111,7 @@ The conversation produces structured answers:
   "pain_change": "worse",
   "medication_missed": false
 }
-Those answers are sent to Vesper and become part of the next ML and rules-based analysis.
+Those answers are sent to Relay and become part of the next ML and rules-based analysis.
 
 The ML model
 Use an Isolation Forest anomaly-detection model.
@@ -246,7 +246,7 @@ More than four polished screens
 Use synthetic data and simulated device connectors.
 
 Final pitch
-Hospitals face a difficult transition: some patients no longer need an inpatient bed, but they still need meaningful observation as they recover at home. Vesper combines fragmented wearable, glucose, oxygen, medication, and symptom data into one patient-specific evidence story. It identifies unusual changes relative to the patient’s baseline and uses an ElevenLabs voice check-in to gather information that devices cannot provide. Render Workflows then converts that combined evidence into a clear, traceable case for clinical review.
+Hospitals face a difficult transition: some patients no longer need an inpatient bed, but they still need meaningful observation as they recover at home. Relay combines fragmented wearable, glucose, oxygen, medication, and symptom data into one patient-specific evidence story. It identifies unusual changes relative to the patient’s baseline and uses an ElevenLabs voice check-in to gather information that devices cannot provide. Render Workflows then converts that combined evidence into a clear, traceable case for clinical review.
 Short version
-Vesper makes recovery between visits visible. It combines fragmented home-health data, detects unusual changes, gathers missing context through voice, and gives clinicians one explainable evidence packet.
+Relay makes recovery between visits visible. It combines fragmented home-health data, detects unusual changes, gathers missing context through voice, and gives clinicians one explainable evidence packet.
 

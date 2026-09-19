@@ -120,7 +120,7 @@ def model_result(rows, subject, program, onset):
     is "did it speak within the week, and on which day" rather than "what did
     it think a month later".
     """
-    from vesper_ml.score import score_request
+    from relay_ml.score import score_request
 
     last_state = "insufficient_data"
     for day in range(onset, min(onset + WATCH_DAYS + 1, len(rows))):
@@ -201,7 +201,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        import vesper_ml.score  # noqa: F401
+        import relay_ml.score  # noqa: F401
     except ImportError as exc:
         sys.exit(f"cannot import the engine ({exc}). Run with PYTHONPATH=ml and numpy/scikit-learn installed.")
 

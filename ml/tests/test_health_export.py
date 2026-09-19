@@ -2,7 +2,7 @@ import io
 import os
 import unittest
 
-from vesper_ml.health_export import read_export, resolve_path, source_category
+from relay_ml.health_export import read_export, resolve_path, source_category
 
 XML = b"""<HealthData>
 <Record type="HKQuantityTypeIdentifierOxygenSaturation" sourceName="Test Watch" unit="%" value="0.98" startDate="2026-09-18 12:10:00 -0400" endDate="2026-09-18 12:10:00 -0400"/>

@@ -1,6 +1,6 @@
 import unittest
 
-from vesper_ml.contracts import ContractError, normalize, normalize_context, parse_timestamp, to_iso
+from relay_ml.contracts import ContractError, normalize, normalize_context, parse_timestamp, to_iso
 
 
 def event(**over):

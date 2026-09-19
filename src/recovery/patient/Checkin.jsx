@@ -473,7 +473,7 @@ export default function Checkin({ patient: p }) {
             </button>
             <small className="rx-p-fine">
               {modelUsed
-                ? "Questions are focused using the latest Vesper score and your discharge plan."
+                ? "Questions are focused using the latest Relay score and your discharge plan."
                 : scoreAttempted
                   ? "The scorer could not be reached, so questions use your discharge plan and recent reading changes."
                   : checkinPlan.mode === "insufficient"
@@ -702,7 +702,7 @@ export default function Checkin({ patient: p }) {
             ) : (
               <p className="rx-p-aside-copy">No specific reading change is driving this check-in. Relay will ask about your recovery plan and how you feel.</p>
             )}
-            <small>{modelUsed ? "Vesper score checked for this session." : scoreAttempted ? "Using recent readings and your discharge plan." : "A fresh score is requested when you begin."}</small>
+            <small>{modelUsed ? "Relay score checked for this session." : scoreAttempted ? "Using recent readings and your discharge plan." : "A fresh score is requested when you begin."}</small>
           </section>
           <section className="rx-p-card rx-p-next-card">
             <h2>At your pace</h2>

@@ -1,10 +1,10 @@
 """Command line boundary.
 
-    python -m vesper_ml score < request.json > evidence.json
-    python -m vesper_ml synthetic --scenario ambiguous [--context]
-    python -m vesper_ml validate-export [--export PATH]   (reads HEALTH_EXPORT_XML)
-    python -m vesper_ml train-synthetic
-    python -m vesper_ml fixtures
+    python -m relay_ml score < request.json > evidence.json
+    python -m relay_ml synthetic --scenario ambiguous [--context]
+    python -m relay_ml validate-export [--export PATH]   (reads HEALTH_EXPORT_XML)
+    python -m relay_ml train-synthetic
+    python -m relay_ml fixtures
 
 `score` reads one JSON document on stdin and writes one on stdout. It never
 touches the filesystem, so a workflow task can shell out to it safely.
@@ -74,7 +74,7 @@ def cmd_train_synthetic(args):
 
 
 def build_parser():
-    p = argparse.ArgumentParser(prog="vesper_ml", description=f"Vesper ML ({MODEL_VERSION})")
+    p = argparse.ArgumentParser(prog="relay_ml", description=f"Relay ML ({MODEL_VERSION})")
     sub = p.add_subparsers(dest="command", required=True)
 
     s = sub.add_parser("score", help="score a JSON request from stdin")

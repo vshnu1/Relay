@@ -178,7 +178,7 @@ function Home({ patient: p }) {
               <div className="rx-p-row" key={s.id}>
                 <span>{s.plain}</span>
                 <strong>
-                  {s.today === null ? "—" : `${s.fmt(s.today)} ${s.unit}`}
+                  {s.today === null ? "Not available" : `${s.fmt(s.today)} ${s.unit}`}
                 </strong>
                 <span className={`rx-p-chip ${s.towardDays ? "changed" : ""}`}>
                   {s.today === null

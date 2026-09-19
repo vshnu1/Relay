@@ -128,7 +128,7 @@ export default function Root() {
 // them. Labelled as such so a judge is never misled about what it is.
 // When access codes are configured the role switcher is gone: the signed-in
 // role decides the view, and offering a toggle would contradict the gate. The
-// note has to change with it — claiming no login stands between the views
+// note has to change with it, claiming no login stands between the views
 // would be false once one does.
 function DemoBar({ isPatient, roster, actingId, onSelect }) {
   const sourceLabel = useSourceLabel();
@@ -191,7 +191,7 @@ function DemoBar({ isPatient, roster, actingId, onSelect }) {
       <p className="rx-demobar-note">
         {gated
           ? "Access codes are shared per role, checked by the server. A real deployment gives each person an account."
-          : "Demo only — a real deployment separates these by account. No login stands between the two views here."}
+          : "Demo only, a real deployment separates these by account. No login stands between the two views here."}
       </p>
     </div>
   );

@@ -129,9 +129,6 @@ export default function DoctorHome({ cohort }) {
           </p>
           <div className="rx-home-hero-meta">
             <span>
-              <UsersRound size={15} /> {cohort.length} patients in this demo
-            </span>
-            <span>
               <ShieldCheck size={15} /> Synthetic records only
             </span>
           </div>
@@ -161,27 +158,27 @@ export default function DoctorHome({ cohort }) {
         aria-label="Readmission programme alignment"
       >
         <div>
-          <span className="rx-eyebrow">Why these thirty days</span>
-          <h2>
-            {hrrpCount} of {cohort.length} patients are on a condition CMS
-            penalises for 30-day readmission.
-          </h2>
+          <span className="rx-eyebrow">30-day recovery overview</span>
+          <h2>Connect discharge to a clearer follow-up picture</h2>
           <p>
-            Heart failure, pneumonia, COPD, hip or knee replacement, heart
-            attack and bypass surgery are the six conditions in the Hospital
-            Readmissions Reduction Program, and Relay has a program for each.
-            Relay&apos;s monitoring window is that programme&apos;s window.
-            About three quarters of eligible hospitals pay a penalty; the
-            statutory maximum is 3% of Medicare inpatient revenue.
+            {hrrpCount} follow-up profiles align with a CMS readmission
+            condition. Relay brings wearable trends and patient check-ins
+            together so your team can focus on changes that persist.
           </p>
         </div>
         <dl className="rx-home-hrrp-ops">
-          <div>
+          <div className="priority">
+            <span className="rx-home-hrrp-icon">
+              <CircleAlert size={17} />
+            </span>
             <dt>Need review today</dt>
             <dd>{reviewCount}</dd>
           </div>
-          <div>
-            <dt>Instead of manual chart checks</dt>
+          <div className="cohort">
+            <span className="rx-home-hrrp-icon">
+              <UsersRound size={17} />
+            </span>
+            <dt>Synthetic patient records</dt>
             <dd>{cohort.length}</dd>
           </div>
         </dl>

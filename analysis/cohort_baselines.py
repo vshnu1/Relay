@@ -6,7 +6,7 @@ someone is looking at the number it justifies: no single threshold serves
 both ends of that range.
 
 Source is LifeSnaps — 71 Fitbit Sense wearers over roughly four months,
-CC-BY-4.0. Output is keyed by the metric names in ml/vesper_ml/metrics.py so
+CC-BY-4.0. Output is keyed by the metric names in ml/relay_ml/metrics.py so
 the ML layer can annotate signals without a translation step.
 
 Usage:

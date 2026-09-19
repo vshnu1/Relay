@@ -11,7 +11,7 @@ import {
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyze, simulate, normalize, fhirBundle } from "../shared/engine.js";
-import { scoreWithVesper } from "./vesper.js";
+import { scoreWithRelay } from "./relayModel.js";
 import { guardEvidence } from "./languageGuard.js";
 try {
   process.loadEnvFile();
@@ -74,7 +74,7 @@ app.disable("x-powered-by");
 app.use(express.json({ limit: "3mb" }));
 // Role access codes. Two shared codes, not per-user accounts: a clinician and
 // a patient sign in with different codes and the server records which. That is
-// honest about what it is — production needs per-account identity, which
+// honest about what it is, production needs per-account identity, which
 // docs/PRIVACY.md states plainly. APP_ACCESS_TOKEN still works on its own and
 // grants the clinician role, so nothing that worked before stops working.
 const ROLE_CODES = () => {
@@ -162,7 +162,7 @@ app.get("/api/status", (req, res) =>
 // The cohort is the clinician's view of the ward. A patient code must not
 // return it. This is the one role rule a shared code can actually enforce:
 // it cannot tell WHICH patient is signed in, so it cannot scope to a single
-// record — see docs/PRIVACY.md.
+// record, see docs/PRIVACY.md.
 app.get("/api/patients", (req, res) => {
   if (req.role === "patient")
     return res
@@ -205,24 +205,24 @@ async function pipeline(events, patientContext, patient) {
       execution: { mode: "Render Workflows", id: result.id },
     };
   }
-  if (process.env.VESPER_ML_ENABLED === "true") {
+  if (process.env.RELAY_ML_ENABLED === "true") {
     try {
-      const evidence = await scoreWithVesper({
+      const evidence = await scoreWithRelay({
         events,
         context: patientContext,
         program:
           patient.program ||
-          process.env.VESPER_PROGRAM ||
+          process.env.RELAY_PROGRAM ||
           "post_abdominal_surgery",
         patientId: patient.id,
       });
       return {
         evidence,
-        execution: { mode: "Local Vesper ML", id: randomUUID() },
+        execution: { mode: "Local Relay ML", id: randomUUID() },
       };
     } catch (error) {
       console.warn(
-        `Vesper ML unavailable; using deterministic engine: ${error.message}`,
+        `Relay ML unavailable; using deterministic engine: ${error.message}`,
       );
     }
   }
@@ -502,14 +502,27 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
     process.env.NODE_ENV === "production" &&
     process.env.ELEVENLABS_DEMO_SUMMARY_ENABLED !== "true"
   )
-    return res.status(503).json({ error: "Clinician voice summaries are disabled for this deployment." });
+    return res
+      .status(503)
+      .json({
+        error: "Clinician voice summaries are disabled for this deployment.",
+      });
   if (req.body?.demoSynthetic !== true)
-    return res.status(403).json({ error: "Voice summaries are for synthetic demo data only." });
+    return res
+      .status(403)
+      .json({ error: "Voice summaries are for synthetic demo data only." });
   const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
   if (text.length < 20 || text.length > 3000)
-    return res.status(400).json({ error: "Summary text must be between 20 and 3,000 characters." });
-  if (!process.env.ELEVENLABS_API_KEY || (!process.env.ELEVENLABS_VOICE_ID && !process.env.ELEVENLABS_AGENT_ID))
-    return res.status(503).json({ error: "ElevenLabs speech is not configured." });
+    return res
+      .status(400)
+      .json({ error: "Summary text must be between 20 and 3,000 characters." });
+  if (
+    !process.env.ELEVENLABS_API_KEY ||
+    (!process.env.ELEVENLABS_VOICE_ID && !process.env.ELEVENLABS_AGENT_ID)
+  )
+    return res
+      .status(503)
+      .json({ error: "ElevenLabs speech is not configured." });
 
   try {
     let voiceId = process.env.ELEVENLABS_VOICE_ID || cachedSummaryVoiceId;
@@ -521,7 +534,8 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
           signal: AbortSignal.timeout(12000),
         },
       );
-      if (!agentResponse.ok) throw new Error("Could not read the configured voice.");
+      if (!agentResponse.ok)
+        throw new Error("Could not read the configured voice.");
       const agent = await agentResponse.json();
       voiceId = agent?.conversation_config?.tts?.voice_id;
       if (!voiceId) throw new Error("The configured agent has no voice ID.");
@@ -542,18 +556,26 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
     );
     if (!speech.ok) {
       if (speech.status === 401)
-        throw new Error("The ElevenLabs API key needs the text_to_speech permission.");
+        throw new Error(
+          "The ElevenLabs API key needs the text_to_speech permission.",
+        );
       throw new Error(`ElevenLabs speech request failed (${speech.status}).`);
     }
     const audio = Buffer.from(await speech.arrayBuffer());
     if (!audio.length || audio.length > 8_000_000)
       throw new Error("ElevenLabs returned an invalid audio response.");
-    audit("clinician.voice_summary.generated", null, `${text.length} characters`);
+    audit(
+      "clinician.voice_summary.generated",
+      null,
+      `${text.length} characters`,
+    );
     res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("Cache-Control", "no-store");
     res.status(200).send(audio);
   } catch (error) {
-    res.status(503).json({ error: error.message || "Unable to prepare voice summary." });
+    res
+      .status(503)
+      .json({ error: error.message || "Unable to prepare voice summary." });
   }
 });
 
@@ -572,7 +594,7 @@ app.post("/api/ml/score", async (req, res) => {
     return res
       .status(400)
       .json({ error: "Supply 1-10,000 measurement records." });
-  if (process.env.VESPER_ML_ENABLED !== "true")
+  if (process.env.RELAY_ML_ENABLED !== "true")
     return res.status(503).json({
       // This reaches a clinician's screen, so it says what is true of the
       // deployment rather than naming the switch that turns it on.
@@ -581,7 +603,7 @@ app.post("/api/ml/score", async (req, res) => {
       code: "ML_DISABLED",
     });
   try {
-    const evidence = await scoreWithVesper({
+    const evidence = await scoreWithRelay({
       events,
       context,
       program,

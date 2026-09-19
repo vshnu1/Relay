@@ -33,7 +33,7 @@ services:
       # The model is a Python program and this service runs the Node runtime,
       # so it stays off here. Flip it in the dashboard only if the build has
       # installed requirements.txt and PYTHON_BIN points at that interpreter.
-      - key: VESPER_ML_ENABLED
+      - key: RELAY_ML_ENABLED
         value: "false"
       - key: RENDER_API_KEY
         sync: false
@@ -43,3 +43,7 @@ services:
         sync: false
       - key: ELEVENLABS_AGENT_ID
         sync: false
+      # This deployment is currently a synthetic-data demo. Keep clinician
+      # speech summaries available; turn this off before loading real records.
+      - key: ELEVENLABS_DEMO_SUMMARY_ENABLED
+        value: "true"

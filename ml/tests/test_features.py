@@ -2,19 +2,19 @@ import unittest
 
 import numpy as np
 
-from vesper_ml.baseline import rolling_baseline
-from vesper_ml.contracts import normalize
-from vesper_ml.features import build_features
-from vesper_ml.programs import get_program
-from vesper_ml.synthetic import simulate
-from vesper_ml.windows import build_grid
+from relay_ml.baseline import rolling_baseline
+from relay_ml.contracts import normalize
+from relay_ml.features import build_features
+from relay_ml.programs import get_program
+from relay_ml.synthetic import simulate
+from relay_ml.windows import build_grid
 
 ANCHOR = 1789732800000
 PROGRAM = get_program("post_abdominal_surgery")
 
 
 def daily_events(days, metric="rhr", unit="bpm", value=60.0, start_ms=ANCHOR - 30 * 86_400_000):
-    from vesper_ml.contracts import from_epoch_ms, to_iso
+    from relay_ml.contracts import from_epoch_ms, to_iso
 
     return [
         {"metric": metric, "value": value + (i % 3) * 0.5, "unit": unit, "timestamp": to_iso(from_epoch_ms(start_ms + i * 86_400_000)), "source": "wearable"}

@@ -1,4 +1,4 @@
-"""Vesper ML: personalized anomaly engine behind a stdin/stdout CLI.
+"""Relay ML: personalized anomaly engine behind a stdin/stdout CLI.
 
 The package never reads private data except through the HEALTH_EXPORT_XML
 environment variable or an explicit CLI path, and it never writes

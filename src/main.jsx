@@ -2,6 +2,9 @@ import { createRoot } from "react-dom/client";
 
 // Two apps share this entry and never load together, so their global styles cannot
 // collide: the recovery watch (default) and the original workspace at #/classic.
+// The ElevenLabs browser SDK is also dynamically imported only when a voice
+// session starts. Its LiveKit transport is a large standalone chunk, not part of
+// the initial page download; keeping it lazy avoids slowing every visit.
 const root = createRoot(document.getElementById("root"));
 if (location.hash.startsWith("#/classic"))
   Promise.all([import("./App.jsx"), import("./styles/index.css")]).then(

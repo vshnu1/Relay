@@ -5,8 +5,8 @@
 // remembered to run; the pitch said "enforced in code" and it was enforced by
 // habit. This is the difference.
 //
-// Redact, do not reject. The regexes are deliberately dumb — they flag "this is
-// not a diagnosis" as readily as "this is a diagnosis" — so failing a whole score
+// Redact, do not reject. The regexes are deliberately dumb, they flag "this is
+// not a diagnosis" as readily as "this is a diagnosis", so failing a whole score
 // because a sentence tripped one would be brittle. The numbers stay; the prose is
 // replaced with a sentence that only says what changed, and the redaction is
 // recorded so the UI and the audit log both know a sentence was withheld.

@@ -1,11 +1,11 @@
-# ML handoff — `ml/vesper_ml`
+# ML handoff — `ml/relay_ml`
 
 Owner: Pranav (ML and synthetic). Branch: `Pranav`. Scope: `ml/**`, `docs/ML.md`.
 Progress log and decisions: [`ml/PROGRESS.md`](../ml/PROGRESS.md).
 
 One personalized anomaly engine behind a stdin/stdout CLI. It accepts the
 event contract the app already uses, returns a superset of the evidence object
-the UI already renders, and adds the fields the Vesper brief asks for. It does
+the UI already renders, and adds the fields the Relay brief asks for. It does
 not diagnose, predict risk, or decide that a patient is safe.
 
 ## Run it
@@ -18,23 +18,23 @@ PYTHONPATH=ml python3 -m unittest discover -s ml/tests -t ml
 ```
 
 ```bash
-PYTHONPATH=ml python3 -m vesper_ml synthetic --scenario postoperative_drift | PYTHONPATH=ml python3 -m vesper_ml score
+PYTHONPATH=ml python3 -m relay_ml synthetic --scenario postoperative_drift | PYTHONPATH=ml python3 -m relay_ml score
 ```
 
 ```bash
-PYTHONPATH=ml python3 -m vesper_ml synthetic --scenario review --context | PYTHONPATH=ml python3 -m vesper_ml score --compact
+PYTHONPATH=ml python3 -m relay_ml synthetic --scenario review --context | PYTHONPATH=ml python3 -m relay_ml score --compact
 ```
 
 ```bash
-PYTHONPATH=ml python3 -m vesper_ml fixtures
+PYTHONPATH=ml python3 -m relay_ml fixtures
 ```
 
 ```bash
-PYTHONPATH=ml python3 -m vesper_ml train-synthetic
+PYTHONPATH=ml python3 -m relay_ml train-synthetic
 ```
 
 ```bash
-HEALTH_EXPORT_XML=/path/to/export.xml PYTHONPATH=ml python3 -m vesper_ml validate-export
+HEALTH_EXPORT_XML=/path/to/export.xml PYTHONPATH=ml python3 -m relay_ml validate-export
 ```
 
 Subcommands: `score` (stdin JSON -> stdout JSON, touches no files),
@@ -153,7 +153,7 @@ real wearables (see Anson's `docs/INTEROP.md`).
 
 ## Programs
 
-Configuration only, in `ml/vesper_ml/programs.py`. Fourteen monitoring
+Configuration only, in `ml/relay_ml/programs.py`. Fourteen monitoring
 programs share the engine: `post_abdominal_surgery` (the one measured most),
 `copd_recovery`, `pneumonia_recovery`, `heart_failure_recovery`,
 `sepsis_watch`, `respiratory_infection`, `asthma_recovery`,
@@ -161,7 +161,7 @@ programs share the engine: `post_abdominal_surgery` (the one measured most),
 `postpartum_recovery`, `joint_replacement_recovery`, `post_chemotherapy`,
 `stroke_rehabilitation` (functional recovery only; it does not detect or rule
 out a new stroke) and `cardiac_recovery`. Every one has a synthetic-only prior
-under `ml/artifacts/`, trained by `ml/vesper_ml/train.py` on a population
+under `ml/artifacts/`, trained by `ml/relay_ml/train.py` on a population
 drawn from that program's own core metrics, so a patient with days of history
 is scored rather than refused. Each lists its metrics, core metrics
 for coverage, relevant check-in fields, and one or two illustrative protocol
@@ -223,7 +223,7 @@ without touching `shared/engine.js`:
 
 1. Add a Python runtime to the workflow service (Render lets a Node service
    install Python; `numpy` and `scikit-learn` are the only packages).
-2. In a new task, spawn `python3 -m vesper_ml score --compact` with
+2. In a new task, spawn `python3 -m relay_ml score --compact` with
    `PYTHONPATH=ml` and write the request JSON to stdin; parse stdout.
 3. The result already contains `signals` (the server's completeness check),
    `state`, `summary`, `coordinated`, `context`, `rule`, so it can replace the

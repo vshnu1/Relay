@@ -21,8 +21,9 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
           <span className="rx-brand-mark">
             <Activity size={18} strokeWidth={2.4} />
           </span>
-          relay
+          Relay
         </a>
+        <span className="rx-side-heading">Care team</span>
         <a
           className="rx-navlink"
           href="#/doctor"
@@ -35,7 +36,9 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
         <a
           className="rx-navlink"
           href="#/doctor/watchlist"
-          aria-current={page === "watchlist" || page === "patient" ? "page" : undefined}
+          aria-current={
+            page === "watchlist" || page === "patient" ? "page" : undefined
+          }
         >
           <span className="rx-navlink-label">
             <ListChecks size={16} aria-hidden="true" /> Recovery watch
@@ -52,8 +55,8 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
           </span>
         </a>
         <div className="rx-side-foot">
-          <p>Relay clinician workspace</p>
-          <small>Demo only · synthetic patient records</small>
+          <p>Demo workspace</p>
+          <small>Synthetic patient records</small>
         </div>
       </nav>
       <main className="rx-main">

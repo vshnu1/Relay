@@ -65,7 +65,7 @@ def train_synthetic_prior(program_key="post_abdominal_surgery", n_patients=40, d
         "model_version": MODEL_VERSION,
         "program": program.key,
         "training_data": "synthetic",
-        "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+        "label": "SYNTHETIC ONLY - trained on relay_ml.synthetic.population; contains no real measurements",
         "n_patients": n_patients,
         "core_metrics": list(program.core),
         "patients_train_val_test": [n_train, n_val, n - n_train - n_val],

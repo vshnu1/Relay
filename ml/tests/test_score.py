@@ -4,9 +4,9 @@ import subprocess
 import sys
 import unittest
 
-from vesper_ml.contracts import APPLICATION_STATES
-from vesper_ml.score import score_request
-from vesper_ml.synthetic import ENGINE_CONTEXT, simulate
+from relay_ml.contracts import APPLICATION_STATES
+from relay_ml.score import score_request
+from relay_ml.synthetic import ENGINE_CONTEXT, simulate
 
 ANCHOR = 1789732800000
 ML_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -99,7 +99,7 @@ class CliTest(unittest.TestCase):
     def test_score_roundtrip_via_stdin(self):
         req = json.dumps({"events": simulate("ambiguous", ANCHOR), "context": None, "program": "post_abdominal_surgery", "analyzedThrough": "2026-09-18T12:00:00Z"})
         env = {**os.environ, "PYTHONPATH": ML_DIR}
-        proc = subprocess.run([sys.executable, "-m", "vesper_ml", "score", "--compact"], input=req, capture_output=True, text=True, env=env, cwd=ML_DIR)
+        proc = subprocess.run([sys.executable, "-m", "relay_ml", "score", "--compact"], input=req, capture_output=True, text=True, env=env, cwd=ML_DIR)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         out = json.loads(proc.stdout)
         self.assertEqual(out["state"], "context")
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
 class PriorModelTest(unittest.TestCase):
     def test_short_history_uses_synthetic_prior_and_never_reviews(self):
-        from vesper_ml.synthetic import POSTOP_LEVELS, synthetic_patient
+        from relay_ml.synthetic import POSTOP_LEVELS, synthetic_patient
 
         events = synthetic_patient(POSTOP_LEVELS, 6, ANCHOR, seed=3)
         r = score_request({"events": events, "context": None, "program": "post_abdominal_surgery"}, seed=0)

@@ -6,7 +6,7 @@ import { useAnalysis } from "../patient/useAnalysis.js";
 // rule and never the second opinion sitting beside it.
 //
 // The rule decides. This card corroborates or disagrees, and says which gates
-// held when it stayed quiet — because "monitoring" and "not looking" are
+// held when it stayed quiet, because "monitoring" and "not looking" are
 // indistinguishable unless the system shows its ledger.
 
 const STATE = {
@@ -102,7 +102,7 @@ export default function ModelCard({ patient: p }) {
                   <li key={s.metric}>
                     <span>{s.label}</span>
                     <span>
-                      usual {s.baseline?.median ?? "—"} {s.unit}; across{" "}
+                      usual {s.baseline?.median ?? "Not available"} {s.unit}; across{" "}
                       {s.cohort.subjects} people, baselines run{" "}
                       {s.cohort.lowest_baseline}–{s.cohort.highest_baseline}
                       {s.cohort.patient_percentile !== null &&

@@ -1,6 +1,6 @@
 # Wiring the ML engine: verified recipe, and why it is not applied
 
-The Python engine in `ml/vesper_ml` passes 53 tests, covers six programs, and
+The Python engine in `ml/relay_ml` passes 53 tests, covers six programs, and
 has a measured false-positive rate. **It has no caller.** `grep` finds zero
 references to it in `server/index.js`, `workflows/tasks.js` or anywhere under
 `src/`.
@@ -28,7 +28,7 @@ is sound.
 
 **One:** `render.yaml` declares `runtime: node` with
 `buildCommand: npm ci && npm run build`. Nothing installs Python packages.
-Seven modules under `ml/vesper_ml/` import numpy at module level
+Seven modules under `ml/relay_ml/` import numpy at module level
 (`baseline`, `explain`, `features`, `model`, `score`, `train`, `windows`), so
 the first import crashes rather than degrading. There is no partial success.
 

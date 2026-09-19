@@ -1,7 +1,7 @@
 # Anson — real data, and three plans that need reconciling
 
 Friday night. Three things landed within about 40 minutes of each other:
-Vishnu's working MVP on `feat/relay-initial-mvp`, the Vesper spec, and this
+Vishnu's working MVP on `feat/relay-initial-mvp`, the Relay spec, and this
 branch. They do not currently agree. Fastest path is to decide the conflicts
 explicitly rather than let them surface at 4am.
 
@@ -42,17 +42,17 @@ generator.
 
 ## The three conflicts
 
-**1. Stack. Vesper says FastAPI + Render Postgres. The MVP that exists is
+**1. Stack. Relay says FastAPI + Render Postgres. The MVP that exists is
 Express + Node 22, with Render Workflows already wired, tests passing, and a
 FHIR bundle exporter.**
 
 With roughly 20 hours left, rewriting a working backend into another language
 is the single most dangerous move available to us. My vote: keep Express,
-adopt everything else from Vesper. If we want Python for the model, run it as
+adopt everything else from Relay. If we want Python for the model, run it as
 a sidecar the workflow calls, not as a replacement backend. Vishnu owns this
 call as integration lead.
 
-**2. Model. Vesper says Isolation Forest. The MVP has deterministic percent
+**2. Model. Relay says Isolation Forest. The MVP has deterministic percent
 thresholds. I built z-scores against a personal baseline.**
 
 All three are defensible. Isolation Forest on 6-9 features with one patient's
@@ -63,7 +63,7 @@ opinion shown alongside if there is time. That also preserves the doc's
 auditability claim — an Isolation Forest score is not traceable to a
 measurement the way a z-score is.
 
-**3. Real versus synthetic data. Vesper says do not build device
+**3. Real versus synthetic data. Relay says do not build device
 integrations and use synthetic data.**
 
 That instruction is right about where to spend time, and the integration cost
@@ -79,7 +79,7 @@ am not arguing for more.
 
 ## Repo structure
 
-Vesper proposes `apps/web`, `apps/api`, `packages/contracts|ml|voice`. The MVP
+Relay proposes `apps/web`, `apps/api`, `packages/contracts|ml|voice`. The MVP
 is flat: `server/`, `src/`, `shared/`, `workflows/`. Moving files costs merge
 pain for zero judging points. Suggestion: keep flat, add `packages/ml/` only
 if the model lands.
@@ -106,7 +106,7 @@ patient with a reading every 6 hours is a tell.
 ## The boundary is enforced in code now
 
 `analysis/language_guard.py` turns the allowed/forbidden phrasing list from
-`first build.md` into a check that runs. Vesper repeats the same constraint
+`first build.md` into a check that runs. Relay repeats the same constraint
 ("avoid labels such as safe, healthy, emergency, or sepsis detected"), so this
 applies to both plans.
 
@@ -146,7 +146,7 @@ data I dropped it, and I think both specs are right to exclude it:
    range for the only real subject we have and would output roughly zero.
 3. It is the WHOOP / InsideTracker product, and "not clones of existing
    products" is a stated judging criterion.
-4. Both `first build.md` and Vesper explicitly rule out risk prediction and
+4. Both `first build.md` and Relay explicitly rule out risk prediction and
    treatment recommendation.
 
 Personal-baseline deviation detection has no lab or age dependency and gets

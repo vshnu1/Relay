@@ -1,7 +1,7 @@
 """LifeSnaps -> our metric schema, one row per subject-day.
 
 LifeSnaps is 71 Fitbit Sense wearers over ~4 months and carries every signal
-Vesper uses. We use it for two things neither our own data nor the synthetic
+Relay uses. We use it for two things neither our own data nor the synthetic
 generator can provide:
 
   * population spread — how far apart 71 people's personal baselines actually

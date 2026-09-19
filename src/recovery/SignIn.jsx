@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-// Sign-in for the two roles. The code is verified by the server, not here —
+// Sign-in for the two roles. The code is verified by the server, not here -
 // a check in the browser would be decoration. What this cannot do is tell
 // which patient is signing in, because the code is shared per role, so the
 // server can refuse the cohort to a patient but cannot scope to one record.

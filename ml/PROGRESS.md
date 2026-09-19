@@ -16,10 +16,10 @@ Branch: `Pranav`. Owner: Pranav (ML and synthetic). Scope: `ml/**`, `docs/ML.md`
 
 ## Decisions and assumptions
 
-- Package lives at `ml/vesper_ml`, invoked as `python -m vesper_ml` with `ml/` on `PYTHONPATH`.
+- Package lives at `ml/relay_ml`, invoked as `python -m relay_ml` with `ml/` on `PYTHONPATH`.
 - Tests use `unittest` (`python3 -m unittest discover -s ml/tests -t ml`).
 - Output is a superset of the existing evidence object; legacy `state` keeps `quiet`/`context`/`review`.
-- Engine parity verified once via Node: `simulate("ambiguous"|"explained", 1789732800000)` in `shared/engine.js` and `vesper_ml.synthetic.simulate` produce identical 378-event lists (metric, value, timestamp, source).
+- Engine parity verified once via Node: `simulate("ambiguous"|"explained", 1789732800000)` in `shared/engine.js` and `relay_ml.synthetic.simulate` produce identical 378-event lists (metric, value, timestamp, source).
 - Every contract event value is a level (a reading), not an increment. Windows take the mean of in-window samples; empty windows fall back to a trailing lookback of max(6h, 1.5 x metric cadence) and are stale beyond it.
 - Robust scale = max(1.4826 x MAD, legacy percent threshold / 3 of the median). Demo configuration so near-constant synthetic histories do not amplify ordinary fluctuation.
 
@@ -35,7 +35,7 @@ Branch: `Pranav`. Owner: Pranav (ML and synthetic). Scope: `ml/**`, `docs/ML.md`
 
 ## Scenario outcomes (add synthetic scenarios)
 
-Fixtures: `python -m vesper_ml fixtures` writes one request per scenario plus `expected.json` under `ml/fixtures/synthetic/` (anchor 2026-09-18T12:00Z, generator seed 0). All synthetic.
+Fixtures: `python -m relay_ml fixtures` writes one request per scenario plus `expected.json` under `ml/fixtures/synthetic/` (anchor 2026-09-18T12:00Z, generator seed 0). All synthetic.
 
 | Scenario | Program | Without context | With context |
 | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ Fixtures: `python -m vesper_ml fixtures` writes one request per scenario plus `e
 
 ## Private export validation (read-only, aggregate only)
 
-Run: `HEALTH_EXPORT_XML=... python -m vesper_ml validate-export`. Report: `ml/reports/private_export_validation.json`. The export was accessed only through the environment variable; nothing person-level was written inside the repository.
+Run: `HEALTH_EXPORT_XML=... python -m relay_ml validate-export`. Report: `ml/reports/private_export_validation.json`. The export was accessed only through the environment variable; nothing person-level was written inside the repository.
 
 | Item | Value |
 | --- | --- |

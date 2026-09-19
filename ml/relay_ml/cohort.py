@@ -23,7 +23,7 @@ _cache = {}
 
 def load_cohort(path=None):
     """Read the cohort file once. Missing or malformed means no context, not an error."""
-    target = Path(path or os.environ.get("VESPER_COHORT") or _DEFAULT)
+    target = Path(path or os.environ.get("RELAY_COHORT") or _DEFAULT)
     key = str(target)
     if key not in _cache:
         try:

@@ -17,7 +17,7 @@ export function useCohort() {
   const state = useRecovery();
   return state.order.map((id) => view(state.patients[id], state.now));
 }
-// Identities only — id, name, and whether a check-in is waiting. The patient app uses
+// Identities only, id, name, and whether a check-in is waiting. The patient app uses
 // this for the demo role switcher without deriving (or holding) anyone else's record.
 export function useRoster() {
   const state = useRecovery();

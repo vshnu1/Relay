@@ -270,7 +270,7 @@ export const SIGNALS = {
 const NYS = ["No", "Yes", "Not sure"];
 const SCALE = ["No", "A little", "A lot"];
 // Every question maps onto a field of the ML model's structured context
-// (ml/vesper_ml/programs.py), so an answer given here can be scored there.
+// (ml/relay_ml/programs.py), so an answer given here can be scored there.
 // `ml` is the field, `toModel` turns the chosen option into the model's value.
 // `reports` is how a concerning answer reads in the doctor's summary.
 const worse = (a) =>
@@ -876,7 +876,7 @@ export const PROFILES = {
   },
 };
 
-// Model programs defined in ml/vesper_ml but not yet enabled in the patient
+// Model programs defined in ml/relay_ml but not yet enabled in the patient
 // feed. Keeping them separate from PROFILES stops a card implying the frontend
 // is scoring its metrics. Stroke rehabilitation and cardiac recovery were both
 // listed here until the gait signals landed and gave them something to run on;

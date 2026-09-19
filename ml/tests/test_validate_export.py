@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from unittest import mock
 
-from vesper_ml import validate_export
-from vesper_ml.synthetic import POSTOP_LEVELS, synthetic_patient
+from relay_ml import validate_export
+from relay_ml.synthetic import POSTOP_LEVELS, synthetic_patient
 
 ANCHOR = 1789732800000
 

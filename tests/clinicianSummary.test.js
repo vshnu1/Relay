@@ -41,7 +41,7 @@ test("clinician briefing states watch status, readings, and model evidence", () 
   assert.match(text, /16\.5 per min, \+16% from usual/);
   assert.match(
     text,
-    /Fresh Vesper model result: unusual pattern; clinician review is recommended/,
+    /Fresh Relay model result: unusual pattern; clinician review is recommended/,
   );
   assert.match(text, /Breathing rate higher than this patient's usual/);
   assert.match(text, /breathing: A little/);
@@ -58,5 +58,5 @@ test("without a score the briefing clearly identifies its readings-only fallback
     text,
     /No counted wearable signal is currently past its persistent watch threshold/,
   );
-  assert.match(text, /Vesper has not returned a score/);
+  assert.match(text, /Relay has not returned a score/);
 });

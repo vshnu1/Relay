@@ -190,13 +190,13 @@ body {
   min-width: 0;
 }
 .rx-side {
-  width: 184px;
+  width: 232px;
   flex-shrink: 0;
-  padding: 28px 16px 20px;
+  padding: 28px 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  background: #fcfdfb;
+  gap: 6px;
+  background: linear-gradient(180deg, #fbfcfa 0%, #f7f9f6 100%);
   border-right: 1px solid var(--line);
   position: sticky;
   top: 0;
@@ -206,17 +206,18 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 8px 28px;
-  font-size: 24px;
+  padding: 0 8px 18px;
+  margin-bottom: 6px;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.04em;
   color: var(--ink) !important;
   text-decoration: none;
 }
 .rx-brand-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   display: grid;
   place-items: center;
   background: var(--pine);
@@ -226,11 +227,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
-  padding: 0 12px;
-  border-radius: 8px;
+  min-height: 48px;
+  padding: 0 13px;
+  border-radius: 10px;
   color: var(--muted) !important;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 500;
   text-decoration: none;
 }
@@ -238,6 +239,15 @@ body {
   background: var(--sage);
   color: #1f3d33 !important;
   font-weight: 600;
+  box-shadow: inset 3px 0 0 #315e4c;
+}
+.rx-side-heading {
+  padding: 0 13px 4px;
+  color: #879188;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 .rx-count {
   padding: 2px 7px;
@@ -248,7 +258,8 @@ body {
 }
 .rx-side-foot {
   margin-top: auto;
-  padding: 0 12px;
+  padding: 14px 13px 0;
+  border-top: 1px solid var(--line);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -2044,7 +2055,7 @@ p.rx-row-summary {
   }
 }
 
-/* Patient context header — clinician side (PatientOverview.jsx). Denser than the
+/* Patient context header, clinician side (PatientOverview.jsx). Denser than the
    patient view: a labelled grid of the discharge and monitoring context. */
 .rx-context {
   display: grid;
@@ -2072,7 +2083,7 @@ p.rx-row-summary {
   line-height: 1.4;
 }
 
-/* Patient context header — patient side (PatientApp.jsx). Plain language. */
+/* Patient context header, patient side (PatientApp.jsx). Plain language. */
 .rx-p-context h2 {
   font-size: 20px;
   font-weight: 600;
@@ -4841,6 +4852,9 @@ p.rx-row-summary {
     padding: 0 8px 0 0;
     font-size: 21px;
   }
+  .rx-doctor:not(.rx-pweb) .rx-side-heading {
+    display: none;
+  }
   .rx-doctor:not(.rx-pweb) .rx-navlink {
     flex: 0 0 auto;
     min-height: 38px;
@@ -4957,7 +4971,10 @@ p.rx-row-summary {
   font-size: 13px;
   line-height: 1.45;
 }
-.rx-p-voice-consent input { margin-top: 3px; accent-color: var(--pine); }
+.rx-p-voice-consent input {
+  margin-top: 3px;
+  accent-color: var(--pine);
+}
 .rx-p-voice-review {
   display: flex;
   flex-direction: column;
@@ -4967,18 +4984,29 @@ p.rx-row-summary {
   border-radius: 12px;
   background: #f8faf7;
 }
-.rx-p-voice-review h2 { font-size: 17px; }
-.rx-p-voice-review > p { color: var(--muted); font-size: 13px; }
-.rx-p-voice-review dl { display: grid; gap: 8px; }
+.rx-p-voice-review h2 {
+  font-size: 17px;
+}
+.rx-p-voice-review > p {
+  color: var(--muted);
+  font-size: 13px;
+}
+.rx-p-voice-review dl {
+  display: grid;
+  gap: 8px;
+}
 .rx-p-voice-review dl > div {
   display: grid;
-  grid-template-columns: minmax(100px, .65fr) minmax(0, 1fr);
+  grid-template-columns: minmax(100px, 0.65fr) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
   padding-top: 8px;
   border-top: 1px solid var(--line);
 }
-.rx-p-voice-review dt { color: var(--muted); font-size: 13px; }
+.rx-p-voice-review dt {
+  color: var(--muted);
+  font-size: 13px;
+}
 .rx-p-voice-review select,
 .rx-p-voice-note textarea {
   width: 100%;
@@ -4991,11 +5019,21 @@ p.rx-row-summary {
   font: inherit;
   font-size: 14px;
 }
-.rx-p-voice-note { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
-.rx-p-voice-note textarea { resize: vertical; }
-.rx-p-voice-note small { justify-self: end; color: var(--faint); }
+.rx-p-voice-note {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.rx-p-voice-note textarea {
+  resize: vertical;
+}
+.rx-p-voice-note small {
+  justify-self: end;
+  color: var(--faint);
+}
 
-/* Model view — the clinician's second opinion beside the rule. */
+/* Model view, the clinician's second opinion beside the rule. */
 .rx-model .rx-model-head {
   display: flex;
   justify-content: space-between;
@@ -5154,51 +5192,92 @@ p.rx-row-summary {
 /* Readmission-programme alignment, on the clinician home. */
 .rx-home-hrrp {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 340px);
+  gap: clamp(20px, 3vw, 40px);
   align-items: center;
-  margin: 18px 0 6px;
-  padding: 20px 24px;
+  margin: 2px 0 0;
+  padding: clamp(20px, 2.4vw, 30px);
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--paper);
+  border-radius: 18px;
+  background: linear-gradient(115deg, #f8faf6, #f1f5ef);
+}
+.rx-home-hrrp .rx-eyebrow {
+  margin-bottom: 8px;
 }
 .rx-home-hrrp h2 {
-  margin: 6px 0 8px;
-  font-size: 19px;
-  font-weight: 500;
-  line-height: 1.3;
+  margin: 0 0 8px;
+  font-size: clamp(19px, 2vw, 24px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
 }
 .rx-home-hrrp p {
   margin: 0;
-  font-size: 13.5px;
+  max-width: 68ch;
+  font-size: 14px;
   color: var(--muted);
-  line-height: 1.55;
-  max-width: 62ch;
+  line-height: 1.5;
 }
 .rx-home-hrrp-ops {
-  display: flex;
-  gap: 22px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   margin: 0;
 }
 .rx-home-hrrp-ops div {
-  text-align: center;
+  position: relative;
+  min-width: 0;
+  min-height: 126px;
+  padding: 14px;
+  border: 1px solid #dce6da;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.82);
+}
+.rx-home-hrrp-icon {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  margin-bottom: 13px;
+  border-radius: 9px;
+  background: #e9f0e7;
+  color: var(--pine);
+}
+.rx-home-hrrp-ops .priority .rx-home-hrrp-icon {
+  background: #fbf0d9;
+  color: #86651f;
 }
 .rx-home-hrrp-ops dt {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--muted);
-  white-space: nowrap;
+  line-height: 1.25;
 }
 .rx-home-hrrp-ops dd {
-  margin: 2px 0 0;
-  font-size: 28px;
-  font-weight: 500;
+  position: absolute;
+  top: 13px;
+  right: 14px;
+  margin: 0;
+  font-size: 31px;
+  font-weight: 600;
   color: var(--pine);
   font-variant-numeric: tabular-nums;
 }
-@media (max-width: 720px) {
+@media (max-width: 980px) {
   .rx-home-hrrp {
     grid-template-columns: 1fr;
+  }
+  .rx-home-hrrp-ops {
+    max-width: 420px;
+    width: 100%;
+  }
+}
+@media (max-width: 560px) {
+  .rx-home-hrrp-ops div {
+    min-height: 116px;
+    padding: 12px;
+  }
+  .rx-home-hrrp-ops dd {
+    right: 12px;
   }
 }
 
@@ -5900,7 +5979,9 @@ p.rx-row-summary {
   animation: rx-clinician-spin 1s linear infinite;
 }
 @keyframes rx-clinician-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .rx-clinician-voice-status,
 .rx-clinician-voice-disclaimer,
@@ -5940,5 +6021,54 @@ p.rx-row-summary {
   }
   .rx-clinician-voice-button {
     width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .rx-doctor:not(.rx-pweb) .rx-side {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 5px;
+    overflow: visible;
+    padding: 8px 10px;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-brand {
+    grid-column: 1 / -1;
+    min-height: 36px;
+    margin: 0;
+    padding: 0 4px 4px;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-navlink {
+    position: relative;
+    min-width: 0;
+    min-height: 54px;
+    padding: 6px 3px;
+    justify-content: center;
+    text-align: center;
+    font-size: 10.5px;
+    line-height: 1.15;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-navlink-label {
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-navlink-label svg {
+    width: 17px;
+    height: 17px;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-navlink[aria-current] {
+    box-shadow: inset 0 0 0 1px #d5e1d2;
+  }
+  .rx-doctor:not(.rx-pweb) .rx-count {
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 9px;
   }
 }

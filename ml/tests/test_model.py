@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from vesper_ml.model import calibrate, chronological_split, fit_and_score, make_pipeline, terminal_run, to_scores, usable_rows
+from relay_ml.model import calibrate, chronological_split, fit_and_score, make_pipeline, terminal_run, to_scores, usable_rows
 
 
 class SplitTest(unittest.TestCase):

@@ -1,4 +1,4 @@
-# Python dependencies for ml/vesper_ml. Not needed to build or run the web app
+# Python dependencies for ml/relay_ml. Not needed to build or run the web app
 # — the demo UI computes client side and the server uses shared/engine.js.
 # Required only if the ML engine is wired into a service. See docs/ML-WIRING.md.
 numpy>=1.24

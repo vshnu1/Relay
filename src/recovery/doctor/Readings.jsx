@@ -440,7 +440,7 @@ function SignalPanel({
         </div>
         <div className="rx-signal-side">
           <div className="rx-signal-now">
-            <strong>{s.today === null ? "—" : s.fmt(s.today)}</strong>
+            <strong>{s.today === null ? "Not available" : s.fmt(s.today)}</strong>
             <span>{s.unit}</span>
             {s.today !== null && s.usual !== null && (
               <span className={`rx-change ${s.moved ? "moved" : ""}`}>

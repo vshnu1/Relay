@@ -129,7 +129,7 @@ export async function scoreWithModel(patient, answers = null, fetchFn = fetch) {
 // Plain-words reading of the model's result for the patient.
 export function describeAnalysis(a, profile = null) {
   if (!a) return null;
-  // The model's own `summary` is written for a clinician — "this patient's
+  // The model's own `summary` is written for a clinician, "this patient's
   // baseline", "robust deviation +1.4". Rendering it here would have the app
   // say "this patient" to the patient, so patient-facing prose is written in
   // the second person and the condition is named from the profile.

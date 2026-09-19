@@ -29,7 +29,7 @@ And the UI already says so out loud — "Sleep is 5.9 hours against a usual
 7.2. Not counted for pneumonia", plus "4 more signals are recorded but not
 counted for pneumonia."
 
-The ML layer has the same split independently in `ml/vesper_ml/programs.py`
+The ML layer has the same split independently in `ml/relay_ml/programs.py`
 (`metrics` vs `core`) across six programs.
 
 **Do nothing. Demo it instead** — it is one of the strongest things you have
@@ -50,7 +50,7 @@ and nobody currently points at it.
 | Atrial fibrillation | **racing heart**, breathing, medicine, activity |
 
 Heart failure asks about swelling; abdominal surgery asks about pain; AF asks
-about a racing heart. `ml/vesper_ml/programs.py` carries the same idea as
+about a racing heart. `ml/relay_ml/programs.py` carries the same idea as
 `context_fields`, and stroke rehabilitation adds falls and dizziness.
 
 **Do nothing.** Same note: show it. Two patients with different questions on
@@ -179,7 +179,7 @@ Ambiguous, and the two readings have very different costs.
 
 - **Lab results as a data source** (bloodwork, cultures, inflammatory
   markers): a new input with no device behind it, and both `first build.md`
-  and the Vesper spec exclude labs. Post-discharge patients are not having
+  and the Relay spec exclude labs. Post-discharge patients are not having
   daily bloods drawn at home. This looks like scope you should decline.
 - **The clinical workflow / process** this fits into: worth one paragraph in
   the pitch — where the review item lands, who acts on it, what happens next

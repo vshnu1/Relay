@@ -1,7 +1,7 @@
 import unittest
 
-from vesper_ml.contracts import normalize
-from vesper_ml.synthetic import ENGINE_SHIFTS, simulate
+from relay_ml.contracts import normalize
+from relay_ml.synthetic import ENGINE_SHIFTS, simulate
 
 ANCHOR = 1789732800000  # 2026-09-18T12:00:00Z
 

@@ -68,7 +68,7 @@ def subject_events(rows):
 
 def calibratable(program_key):
     """Whether this cohort records every core metric the program needs."""
-    from vesper_ml.programs import PROGRAMS
+    from relay_ml.programs import PROGRAMS
 
     have = {metric for metric, _ in CONTRACT.values()}
     return set(PROGRAMS[program_key].core) <= have
@@ -76,7 +76,7 @@ def calibratable(program_key):
 
 def calibrate(by_subject, program, quiet=False):
     """Score every subject as `program` and count the states. Returns the record."""
-    from vesper_ml.score import score_request
+    from relay_ml.score import score_request
 
     states, scored, skipped, errors = Counter(), 0, 0, 0
     anomaly_scores, escalated = [], []
@@ -142,8 +142,8 @@ def main():
     args = parser.parse_args()
 
     try:
-        from vesper_ml.programs import PROGRAMS
-        import vesper_ml.score  # noqa: F401
+        from relay_ml.programs import PROGRAMS
+        import relay_ml.score  # noqa: F401
     except ImportError as exc:
         sys.exit(f"cannot import the engine ({exc}). Run with PYTHONPATH=ml and numpy/scikit-learn installed.")
 
