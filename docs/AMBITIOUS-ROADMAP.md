@@ -145,7 +145,7 @@ _Speaks to:_ Gajjar, Merchant, Bonilla. _Effort:_ ~45 min, mostly copy.
 
 ### 9. Make the test rigour visible
 
-Gajjar is a Senior Test Manager. 46 JS tests, 60 ML tests, an API
+Gajjar is a Senior Test Manager. 64 JS tests, 63 ML tests, an API
 integration suite, Python converter tests, a guard-parity check, and a
 false-alarm rate measured on 71 real subjects. A validation section in the
 README, with the numbers. _Effort:_ 20 min.

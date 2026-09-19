@@ -145,7 +145,7 @@ the neutropenic-fever watch. Open Grace, not a respiratory patient.
 | ML engine: 3.77%–5.77% of judged subjects across five programs; 5.77% for post-abdominal surgery | `fixtures/ml_calibration.json`   |
 | The model is the quiet one: speaks on 9.8% of untouched subjects, the rule on 53.7%              | `fixtures/sensitivity_ml.json`   |
 | 99 days of real wearable data, one coordinated event found                                       | `docs/DATA.md`                   |
-| 60 ML tests, 46 JS tests, API integration suite                                                  | run them                         |
+| 63 ML tests, 64 JS tests, API integration suite                                                  | run them                         |
 
 Never quote the 3.35% and the 5.77% as though one beats the other — the
 first is per subject-day, the second per subject.

@@ -361,7 +361,7 @@ avoid.
 Tests, and they run in seconds. `npm test` is 64 checks over the detection rule,
 the derived sentences, the patient store, the at-rest encryption, the account
 store and the Render task chain. `PYTHONPATH=ml python3 -m unittest discover -s
-ml/tests` is 60 over the model's contracts, features, scoring and scenarios. One
+ml/tests` is 63 over the model's contracts, features, scoring and scenarios. One
 of them runs the Python language guard and its Node port over the same corpus
 and fails if they disagree phrase for phrase, because a boundary enforced in one
 language and not the other is not enforced. `node tests/api.integration.js` runs
