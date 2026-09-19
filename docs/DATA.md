@@ -138,6 +138,57 @@ repeats the mistake in [INTEROP.md](INTEROP.md): only about 40 of 71 subjects
 have usable baselines for three signals at once, so a 3-signal rule buys
 quiet by being unable to fire.
 
+### How often does it speak when it should?
+
+The rate above is half a measurement. A detector that never fires scores
+perfectly on it. `analysis/sensitivity.py` measures the other half.
+
+Nobody in LifeSnaps deteriorated, so there is no positive class to count.
+Instead each subject's own recorded series becomes the noise floor and a
+coordinated deviation of known size and known start is added to it: heart
+rate and breathing up, variability and blood oxygen down, by a multiple of
+that subject's own standard deviation, ramped over two days and then held.
+41 of the 71 subjects have enough history before the injection point to build
+a baseline for two signals, which is the set judged.
+
+| Injected size | Caught | Median lag | Caught within 2 days |
+|---|---|---|---|
+| 1.0 sd | 78.0% | 3 days | 36.6% |
+| 1.5 sd | 90.2% | 2 days | 46.3% |
+| **2.0 sd** | **97.6%** | **1 day** | **70.7%** |
+| 2.5 sd | 100% | 1 day | 85.4% |
+| 3.0 sd | 100% | 1 day | 85.4% |
+
+A coordinated change of two personal standard deviations is caught in 97.6%
+of these subjects, half of them the day after it starts. A change of one is
+caught in 78% and takes a median of three days, which is the honest lower
+edge of what this rule can see through one person's ordinary variation.
+
+This measures the detector against the pattern it was built for. It does not
+establish that the injected shape is what deterioration looks like, nor that
+catching it prevents a readmission. Only a monitored cohort with recorded
+outcomes can establish either.
+
+### Which baseline the rate is measured against
+
+`fire_rate` in `calibrate.py` builds one baseline from a subject's whole
+series and tests every day against it — including that day, and every day
+after it. `detect.py` builds the baseline from the days before the one under
+test, because that is all a deployment has on the morning it must decide.
+The two disagree by more than rounding:
+
+| Baseline | Fires on |
+|---|---|
+| Whole series, test day included | 3.35% |
+| Whole series, test day left out | 4.05% |
+| Days before the test day, as `detect.py` computes it | **6.04%** |
+
+The 3.35% is the number to quote for the threshold comparison, because every
+row of that sweep is measured the same way and the comparison between rows is
+what chooses 1.75. The 6.04% is the number to quote for how often a
+deployment would speak on people who are fine. Quoting the first as though it
+were the second overstates the product by nearly half.
+
 ### What this does not establish
 
 This is a false-positive rate with no matching true-positive rate, because no

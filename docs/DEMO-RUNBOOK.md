@@ -118,9 +118,20 @@ papers.*
 |---|---|
 | 71 people, resting HR baselines span 31 bpm, individuals vary ~2.4 | `fixtures/calibration.json` |
 | Rule fires on 3.35% of subject-days on healthy people | `fixtures/calibration.json` |
+| The same rule on a trailing baseline fires on 6.04% | `fixtures/calibration.json` |
+| Catches a 2.0 sd coordinated change in 97.6% of subjects, median one day | `fixtures/sensitivity.json` |
 | ML engine: 5.77% of judged subjects | `fixtures/ml_calibration.json` |
 | 99 days of real wearable data, one coordinated event found | `docs/DATA.md` |
-| 53 ML tests, 8 JS tests, API integration suite | run them |
+| 53 ML tests, 30 JS tests, API integration suite | run them |
 
 Never quote the 3.35% and the 5.77% as though one beats the other — the
 first is per subject-day, the second per subject.
+
+If a judge asks whether the 3.35% is in-sample, the answer is yes and you
+should say so before they work it out: it is measured against a baseline built
+from the subject's whole series, including the day being judged. It is the
+right number for choosing between thresholds, because every row of that sweep
+is measured the same way. The number for how often a deployment would speak on
+people who are fine is the trailing one, 6.04%. `docs/DATA.md` has both and
+says which belongs where. Offering this unprompted reads as rigour; being
+caught on it does not.

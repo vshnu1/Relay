@@ -1,0 +1,79 @@
+{
+  "method": "coordinated deviation of known size and start injected onto each subject's own recorded series; baseline from pre-onset days only",
+  "onset_fraction": 0.7,
+  "ramp_days": 2.0,
+  "directions": {
+    "resting_heart_rate": 1,
+    "hr_night": 1,
+    "hrv_sdnn": -1,
+    "respiratory_rate": 1,
+    "spo2": -1
+  },
+  "results": [
+    {
+      "effect_sd": 1.0,
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "subjects_judged": 41,
+      "detected": 32,
+      "detection_pct": 78.0,
+      "median_lag_days": 3.0,
+      "lag_within_2_days_pct": 36.6,
+      "control_fired_days": 73,
+      "control_days": 966,
+      "control_rate_pct": 7.56
+    },
+    {
+      "effect_sd": 1.5,
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "subjects_judged": 41,
+      "detected": 37,
+      "detection_pct": 90.2,
+      "median_lag_days": 2,
+      "lag_within_2_days_pct": 46.3,
+      "control_fired_days": 73,
+      "control_days": 966,
+      "control_rate_pct": 7.56
+    },
+    {
+      "effect_sd": 2.0,
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "subjects_judged": 41,
+      "detected": 40,
+      "detection_pct": 97.6,
+      "median_lag_days": 1.0,
+      "lag_within_2_days_pct": 70.7,
+      "control_fired_days": 73,
+      "control_days": 966,
+      "control_rate_pct": 7.56
+    },
+    {
+      "effect_sd": 2.5,
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "subjects_judged": 41,
+      "detected": 41,
+      "detection_pct": 100.0,
+      "median_lag_days": 1,
+      "lag_within_2_days_pct": 85.4,
+      "control_fired_days": 73,
+      "control_days": 966,
+      "control_rate_pct": 7.56
+    },
+    {
+      "effect_sd": 3.0,
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "subjects_judged": 41,
+      "detected": 41,
+      "detection_pct": 100.0,
+      "median_lag_days": 1,
+      "lag_within_2_days_pct": 85.4,
+      "control_fired_days": 73,
+      "control_days": 966,
+      "control_rate_pct": 7.56
+    }
+  ]
+}

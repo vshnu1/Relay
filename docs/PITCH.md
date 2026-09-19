@@ -38,6 +38,10 @@ Three notes on delivery:
 - **The 31 beats is the hook, not the false-alarm rate.** Thirty seconds only
   buys one number. Lead with the one that makes personal baselines obviously
   necessary; hold 3.35% for when they ask a follow-up, where it lands harder.
+  If they push on it, say it is in-sample and give them 6.04%, the trailing
+  figure — and then give them the one nobody has: a coordinated change of two
+  personal standard deviations is caught in 97.6% of subjects, half of them
+  the day after it starts.
 - **End on the boundary.** In a health pitch it reads as judgement, not as a
   limitation, and it is the line that most reliably earns the next two minutes.
 
