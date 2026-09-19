@@ -1050,3 +1050,23 @@
 .rx-ph-tile.model.compact .rx-model-meaning {
   font-size: 13px;
 }
+
+/* Alert banners carry no icon: the text is the alert. A thicker left edge
+   marks a worsening one. */
+.rx-ph-banner.noicon {
+  align-items: flex-start;
+  padding: 16px 24px;
+}
+.rx-ph-banner.unusual.noicon {
+  box-shadow: inset 4px 0 0 var(--amber);
+}
+.rx-ph-banner.unusual.worsening {
+  box-shadow: inset 4px 0 0 var(--amber-ink);
+  border-color: var(--amber);
+}
+.rx-ph-banner.unusual .rx-ph-kicker {
+  font-weight: 600;
+}
+.rx-ph-banner.noicon .rx-ph-banner-actions {
+  align-self: center;
+}
