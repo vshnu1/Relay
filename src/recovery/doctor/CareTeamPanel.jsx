@@ -6,7 +6,7 @@ import { clock } from "../format.js";
 // What the care team gives the patient: discharge notes and medicines, messages,
 // appointments. Everything the patient sees under those headings is entered here
 // during the demo, never pre-written.
-export default function CareTeamPanel({ patient: p }) {
+export default function CareTeamPanel({ patient: p, embedded = false }) {
   const [tab, setTab] = useState("message");
   const [text, setText] = useState("");
   const [notes, setNotes] = useState(p.notes || "");
@@ -21,8 +21,14 @@ export default function CareTeamPanel({ patient: p }) {
   };
   const thread = [...(p.messages || [])].slice(-4).reverse();
   return (
-    <section className="rx-card rx-careteam" aria-label="For the patient">
-      <h2>For the patient</h2>
+    <section
+      className={`rx-careteam${embedded ? " embedded" : " rx-card"}`}
+      aria-label="Patient follow-up"
+    >
+      <div className="rx-careteam-head">
+        <h2>Patient follow-up</h2>
+        <span>Updates appear in {p.first}&apos;s app</span>
+      </div>
       <div className="rx-seg" role="group" aria-label="What to add">
         {[
           ["message", "Message", MessageSquare],
