@@ -376,6 +376,19 @@ const COHORT = [
   },
 ];
 
+// Patients defined without a discharge code get a stable one from their id, so
+// every synthetic patient can sign in. Listed in docs/PATIENT.md.
+function defaultCode(def) {
+  let h = 0;
+  for (const ch of def.id) h = (h * 31 + ch.charCodeAt(0)) % 9000;
+  const prefix =
+    (def.hospital || "RLY")
+      .replace(/[^A-Za-z]/g, "")
+      .slice(0, 3)
+      .toUpperCase() || "RLY";
+  return `${prefix}-${String(1000 + h).padStart(4, "0")}`;
+}
+
 function seeded(seed) {
   let s = seed;
   return () =>
@@ -443,8 +456,8 @@ function build(def, now, index) {
     admittedAt,
     dischargedAt,
     readings,
-    code: def.code,
-    careEmail: def.careEmail,
+    code: def.code || defaultCode(def),
+    careEmail: def.careEmail || null,
     // Entered by the care team in the clinician view, never pre-written.
     notes: "",
     medications: [],

@@ -454,6 +454,42 @@ app.post("/api/patients/:id/voice", async (req, res) => {
   audit("checkin.voice.started", req.patient.id);
   res.json({ signed_url: payload.signed_url });
 });
+// Mint an ElevenLabs signed session for the patient view. The classic route above
+// is bound to the classic patient list; the recovery app keeps its patients in the
+// browser, so this one only needs consent. The agent's context (readings, model
+// result, questions) travels as dynamic variables from the browser, never here.
+app.post("/api/voice/session", async (req, res) => {
+  if (req.body?.consent !== true)
+    return res
+      .status(403)
+      .json({ error: "Explicit consent is required for a voice session." });
+  if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_AGENT_ID)
+    return res.status(503).json({
+      error: "Voice is not configured. The text assistant is available.",
+      code: "VOICE_DISABLED",
+    });
+  try {
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(process.env.ELEVENLABS_AGENT_ID)}`,
+      {
+        headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY },
+        signal: AbortSignal.timeout(15000),
+      },
+    );
+    if (!response.ok) throw new Error(`ElevenLabs replied ${response.status}`);
+    const payload = await response.json();
+    if (typeof payload?.signed_url !== "string" || !payload.signed_url)
+      throw new Error("no signed URL");
+    audit("checkin.voice.started", req.body?.patientId || null, "patient view");
+    res.json({ signed_url: payload.signed_url });
+  } catch (error) {
+    res.status(503).json({
+      error: `Unable to start the voice session (${error.message}). Use the text assistant.`,
+      code: "VOICE_UNAVAILABLE",
+    });
+  }
+});
+
 // Score any patient's readings with the Python model. Used by the patient view,
 // which keeps its own store in the browser: it sends the event contract plus the
 // structured check-in context and gets the evidence object back. Either role may
@@ -496,12 +532,10 @@ app.post("/api/ml/score", async (req, res) => {
       })),
     });
   } catch (error) {
-    res
-      .status(502)
-      .json({
-        error: `Model scoring failed: ${error.message}`,
-        code: "ML_FAILED",
-      });
+    res.status(502).json({
+      error: `Model scoring failed: ${error.message}`,
+      code: "ML_FAILED",
+    });
   }
 });
 

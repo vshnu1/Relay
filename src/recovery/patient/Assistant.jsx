@@ -3,6 +3,9 @@ import { ChevronLeft, Mic, Send, Volume2, VolumeX } from "lucide-react";
 import { actions } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { useAnalysis } from "./useAnalysis.js";
+import { startPatientVoiceSession, voiceAvailable } from "./voice.js";
+import { go } from "../useRecovery.js";
+import { PhoneCall, PhoneOff } from "lucide-react";
 
 // A conversational check-in: the same profile questions, asked one at a time in a
 // chat, answered by tapping, typing, or speaking. It is scripted, not a chatbot: it
@@ -76,6 +79,80 @@ export default function Assistant({ patient: p }) {
   const endRef = useRef(null);
   const recRef = useRef(null);
   const { run: score } = useAnalysis(p);
+  // ElevenLabs: available when the server holds a key. The agent reads the readings
+  // and the model result through a client tool, asks the same questions, and hands
+  // back answers plus a recommendation. The browser-speech path stays as fallback.
+  const [voice, setVoice] = useState({
+    available: false,
+    status: "",
+    error: "",
+  });
+  const sessionRef = useRef(null);
+  useEffect(() => {
+    let live = true;
+    voiceAvailable().then(
+      (ok) => live && setVoice((v) => ({ ...v, available: ok })),
+    );
+    return () => {
+      live = false;
+      sessionRef.current?.endSession?.();
+    };
+  }, []);
+  const startCall = async () => {
+    setVoice((v) => ({ ...v, status: "connecting", error: "" }));
+    try {
+      sessionRef.current = await startPatientVoiceSession({
+        patient: p,
+        questions,
+        consent: true,
+        onStatus: (st) => setVoice((v) => ({ ...v, status: st })),
+        onAgentSaid: (text) => setLog((l) => [...l, { who: "relay", text }]),
+        onAnswers: (a, note) => {
+          setAnswers((prev) => ({ ...prev, ...a }));
+          setLog((l) => [
+            ...l,
+            {
+              who: "you",
+              text:
+                Object.entries(a)
+                  .map(([q, v]) => `${QUESTIONS[q].short}: ${v}`)
+                  .join(". ") + (note ? `. ${note}` : ""),
+            },
+          ]);
+          if (Object.keys(a).length === questions.length) {
+            actions.submitCheckin(p.id, a);
+            if (note) actions.sendNote(p.id, note);
+            score(a);
+            setStage({ kind: "done" });
+          }
+        },
+        onRecommendation: ({ action, reason }) => {
+          setLog((l) => [
+            ...l,
+            {
+              who: "relay",
+              text: `Recommendation: ${action === "send_report" ? "send a report to your care team" : action === "message_care_team" ? "message your care team" : "nothing to do now"}. ${reason}`,
+            },
+          ]);
+          if (action !== "none")
+            sessionStorage.setItem(
+              "rx-voice-recommendation",
+              JSON.stringify({ action, reason }),
+            );
+        },
+        onError: (e) =>
+          setVoice((v) => ({ ...v, error: e?.message || String(e) })),
+        onDisconnect: () => setVoice((v) => ({ ...v, status: "ended" })),
+      });
+    } catch (e) {
+      setVoice((v) => ({ ...v, status: "", error: e.message || String(e) }));
+    }
+  };
+  const endCall = () => {
+    sessionRef.current?.endSession?.();
+    sessionRef.current = null;
+    setVoice((v) => ({ ...v, status: "ended" }));
+  };
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [log]);
@@ -179,6 +256,36 @@ export default function Assistant({ patient: p }) {
           )}
         </div>
       </header>
+      {voice.available && (
+        <div className="rx-p-call">
+          {["connecting", "connected"].includes(voice.status) ? (
+            <button type="button" className="rx-p-btn" onClick={endCall}>
+              <PhoneOff size={20} aria-hidden="true" /> End the voice call
+              <small>
+                {voice.status === "connecting"
+                  ? "Connecting…"
+                  : "Listening. Relay is asking the questions."}
+              </small>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="rx-p-btn primary"
+              onClick={startCall}
+            >
+              <PhoneCall size={20} aria-hidden="true" /> Talk to Relay by voice
+              <small>
+                Relay checks your readings and the model's result, then asks.
+              </small>
+            </button>
+          )}
+          {voice.error && (
+            <p className="rx-p-error" role="alert">
+              {voice.error}
+            </p>
+          )}
+        </div>
+      )}
       <div className="rx-p-chat" role="log" aria-live="polite">
         {log.map((m, i) => (
           <div key={i} className={`rx-p-bubble ${m.who}`}>

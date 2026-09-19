@@ -8,7 +8,25 @@ chooses to send.
 
 1. **Sign in** (`#/patient`): choose the hospital, enter the discharge code printed on
    the discharge letter, agree to share. Codes are seeded per demo patient in
-   `model/simulatedSource.js` (the sign-in screen can reveal them). Session only.
+   `model/simulatedSource.js`. Session only. Demo codes:
+
+   | Code     | Patient          | Hospital                           |
+   | -------- | ---------------- | ---------------------------------- |
+   | BAY-2741 | Maya Okafor      | Bayfront Health — Respiratory Unit |
+   | TGH-5580 | Daniel Reyes     | Tampa General — Cardiology         |
+   | MMC-1193 | Priya Nair       | Mercy Medical — General Surgery    |
+   | LKR-8027 | Tom Lindqvist    | Lakeside Regional — Pulmonary      |
+   | SVH-3364 | Aisha Rahman     | St. Vincent's — Cardiology         |
+   | MMC-6608 | Samuel Osei      | Mercy Medical — General Surgery    |
+   | TGH-9915 | George Whitfield | Tampa General — Cardiology         |
+   | BAY-4470 | Lena Fischer     | Bayfront Health — Respiratory Unit |
+
+   The twelve patients added on `main` get stable codes from their ids:
+   TAM-7051 Marcus Webb, MER-6489 Nadia Haq, LAK-2832 Yusuf Demir, BAY-7547 Ingrid
+   Larsen, LAK-6727 Oliver Grant, BAY-3991 Beatrice Cole, TAM-5838 Hassan Ali,
+   MER-9855 Clara Moreau, LAK-1482 Arthur Bennett, LAK-9985 Mei Tanaka, TAM-6507
+   Rosa Iglesias, TAM-1604 Amara Nwosu.
+
 2. **Home**: day of recovery, notifications (check-in due, report recommended,
    appointment soon, unread nurse message, device to connect), quick actions, today's
    readings in plain words, device status.
@@ -25,14 +43,26 @@ chooses to send.
    optional read-aloud. Due daily for the first week at home, then every other day
    (`SCHEDULE` in `model/profiles.js`), and whenever the care team or the readings ask.
 7. **Assistant** (`#/patient/assistant`): the same questions as a chat; tap, type or
-   speak (browser speech recognition and synthesis). Scripted, not a chatbot. ElevenLabs
-   can replace the browser voice when the server key is configured.
+   speak (browser speech recognition and synthesis). Scripted, not a chatbot. When the
+   server has `ELEVENLABS_API_KEY`, a "Talk to Relay by voice" call appears: the agent
+   reads the readings and the model's result through a client tool, asks the
+   condition's questions, records the answers, and returns one recommendation
+   (send a report, message the care team, or nothing). The prompt and tools are in
+   `docs/voice-agent.md`.
 8. **Record something** (`#/patient/journal`): timestamped notes of anything unusual.
 9. **What this means** (`#/patient/insight`): the plain-words result of the last
    check-in against the readings, with one action. Never a diagnosis.
 10. **Care team** (`#/patient/care`): appointments, nurse messages, and **Send a report**:
     a confirmation sheet, a preview, then a pre-filled email draft. Nothing is sent
     automatically; the app only records that the patient chose to send.
+
+## The model in the patient view
+
+`POST /api/ml/score` spawns the Python model for the readings the browser sends
+(`model/mlClient.js` maps app signals to the model's metrics). The patient can score
+from Home or the insight screen; a check-in re-scores with the answers as context.
+The model's state leads the insight, the notifications and the report. Requires
+`VESPER_ML_ENABLED=true` on the server.
 
 ## Questions and the ML model
 
@@ -51,7 +81,13 @@ clearing site data.
 
 ## Limits
 
-- The discharge code is demo scaffolding, not authentication.
+- The discharge code is demo scaffolding, not authentication. Main's shared role code
+  is checked by the server first when configured; the discharge code then picks the
+  profile.
+- Discharge notes, medicines, messages and appointments are entered by the care team
+  in the clinician view during the demo; nothing under those headings is pre-written.
+- A Health import with "use only my own data" replaces the example readings and stops
+  the simulated stream for that patient, so charts and the model run on real data.
 - Wearable "connections" are simulated; a real one implements the source contract.
 - Speech uses the browser's services; quality varies by browser.
 - Email goes through the device's mail app via `mailto:`; no server sends anything.

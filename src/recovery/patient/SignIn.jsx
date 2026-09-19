@@ -9,7 +9,6 @@ export default function SignIn({ roster, onSignIn }) {
   const [code, setCode] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
-  const [showCodes, setShowCodes] = useState(false);
   const submit = (e) => {
     e.preventDefault();
     const match = roster.find(
@@ -94,36 +93,9 @@ export default function SignIn({ roster, onSignIn }) {
           Open my profile
         </button>
       </form>
-      <div className="rx-p-demo">
-        <button
-          type="button"
-          className="rx-p-textbtn"
-          onClick={() => setShowCodes(!showCodes)}
-        >
-          {showCodes ? "Hide demo codes" : "Demo: show the codes"}
-        </button>
-        {showCodes && (
-          <ul>
-            {roster.map((p) => (
-              <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHospital(p.hospital);
-                    setCode(p.code);
-                  }}
-                >
-                  <strong>{p.code}</strong> {p.name}
-                  <small>{p.hospital}</small>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
       <p className="rx-p-fine">
-        Every patient here is synthetic. Relay describes readings; it does not
-        diagnose.
+        Every patient here is synthetic; the demo codes are in the runbook.
+        Relay describes readings; it does not diagnose.
       </p>
     </>
   );

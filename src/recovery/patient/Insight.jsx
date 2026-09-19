@@ -13,6 +13,14 @@ export default function Insight({ patient: p }) {
   const { run, busy, error } = useAnalysis(p);
   const i = insight(p);
   const a = p.analysis;
+  let voiceRec = null;
+  try {
+    voiceRec = JSON.parse(
+      sessionStorage.getItem("rx-voice-recommendation") || "null",
+    );
+  } catch {
+    voiceRec = null;
+  }
   const reports = concerningReports(p.answered);
   const moved = p.moved;
   return (
@@ -36,7 +44,16 @@ export default function Insight({ patient: p }) {
         </span>
         <h2>{i.title}</h2>
         <p>{i.body}</p>
-        {i.send && (
+        {voiceRec && (
+          <p className="rx-p-fine">
+            Relay's voice assistant suggested:{" "}
+            {voiceRec.action === "send_report"
+              ? "send a report"
+              : "message your care team"}
+            . {voiceRec.reason}
+          </p>
+        )}
+        {(i.send || voiceRec?.action === "send_report") && (
           <button
             type="button"
             className="rx-p-btn primary"
@@ -44,6 +61,11 @@ export default function Insight({ patient: p }) {
           >
             Send the report to my care team
           </button>
+        )}
+        {voiceRec?.action === "message_care_team" && (
+          <a className="rx-p-btn" href="#/patient/care">
+            Message my care team
+          </a>
         )}
       </section>
       <section className="rx-p-card list" aria-label="Relay's model">

@@ -4468,3 +4468,22 @@ p.rx-row-summary {
 .rx-p-entryrow.mine p {
   color: var(--pine);
 }
+
+/* ---------- Voice call controls ---------- */
+.rx-p-call {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 760px;
+}
+.rx-p-call .rx-p-btn {
+  flex-direction: column;
+  gap: 2px;
+  min-height: 60px;
+  padding: 10px 16px;
+}
+.rx-p-call .rx-p-btn small {
+  font-size: 13px;
+  font-weight: 400;
+  opacity: 0.85;
+}
