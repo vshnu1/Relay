@@ -1,50 +1,42 @@
-import { ArrowDown, ArrowUp, Brain } from "lucide-react";
+import { Brain } from "lucide-react";
 
-// Relay's model, laid out so a patient can read it in one glance: a state,
-// a score, the readings that drove it, and one sentence on what to do.
-// Nothing here is a diagnosis; the states are the model's own four.
+// Relay's model in one glance: a state, a score, and one sentence that says
+// what the numbers above add up to. The tiles already show each reading, so
+// nothing is repeated here. Never a diagnosis; the states are the model's own.
 const STATES = {
-  review_recommended: {
-    label: "Unusual pattern",
-    tone: "alert",
-    meaning:
-      "Your readings and your answers point the same way. Sending a report lets your care team look today.",
-  },
-  context_needed: {
-    label: "Something changed",
-    tone: "watch",
-    meaning:
-      "Your readings moved away from your usual. Your check-in answers help your care team understand why.",
-  },
-  monitoring: {
-    label: "Nothing unusual",
-    tone: "fine",
-    meaning: "Your recent readings look like your usual. Nothing is needed.",
-  },
-  insufficient_data: {
-    label: "Not enough readings",
-    tone: "watch",
-    meaning:
-      "Relay needs more recent readings to judge. Wear your watch tonight and check it is connected.",
-  },
+  review_recommended: { label: "Unusual pattern", tone: "alert" },
+  context_needed: { label: "Something changed", tone: "watch" },
+  monitoring: { label: "Nothing unusual", tone: "fine" },
+  insufficient_data: { label: "Not enough readings", tone: "watch" },
 };
 
-const metricName = (c) =>
-  String(c.label || c.metric || "a reading")
-    .replace(/_/g, " ")
-    .toLowerCase();
+function summary(p, a) {
+  const moved = p.counted.filter((s) => s.moved).length;
+  const total = p.counted.length;
+  const n = (a.contributors || []).length || moved;
+  const span = p.hours ? ` for about ${p.hours} hours` : "";
+  const count = n
+    ? `${Math.min(n, total)} of ${total} readings`
+    : "Your readings";
+  switch (a.application_state) {
+    case "review_recommended":
+      return `${count} have stayed away from your usual together${span}, and your answers do not explain it. Worth your care team's eyes today.`;
+    case "context_needed":
+      return `${count} have moved from your usual${span}. Your check-in answers tell your care team whether there is a simple reason.`;
+    case "insufficient_data":
+      return "Too few recent readings to judge. Wear your watch tonight and check it is connected.";
+    default:
+      return `All ${total} readings are inside your usual range. Nothing is needed.`;
+  }
+}
 
 export default function ModelSummary({ patient: p, run, busy, error }) {
   const a = p.analysis;
   const state = a ? STATES[a.application_state] || STATES.monitoring : null;
   const score =
     a?.anomaly_score == null ? null : Math.round(a.anomaly_score * 100);
-  const contributors = (a?.contributors || []).slice(0, 4);
-  const missing = (a?.missing_signals || [])
-    .filter((m) => m.core)
-    .map((m) => m.metric.replace(/_/g, " "));
   return (
-    <div className={`rx-ph-tile model wide ${state ? state.tone : ""}`}>
+    <div className={`rx-ph-tile model wide compact ${state ? state.tone : ""}`}>
       <div className="rx-model-head">
         <span className="rx-ph-lane-icon">
           <Brain size={15} aria-hidden="true" />
@@ -53,10 +45,13 @@ export default function ModelSummary({ patient: p, run, busy, error }) {
           <span className="rx-ph-kicker">Relay's model</span>
           <strong>
             {busy && !a
-              ? "Comparing your recent readings with your usual…"
+              ? "Comparing with your usual…"
               : state
                 ? state.label
                 : "Not scored yet"}
+            {score !== null && (
+              <span className="rx-model-scorenum"> · {score} of 100</span>
+            )}
           </strong>
         </div>
         <button
@@ -68,54 +63,16 @@ export default function ModelSummary({ patient: p, run, busy, error }) {
           {busy ? "Scoring…" : a ? "Score again" : "Score"}
         </button>
       </div>
-
-      {a && score !== null && (
-        <div className="rx-model-score" aria-label={`Score ${score} of 100`}>
-          <div className="rx-model-bar" aria-hidden="true">
-            <i style={{ width: `${Math.min(100, score)}%` }} />
-          </div>
-          <span>
-            <strong>{score}</strong> of 100 · how far from your usual
-          </span>
+      {score !== null && (
+        <div className="rx-model-bar" aria-label={`Score ${score} of 100`}>
+          <i style={{ width: `${Math.min(100, score)}%` }} />
         </div>
       )}
-
-      {a && contributors.length > 0 && (
-        <ul className="rx-model-list" aria-label="What moved">
-          {contributors.map((c) => {
-            const up = c.direction === "above_baseline";
-            return (
-              <li key={c.metric || c.label}>
-                <span className={`rx-model-dir ${up ? "up" : "down"}`}>
-                  {up ? (
-                    <ArrowUp size={13} strokeWidth={2.6} aria-hidden="true" />
-                  ) : (
-                    <ArrowDown size={13} strokeWidth={2.6} aria-hidden="true" />
-                  )}
-                </span>
-                <span className="rx-model-name">{metricName(c)}</span>
-                <span className="rx-model-how">
-                  {up ? "higher" : "lower"} than your usual
-                  {c.persistence_windows
-                    ? ` · ${c.persistence_windows * 6}h`
-                    : ""}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {a && missing.length > 0 && (
-        <p className="rx-model-note">Missing recently: {missing.join(", ")}.</p>
-      )}
-
       <p className="rx-model-meaning">
         {a
-          ? state.meaning
-          : "Scoring compares your recent readings with your own usual and names what moved."}
+          ? summary(p, a)
+          : "Scores how far your recent readings sit from your own usual, 0 to 100."}
       </p>
-
       {error && (
         <p className="rx-p-error" role="alert">
           {error}

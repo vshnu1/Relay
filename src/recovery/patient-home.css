@@ -971,3 +971,32 @@
   color: var(--faint);
   font-size: 13px;
 }
+
+/* Under review: unusual readings already answered and reported. */
+.rx-ph-banner.reviewing {
+  background: var(--surface);
+  border: 1px solid var(--pine);
+}
+.rx-ph-banner.reviewing .rx-ph-kicker {
+  color: var(--pine);
+}
+.rx-ph-banner.reviewing .rx-ph-banner-icon {
+  background: var(--sage);
+  color: var(--pine);
+}
+
+/* Compact model tile: head, bar, one sentence. */
+.rx-ph-tile.model.compact {
+  gap: 8px;
+  padding: 12px 16px;
+}
+.rx-ph-tile.model.compact .rx-model-head strong {
+  font-size: 14px;
+}
+.rx-model-scorenum {
+  font-weight: 500;
+  color: var(--muted);
+}
+.rx-ph-tile.model.compact .rx-model-meaning {
+  font-size: 13px;
+}
