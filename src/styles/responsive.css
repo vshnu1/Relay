@@ -1,0 +1,282 @@
+@media (min-width: 1550px) {
+  .content {
+    padding: 40px;
+  }
+  .workspace-grid {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+  .evidence-grid {
+    grid-template-columns: minmax(0, 1fr) 310px;
+  }
+  .signal svg {
+    height: 85px;
+  }
+  .evidence-card {
+    padding: 25px;
+  }
+  .brief-summary {
+    font-size: 12px;
+  }
+}
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 180px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  main {
+    margin-left: 180px;
+  }
+  .content {
+    padding: 25px 20px;
+  }
+  .workspace-grid {
+    grid-template-columns: 195px minmax(0, 1fr);
+    gap: 14px;
+  }
+  .evidence-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .evidence-side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .patient-list .panel-heading {
+    padding: 17px 12px;
+  }
+  .patient-list h2 {
+    font-size: 13px;
+  }
+  .patient-card {
+    gap: 7px;
+    padding-right: 7px;
+  }
+  .patient-card > svg {
+    display: none;
+  }
+  .analysis-bar > div > span:not(.live-dot) {
+    display: none;
+  }
+  .stats > div {
+    padding: 0 15px;
+  }
+  .stats > div > span {
+    font-size: 8px;
+  }
+  .stats small {
+    font-size: 9px;
+  }
+}
+@media (max-width: 850px) {
+  .sidebar {
+    width: 68px;
+    padding: 25px 10px;
+  }
+  .brand {
+    font-size: 0;
+    padding: 0;
+    gap: 0;
+    margin-bottom: 40px;
+  }
+  .brand > span,
+  .workspace-label,
+  .nav-count,
+  .sidebar-bottom {
+    display: none;
+  }
+  .nav {
+    font-size: 0;
+    padding: 13px;
+    gap: 0;
+  }
+  .nav svg {
+    width: 20px;
+    height: 20px;
+  }
+  main {
+    margin-left: 68px;
+  }
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+  .patient-list {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .patient-list .panel-heading {
+    width: 100%;
+  }
+  .patient-list .search,
+  .list-label,
+  .queue-note {
+    display: none;
+  }
+  .patient-card {
+    width: 33.33%;
+    border-top: 1px solid #edf0e7;
+  }
+  .patient-card.selected {
+    border-left: 0;
+    border-bottom: 3px solid #6c8a56;
+    padding: 18px 13px 15px;
+  }
+  .patient-card .avatar {
+    display: none;
+  }
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .stats > div:nth-child(2) {
+    border: 0;
+  }
+  h1 {
+    font-size: 27px;
+  }
+  .demo-label {
+    font-size: 8px;
+  }
+  header {
+    padding: 0 20px;
+  }
+  .patient-title {
+    flex-wrap: wrap;
+  }
+  .patient-title > .badge {
+    margin-left: 0;
+  }
+  .page-heading .button {
+    font-size: 0;
+    gap: 0;
+  }
+  .evidence-side {
+    grid-template-columns: 1fr;
+  }
+  .patient-meta > span:last-child {
+    margin-left: 0;
+  }
+  .connection-row {
+    flex-wrap: wrap;
+  }
+  .connection-row .badge {
+    margin-left: 0;
+  }
+}
+@media (max-width: 520px) {
+  .content {
+    padding: 20px 12px;
+  }
+  .sidebar {
+    width: 55px;
+    padding: 25px 6px;
+  }
+  .nav {
+    padding: 12px 10px;
+  }
+  main {
+    margin-left: 55px;
+  }
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+  .stats > div {
+    padding: 0 12px;
+  }
+  .stats > div > span svg {
+    display: none;
+  }
+  .stats small {
+    font-size: 8px;
+  }
+  .stats strong {
+    font-size: 26px;
+  }
+  .patient-card {
+    padding: 13px 8px;
+  }
+  .patient-card.selected {
+    padding: 13px 8px 10px;
+  }
+  .patient-card strong {
+    font-size: 10px;
+  }
+  .patient-card .badge {
+    font-size: 7px;
+    padding: 4px;
+  }
+  .patient-card small {
+    font-size: 7px;
+  }
+  .patient-header {
+    padding: 16px;
+  }
+  .patient-title h2 {
+    font-size: 16px;
+  }
+  .patient-title h2 span {
+    display: block;
+    margin: 5px 0;
+  }
+  .simulation-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .analysis-bar .button {
+    font-size: 9px;
+  }
+  .signal-label > div:first-child > small {
+    display: none;
+  }
+  .timeline .panel-heading {
+    padding: 17px 14px;
+  }
+  .signal {
+    padding: 16px 13px 10px;
+  }
+  .signal-label strong {
+    font-size: 9px;
+  }
+  .signal-label b {
+    font-size: 12px;
+  }
+  .signal-foot {
+    font-size: 7px;
+  }
+  .workflow-steps {
+    justify-content: flex-start;
+  }
+  .page-heading h1 {
+    font-size: 23px;
+  }
+  .page-heading p {
+    font-size: 10px;
+  }
+  header {
+    height: 60px;
+    padding: 0 12px;
+  }
+  .header-right {
+    gap: 8px;
+  }
+  .breadcrumb {
+    gap: 5px;
+    font-size: 9px;
+  }
+  .demo-label {
+    font-size: 7px;
+  }
+  .modal-backdrop {
+    padding: 10px;
+  }
+  .modal {
+    padding: 28px 20px;
+  }
+  .modal h2 {
+    font-size: 23px;
+  }
+  footer > span:last-child {
+    display: none;
+  }
+}

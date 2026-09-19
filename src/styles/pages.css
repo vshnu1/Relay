@@ -1,0 +1,75 @@
+.patient-directory > button {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  width: 100%;
+  padding: 25px;
+  border: 0;
+  border-bottom: 1px solid #edf0e7;
+  background: #fff;
+  text-align: left;
+}
+.patient-directory p {
+  font-size: 11px;
+  margin-top: 5px;
+}
+.patient-directory .badge {
+  margin-left: auto;
+}
+.connections {
+  padding: 10px 20px 25px;
+}
+.connections > .panel-heading {
+  padding-left: 0;
+  padding-right: 0;
+}
+.connections > p {
+  font-size: 12px;
+}
+.connection-row {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 25px 0;
+  border-bottom: 1px solid #edf0e7;
+}
+.connection-row > svg {
+  color: #92a184;
+}
+.connection-row p {
+  font-size: 11px;
+}
+.connection-row .badge {
+  margin-left: auto;
+}
+.connections .method-card {
+  max-width: 800px;
+}
+.audit-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-top: 1px solid #edf0e7;
+  padding: 17px 22px;
+}
+.audit-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: #f3f6ec;
+  color: #90a17d;
+  border-radius: 7px;
+}
+.audit-row strong {
+  font-size: 11px;
+}
+.audit-row p {
+  font-size: 10px;
+  margin-top: 5px;
+}
+.audit-row time {
+  margin-left: auto;
+  font-size: 10px;
+  color: #9aa98b;
+}

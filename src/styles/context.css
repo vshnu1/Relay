@@ -1,0 +1,29 @@
+.context-body {
+  text-align: center;
+  padding: 42px 25px;
+  color: #8d9d7e;
+}
+.context-body > svg {
+  margin-bottom: 18px;
+}
+.context-body h3 {
+  font-size: 18px;
+}
+.context-body p {
+  font-size: 12px;
+  margin: 12px 0 23px;
+}
+.context-answer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 13px 0;
+  border-bottom: 1px solid #eef1e9;
+  text-align: left;
+}
+.context-answer span {
+  text-transform: capitalize;
+}
+.context-body .button {
+  margin-top: 20px;
+}
