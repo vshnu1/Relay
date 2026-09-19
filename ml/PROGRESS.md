@@ -10,7 +10,7 @@ Branch: `Pranav`. Owner: Pranav (ML and synthetic). Scope: `ml/**`, `docs/ML.md`
 - [x] build baseline features — six-hour windows, cadence-aware staleness, median/MAD baselines, robust deviations, missingness and coverage features
 - [x] train anomaly model — SimpleImputer(add_indicator) + RobustScaler + IsolationForest, chronological split, validation-calibrated threshold, persistence, synthetic-only prior artifact
 - [x] add synthetic scenarios — postoperative drift, missing sensor, gait decline; fixtures under `ml/fixtures/synthetic/`
-- [ ] test ml pipeline — end-to-end CLI tests and scenario outcome tests
+- [x] test ml pipeline — end-to-end CLI tests and scenario outcome tests
 - [ ] private local validation — read-only run on the export, aggregate report in `ml/reports/`
 - [ ] document ml handoff — `docs/ML.md`
 
@@ -48,3 +48,7 @@ Fixtures: `python -m vesper_ml fixtures` writes one request per scenario plus `e
 
 - Realistic-cadence scenarios sample like the real export: resting HR about 60% of days, HRV about 3/day on 70% of days, SpO2 four a day, sleep nightly, phone gait near-daily.
 - Robustness across generator seeds (model seed 0): gait_decline 6/8 context_needed; postoperative_drift about half. Misses coincide with days where the synthetic resting-HR or HRV reading is absent, so the model does not invent a deviation from stale data. Seed 0 is the committed fixture and is stable across model seeds.
+
+## Tests (test ml pipeline)
+
+`PYTHONPATH=ml python3 -m unittest discover -s ml/tests -t ml` — 53 tests: contracts, engine parity, export reader (synthetic XML), windows/baselines/features, model calibration, end-to-end scoring for every scenario, CLI round trip, fixture reproduction, and the export validator on a synthetic XML with an aggregate-only report check.
