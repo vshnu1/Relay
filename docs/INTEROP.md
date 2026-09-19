@@ -49,47 +49,105 @@ correction.
 
 ## What genuinely remains
 
-Re-running the engine on 6-hour windows, it still reports `quiet` on the real
-event day, but the failure modes are now specific and much smaller:
+With 6-hour windows the cadence is detected correctly as 6h and four of five
+baselines become usable:
 
 ```
-2026-07-18  state=quiet coordinated=false
-   rhr           25.8% vs 10%   flagged=false  Insufficient baseline
-   hrv          -15.9% vs 15%   flagged=false  Insufficient baseline
-   respiratory    0.8% vs 10%   flagged=false  Missing recent data
-   spo2             0% vs  3%   flagged=false  Available
+rhr          n= 11  sufficient=false
+hrv          n= 22  sufficient=true
+respiratory  n= 26  sufficient=true
+sleep        n= 13  sufficient=true
+spo2         n= 56  sufficient=true
 ```
 
-1. **Resting HR is genuinely sparse** at 0.55/day and cannot reach 12 samples
-   in 14 days at any window size. It clears its percent threshold (+25.8% vs
-   10%) and is still gated off. This one is a real engine problem.
-   *Fix:* derive resting HR ourselves from the continuous stream — mean heart
-   rate over 02:00-06:00 is available on 73 of 99 days against the vendor's 54,
-   and updates per window rather than per day.
-2. **`fresh` fails for respiratory** on some windows. The check requires a
-   sample within `max(8, cadence * 1.5)` hours of the series end. Real wear
-   has overnight and charging gaps that exceed it. *Fix:* widen the freshness
-   allowance, or treat a gap as `Missing recent data` on that signal only
-   rather than letting it suppress the whole pattern.
-3. **The 3-signal rule.** `coordinated` needs 3+ flagged signals. With
-   glucose absent (no CGM) and sleep nightly, real events here move 2 signals.
-   *Fix:* require 3 of the metrics that actually have usable baselines, not 3
-   of 6 fixed.
+The engine still reports `quiet` on the real event days. Peeling it apart by
+patching a local copy one constraint at a time gives a chain, not a single
+cause. Each fix below exposes the next:
+
+| Patch | Effect |
+|---|---|
+| baseline window 14d → 28d | every `Insufficient baseline` clears |
+| `fresh` 9h → 36h | every `Missing recent data` clears |
+| analysis window 36h → 96h | `hr_night` finally flags on one day |
+
+After all three, one signal flags. Not three, so `coordinated` stays false.
+
+### The tension that makes this a design question
+
+Widening the analysis window is what lets a daily metric contribute three
+samples — and it is also what destroys the signal. `current` is the mean over
+that window, so on the real event day resting HR reads:
+
+| Analysis window | rhr delta |
+|---|---|
+| 36h | +31.1% |
+| 96h | +15.2% |
+
+The same excursion, diluted by averaging it with three normal days. For a
+metric sampled once a day, "three consecutive samples" and "a strong delta"
+pull in opposite directions. No choice of constant satisfies both.
+
+So this is not a tuning bug. The persistence model assumes every metric is
+sampled densely, and ours are not: SpO2 arrives 3.1 times a day, resting HR
+0.54 times a day, and one rule governs both.
 
 ## Suggested changes, smallest first
 
-1. **Aggregate to 6-hour windows in ingestion.** Ours, not theirs. Fixes
-   three of four metrics with no engine change.
-2. **Derive resting HR from the nocturnal window** instead of using the
-   vendor's daily field. More coverage, finer cadence.
-3. **Make `min_signals` relative** to how many metrics have usable baselines.
-4. **Widen `fresh`** or scope its effect to the individual signal.
+1. **Aggregate to 6-hour windows in ingestion.** Done — `pipeline/aggregate.py
+   --window 6`. Fixes three of five baselines with no engine change.
+2. **Make persistence cadence-relative per metric.** Require 3 samples
+   spanning at least 24h *of that metric's own cadence*, rather than 3
+   samples inside one global window. A daily metric then needs 3 days, which
+   it can supply, and a 5-minute metric is unaffected.
+3. **For low-cadence metrics, compare the latest sample, not a window mean.**
+   Averaging is what turned +31% into +15%. Dense metrics should keep the
+   mean; it is what makes them robust.
+4. **Widen `fresh`, or scope it per signal.** Overnight and charging gaps
+   routinely exceed `max(8, cadence * 1.5)`, and one stale signal currently
+   suppresses the whole pattern.
+5. **Make `min_signals` relative** to how many metrics have usable baselines.
+   With no CGM, requiring 3 of 6 is requiring 3 of 5.
+
+Items 2 and 3 are the substantive ones and they are the same idea: the rules
+should be per-metric, because the sampling rates differ by a factor of six.
+
+## Nocturnal heart rate
+
+`pipeline/aggregate.py` derives `hr_night` as the mean over 02:00-06:00. It
+covers 73 of 99 days against the vendor resting-HR field's 54.
+
+**It is not a substitute for that field.** Measured against it on the 54 days
+where both exist:
+
+| Derivation | Bias | Correlation | MAE |
+|---|---|---|---|
+| HR 5th percentile | +4.2 bpm | 0.22 | 5.9 |
+| HR 10th percentile | +10.4 bpm | -0.05 | 11.1 |
+| Nocturnal 02:00-06:00 mean | +9.2 bpm | 0.45 | 9.4 |
+
+Splicing 54 days of vendor RHR (mean 59) onto 73 days of nocturnal mean
+(mean 68) would put a 9 bpm step in the middle of the series and manufacture
+deviations from it. They are kept as separate columns with separate
+baselines, and `to_relay_events.py` refuses to emit `hr_night` as `rhr`.
+
+Emitting it needs a `METRICS` entry, which is why it sits behind
+`--include-nocturnal`:
+
+```js
+hr_night: {
+  label: "Nocturnal heart rate", unit: "bpm", base: 62,
+  threshold: 12, color: "#8b6f9e", source: "Wearable",
+},
+```
+
+Patched in locally, it gets a usable baseline (n=14) and shows +33% on the
+real event day, which is the largest deviation of any signal there.
 
 ## Why this still matters for judging
 
 The Nucleate brief asks whether the data-to-insight pipeline is *sound*.
 "We ran it against 99 days of real wearable data, found our windowing was
-wrong, fixed it, and found the two places the engine genuinely needed
-loosening" is a strong answer. It is also an honest one, which is the point —
-the first version of this document had it backwards, and the measurement is
-what caught it.
+wrong, fixed it, and traced what remained to a persistence model that assumes
+uniform sampling rates" is a strong answer. It is also an honest one, which
+is the point — the first version of this document had it backwards, and
+measuring is what caught it.
