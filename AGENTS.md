@@ -55,6 +55,7 @@ The doctor and patient views for the post-discharge mission. `Root.jsx` holds th
 - `model/derive.js` turns raw readings into every status, number, sentence, and chart point. It is pure and covered by `tests/recovery.test.js`. **The UI stores no computed values**, so late or out-of-order readings are safe.
 - `model/profiles.js` is the illness table: which signals count, in which direction, past what threshold, and which questions are asked. Illustrative until a clinician signs it off.
 - `doctor/`, `patient/` are the screens. They read derived state and call `actions`; they never fetch.
+- `Conversation.jsx` is the one message thread both sides use, with its own `conversation.css`. `model/currentUser.js` holds who is signed in, for display only; the server decides who a message is from. The server side of messaging is in `docs/HANDOFF-MESSAGING.md`.
 
 Never name a source folder `data`. `.gitignore` ignores `data/` at every depth to keep real health data out of git, so such a folder is silently left out of commits. That is why this one is called `model/`.
 
