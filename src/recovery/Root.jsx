@@ -115,13 +115,11 @@ function PatientRoot({ route }) {
     return (
       <div className="rx">
         <DemoBar isPatient />
-        <div className="rx-patient">
-          <div className="rx-phone">
-            <main className="rx-p-screen">
-              <SignIn roster={roster} onSignIn={enter} />
-            </main>
+        <main className="rx-p-auth">
+          <div className="rx-p-screen rx-card">
+            <SignIn roster={roster} onSignIn={enter} />
           </div>
-        </div>
+        </main>
       </div>
     );
   return (

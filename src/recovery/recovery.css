@@ -2384,3 +2384,219 @@ p.rx-row-summary {
 .rx-p-stephead .rx-p-iconbtn {
   margin-left: auto;
 }
+
+/* ---------- Patient view as a web app (no phone frame) ---------- */
+.rx-p-auth {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 48px 24px;
+}
+.rx-p-auth .rx-p-screen {
+  width: 100%;
+  max-width: 560px;
+  padding: 36px 40px;
+  font-size: 16px;
+  gap: 18px;
+}
+.rx-pweb .rx-p-screen {
+  max-width: 1040px;
+  padding: 32px 40px 48px;
+  gap: 20px;
+  font-size: 16px;
+}
+.rx-pweb .rx-navlink > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.rx-pweb .rx-side-foot button {
+  align-self: flex-start;
+  padding: 0;
+  font-size: 12.5px;
+}
+.rx-pweb .rx-p-hello h1,
+.rx-p-auth .rx-p-title {
+  font-size: 28px;
+}
+.rx-pweb .rx-p-title {
+  font-size: 28px;
+}
+.rx-pweb .rx-p-title.small {
+  font-size: 24px;
+}
+.rx-pweb .rx-p-lead {
+  font-size: 16.5px;
+  max-width: 720px;
+}
+.rx-pweb .rx-p-question {
+  font-size: 26px;
+  max-width: 720px;
+}
+.rx-pweb .rx-p-card {
+  padding: 20px 22px;
+  gap: 12px;
+  border-radius: 14px;
+}
+.rx-pweb .rx-p-card h2 {
+  font-size: 17px;
+}
+.rx-pweb .rx-p-btn,
+.rx-p-auth .rx-p-btn {
+  min-height: 48px;
+  font-size: 16px;
+  border-radius: 10px;
+}
+.rx-pweb .rx-p-btn.primary,
+.rx-p-auth .rx-p-btn.primary {
+  font-size: 16px;
+}
+.rx-pweb .rx-p-options {
+  max-width: 560px;
+}
+.rx-pweb .rx-p-options button {
+  min-height: 52px;
+  font-size: 17px;
+  border-radius: 12px;
+}
+.rx-pweb .rx-p-status strong,
+.rx-pweb .rx-p-device strong,
+.rx-pweb .rx-p-signal strong,
+.rx-pweb .rx-p-answer strong {
+  font-size: 16px;
+}
+.rx-pweb .rx-p-status span,
+.rx-pweb .rx-p-device span,
+.rx-pweb .rx-p-answer span,
+.rx-pweb .rx-p-fine,
+.rx-pweb .rx-p-field label,
+.rx-pweb .rx-p-consent span {
+  font-size: 14.5px;
+}
+.rx-pweb .rx-p-status {
+  min-height: 56px;
+}
+.rx-pweb .rx-p-rowlink {
+  min-height: 48px;
+  font-size: 15px;
+}
+.rx-pweb .rx-p-signal p,
+.rx-pweb .rx-p-notif p,
+.rx-pweb .rx-p-plain,
+.rx-pweb .rx-p-insight p,
+.rx-pweb .rx-p-bubble,
+.rx-pweb .rx-p-entryrow p,
+.rx-pweb .rx-p-notes {
+  font-size: 15.5px;
+}
+.rx-pweb .rx-p-notif strong {
+  font-size: 16px;
+}
+.rx-pweb .rx-p-notif {
+  padding: 14px 18px;
+  border-radius: 12px;
+}
+.rx-pweb .rx-p-chip {
+  font-size: 13px;
+  padding: 4px 10px;
+}
+.rx-pweb .rx-p-help {
+  display: none;
+}
+.rx-pweb .rx-p-home {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.rx-p-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.rx-pweb .rx-p-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+.rx-pweb .rx-p-action {
+  min-height: 84px;
+  font-size: 15px;
+}
+.rx-pweb .rx-p-metric,
+.rx-pweb .rx-p-insight,
+.rx-pweb .rx-p-form,
+.rx-pweb .rx-p-chat,
+.rx-pweb .rx-p-input,
+.rx-pweb .rx-p-quick {
+  max-width: 760px;
+}
+.rx-pweb .rx-p-chat {
+  max-height: 460px;
+}
+.rx-pweb .rx-p-now strong {
+  font-size: 32px;
+}
+.rx-pweb .rx-p-screen > .bottom {
+  margin-top: 8px;
+}
+.rx-pweb .rx-p-stack.bottom {
+  max-width: 560px;
+}
+.rx-pweb .rx-p-sheet,
+.rx-p-auth .rx-p-sheet {
+  align-items: center;
+}
+.rx-pweb .rx-p-sheet-body {
+  max-width: 480px;
+  border-radius: 20px;
+  padding: 28px;
+  font-size: 16px;
+}
+.rx-pweb .rx-p-report {
+  max-width: 760px;
+}
+.rx-pweb .rx-p-entry > div {
+  max-width: 360px;
+}
+.rx-pweb .rx-p-kv > div {
+  grid-template-columns: 180px minmax(0, 1fr);
+}
+@media (max-width: 860px) {
+  .rx-pweb {
+    flex-direction: column;
+  }
+  .rx-pweb .rx-side {
+    position: static;
+    width: auto;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    padding: 12px 12px 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rx-pweb .rx-side .rx-brand {
+    width: 100%;
+    padding: 0 8px 8px;
+  }
+  .rx-pweb .rx-navlink {
+    min-height: 38px;
+    padding: 0 10px;
+  }
+  .rx-pweb .rx-side-foot {
+    width: 100%;
+    margin-top: 6px;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+  .rx-pweb .rx-p-screen {
+    padding: 20px 16px 40px;
+  }
+  .rx-pweb .rx-p-home {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

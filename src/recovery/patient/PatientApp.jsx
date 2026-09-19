@@ -8,6 +8,7 @@ import {
   LineChart,
   MessageCircle,
   MessageSquare,
+  Smartphone,
   UserRound,
 } from "lucide-react";
 import { ago, list } from "../format.js";
@@ -27,13 +28,31 @@ import Journal from "./Journal.jsx";
 import Care from "./Care.jsx";
 import Insight from "./Insight.jsx";
 
-const TABS = [
+const NAV = [
   { id: "home", label: "Home", href: "#/patient", icon: HomeIcon },
   {
     id: "readings",
-    label: "Readings",
+    label: "My readings",
     href: "#/patient/readings",
     icon: LineChart,
+  },
+  {
+    id: "checkin",
+    label: "Check-in",
+    href: "#/patient/checkin",
+    icon: MessageSquare,
+  },
+  {
+    id: "assistant",
+    label: "Assistant",
+    href: "#/patient/assistant",
+    icon: MessageCircle,
+  },
+  {
+    id: "journal",
+    label: "Record something",
+    href: "#/patient/journal",
+    icon: BookOpen,
   },
   {
     id: "care",
@@ -41,9 +60,14 @@ const TABS = [
     href: "#/patient/care",
     icon: MessageSquare,
   },
+  {
+    id: "connect",
+    label: "Your data",
+    href: "#/patient/connect",
+    icon: Smartphone,
+  },
   { id: "profile", label: "Me", href: "#/patient/profile", icon: UserRound },
 ];
-const FOCUSED = ["checkin", "watching", "assistant", "journal", "insight"];
 
 function phrase(s) {
   if (s.today === null) return "no reading yet today";
@@ -65,17 +89,6 @@ function Home({ patient: p }) {
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   return (
     <>
-      <header className="rx-p-top">
-        <span className="rx-brand">
-          <span className="rx-brand-mark">
-            <Activity size={18} strokeWidth={2.4} />
-          </span>
-          relay
-        </span>
-        <a className="rx-p-help" href="#/patient/watching">
-          Help
-        </a>
-      </header>
       <div className="rx-p-hello">
         <h1>
           {greeting}, {p.first}
@@ -101,90 +114,98 @@ function Home({ patient: p }) {
               : "Your check-ins are complete."}
         </small>
       </div>
-      {notes.length ? (
-        <section aria-label="For you today" className="rx-p-stack">
-          {notes.map((n) => (
-            <div key={n.id} className={`rx-p-notif ${n.kind}`}>
-              <strong>{n.title}</strong>
-              <p>{n.body}</p>
-              <a href={n.href}>{n.cta} →</a>
-            </div>
-          ))}
-        </section>
-      ) : (
-        <section className="rx-p-card" aria-label="Today">
-          <h2>Nothing is needed from you today</h2>
-          <p>
-            Your care team can see your readings. We will let you know if they
-            have questions.
-          </p>
-        </section>
-      )}
-      <div className="rx-p-grid" aria-label="Quick actions">
-        <a className="rx-p-action" href="#/patient/checkin">
-          <MessageSquare size={22} aria-hidden="true" /> Check in
-          <small>{p.profile.questions.length} questions, two minutes</small>
-        </a>
-        <a className="rx-p-action" href="#/patient/assistant">
-          <MessageCircle size={22} aria-hidden="true" /> Talk it through
-          <small>Answer by voice or chat</small>
-        </a>
-        <a className="rx-p-action" href="#/patient/journal">
-          <BookOpen size={22} aria-hidden="true" /> Record something
-          <small>A symptom, a medicine, anything odd</small>
-        </a>
-        <a className="rx-p-action" href="#/patient/readings">
-          <LineChart size={22} aria-hidden="true" /> My readings
-          <small>{p.counted.length} watched signals</small>
-        </a>
-      </div>
-      <section className="rx-p-card list" aria-label="Your readings today">
-        <h2>Your readings today</h2>
-        {p.counted.map((s) => (
-          <div className="rx-p-signal" key={s.id}>
-            <div>
-              <strong>{s.plain}</strong>
-              <span className={`rx-p-chip ${s.towardDays ? "changed" : ""}`}>
-                {s.towardDays ? "Changed" : "Usual"}
-              </span>
-            </div>
-            <p>
-              {s.today === null
-                ? "No reading yet today."
-                : `${s.fmt(s.today)} ${s.unit}, ${phrase(s)}.`}
-            </p>
-          </div>
-        ))}
-        <a className="rx-p-rowlink" href="#/patient/readings">
-          See all readings
-          <ChevronRight size={20} aria-hidden="true" />
-        </a>
-      </section>
-      <section className="rx-p-card list" aria-label="Your devices">
-        <div className="rx-p-status">
-          {connected.length ? (
-            <CheckCircle2 size={28} color="#2f7a62" aria-hidden="true" />
+      <div className="rx-p-home">
+        <div className="rx-p-col">
+          {notes.length ? (
+            <section aria-label="For you today" className="rx-p-stack">
+              {notes.map((n) => (
+                <div key={n.id} className={`rx-p-notif ${n.kind}`}>
+                  <strong>{n.title}</strong>
+                  <p>{n.body}</p>
+                  <a href={n.href}>{n.cta} →</a>
+                </div>
+              ))}
+            </section>
           ) : (
-            <CircleAlert size={28} color="#8a6520" aria-hidden="true" />
+            <section className="rx-p-card" aria-label="Today">
+              <h2>Nothing is needed from you today</h2>
+              <p>
+                Your care team can see your readings. We will let you know if
+                they have questions.
+              </p>
+            </section>
           )}
-          <div>
-            <strong>
-              {connected.length
-                ? `${list(connected.map(([, d]) => d.name))} connected`
-                : "No wearable connected"}
-            </strong>
-            <span>
-              {connected.length
-                ? `Last synced ${ago(Date.now() - Math.max(...connected.map(([, d]) => d.lastSync || 0)))}`
-                : "Connect one so your care team sees your readings."}
-            </span>
+          <div className="rx-p-grid" aria-label="Quick actions">
+            <a className="rx-p-action" href="#/patient/checkin">
+              <MessageSquare size={22} aria-hidden="true" /> Check in
+              <small>{p.profile.questions.length} questions, two minutes</small>
+            </a>
+            <a className="rx-p-action" href="#/patient/assistant">
+              <MessageCircle size={22} aria-hidden="true" /> Talk it through
+              <small>Answer by voice or chat</small>
+            </a>
+            <a className="rx-p-action" href="#/patient/journal">
+              <BookOpen size={22} aria-hidden="true" /> Record something
+              <small>A symptom, a medicine, anything odd</small>
+            </a>
+            <a className="rx-p-action" href="#/patient/readings">
+              <LineChart size={22} aria-hidden="true" /> My readings
+              <small>{p.counted.length} watched signals</small>
+            </a>
           </div>
         </div>
-        <a className="rx-p-rowlink" href="#/patient/connect">
-          Connected data and imports
-          <ChevronRight size={20} aria-hidden="true" />
-        </a>
-      </section>
+        <div className="rx-p-col">
+          <section className="rx-p-card list" aria-label="Your readings today">
+            <h2>Your readings today</h2>
+            {p.counted.map((s) => (
+              <div className="rx-p-signal" key={s.id}>
+                <div>
+                  <strong>{s.plain}</strong>
+                  <span
+                    className={`rx-p-chip ${s.towardDays ? "changed" : ""}`}
+                  >
+                    {s.towardDays ? "Changed" : "Usual"}
+                  </span>
+                </div>
+                <p>
+                  {s.today === null
+                    ? "No reading yet today."
+                    : `${s.fmt(s.today)} ${s.unit}, ${phrase(s)}.`}
+                </p>
+              </div>
+            ))}
+            <a className="rx-p-rowlink" href="#/patient/readings">
+              See all readings
+              <ChevronRight size={20} aria-hidden="true" />
+            </a>
+          </section>
+          <section className="rx-p-card list" aria-label="Your devices">
+            <div className="rx-p-status">
+              {connected.length ? (
+                <CheckCircle2 size={28} color="#2f7a62" aria-hidden="true" />
+              ) : (
+                <CircleAlert size={28} color="#8a6520" aria-hidden="true" />
+              )}
+              <div>
+                <strong>
+                  {connected.length
+                    ? `${list(connected.map(([, d]) => d.name))} connected`
+                    : "No wearable connected"}
+                </strong>
+                <span>
+                  {connected.length
+                    ? `Last synced ${ago(Date.now() - Math.max(...connected.map(([, d]) => d.lastSync || 0)))}`
+                    : "Connect one so your care team sees your readings."}
+                </span>
+              </div>
+            </div>
+            <a className="rx-p-rowlink" href="#/patient/connect">
+              Connected data and imports
+              <ChevronRight size={20} aria-hidden="true" />
+            </a>
+          </section>
+        </div>
+      </div>
       <p className="rx-p-fine">
         Feeling very unwell? Follow the emergency instructions in your discharge
         papers.
@@ -208,12 +229,53 @@ export default function PatientApp({ patient, route, onSignOut }) {
   ].includes(route[1])
     ? route[1]
     : "home";
-  const focused = FOCUSED.includes(page);
-  const tab = page === "connect" || page === "sharing" ? "profile" : page;
+  const current =
+    page === "sharing"
+      ? "connect"
+      : page === "watching"
+        ? "profile"
+        : page === "insight"
+          ? "care"
+          : page;
+  const due = checkinDue(patient);
   return (
-    <div className="rx-patient">
-      <div className="rx-phone">
-        <main className="rx-p-screen">
+    <div className="rx-doctor rx-pweb">
+      <nav className="rx-side" aria-label="Sections">
+        <a className="rx-brand" href="#/patient">
+          <span className="rx-brand-mark">
+            <Activity size={18} strokeWidth={2.4} />
+          </span>
+          relay
+        </a>
+        {NAV.map((t) => (
+          <a
+            key={t.id}
+            className="rx-navlink"
+            href={t.href}
+            aria-current={current === t.id ? "page" : undefined}
+          >
+            <span>
+              <t.icon size={16} aria-hidden="true" /> {t.label}
+            </span>
+            {t.id === "checkin" && due.due && (
+              <span className="rx-count">1</span>
+            )}
+          </a>
+        ))}
+        <div className="rx-side-foot">
+          <p>
+            {patient.name}
+            <br />
+            Day {patient.dayHome} of {patient.windowDays}
+          </p>
+          <a href="#/patient/watching">What is watched</a>
+          <button type="button" className="rx-textbtn" onClick={onSignOut}>
+            Sign out
+          </button>
+        </div>
+      </nav>
+      <main className="rx-main">
+        <div className="rx-p-screen">
           {page === "checkin" ? (
             <Checkin patient={patient} />
           ) : page === "watching" ? (
@@ -237,22 +299,8 @@ export default function PatientApp({ patient, route, onSignOut }) {
           ) : (
             <Home patient={patient} />
           )}
-        </main>
-        {!focused && (
-          <nav className="rx-p-tabs four" aria-label="Sections">
-            {TABS.map((t) => (
-              <a
-                key={t.id}
-                href={t.href}
-                aria-current={tab === t.id ? "page" : undefined}
-              >
-                <t.icon size={23} aria-hidden="true" />
-                {t.label}
-              </a>
-            ))}
-          </nav>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
