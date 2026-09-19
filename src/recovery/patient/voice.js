@@ -7,6 +7,7 @@
 // docs/voice-agent.md forbids it and the tools give it nothing to diagnose with.
 import { QUESTIONS } from "../model/profiles.js";
 import { describeAnalysis } from "../model/mlClient.js";
+import { checkinWhy } from "../model/schedule.js";
 
 export async function voiceAvailable(fetchFn = fetch) {
   try {
@@ -105,14 +106,10 @@ export async function startPatientVoiceSession({
     throw new Error(body.error || "Voice is not available right now.");
   const { Conversation } = await import("@elevenlabs/client");
   const status = recoveryStatus(p, questions);
-  const moved = p.counted
-    .filter((s) => s.moved)
-    .map((s) => s.plain.toLowerCase());
-  const firstMessage = `Hi ${p.first}. This is Relay, checking in on day ${p.dayHome} of your recovery after ${p.profile.after}. ${
-    moved.length
-      ? `Your ${moved.join(", ")} ${moved.length === 1 ? "has" : "have"} moved away from your usual, so I have ${questions.length} short questions for your care team.`
-      : `Your readings look like your usual. I have ${questions.length} short questions for your care team.`
-  } Nothing I say is a diagnosis. Is it okay to start?`;
+  // The agent opens by saying why this check-in is happening: the cadence (daily
+  // for the first week, every other day after) or the readings that moved.
+  const why = checkinWhy(p);
+  const firstMessage = `Hi ${p.first}. This is Relay, checking in on day ${p.dayHome} of your recovery after ${p.profile.after}. ${why} I have ${questions.length} short questions; we can just talk through them. Nothing I say is a diagnosis. Is it okay to start?`;
   return Conversation.startSession({
     signedUrl: body.signed_url,
     connectionType: "websocket",
@@ -120,6 +117,7 @@ export async function startPatientVoiceSession({
       patient_name: p.first,
       program: p.profile.name,
       day_at_home: String(p.dayHome),
+      checkin_reason: why,
       model_state: status.model.state,
       model_summary: status.model.summary,
       readings_summary: status.readings

@@ -64,15 +64,17 @@ Render workflow code is ready on the `Vishnu` branch. The deployed `relay-monito
 
 ## Patient-view agent: reads the metrics and the model, then asks
 
-The patient view (`src/recovery/patient/Assistant.jsx`, `voice.js`) starts the same
-agent with a richer brief. Paste the prompt and the three client tools below into
+The patient view (`src/recovery/patient/Checkin.jsx`, `voice.js`) starts the same
+agent with a richer brief; the check-in is this one conversation. Paste the prompt and the three client tools below into
 the agent in the ElevenLabs dashboard; the app works with the browser's own speech
 until the server has `ELEVENLABS_API_KEY`. The server route is
 `POST /api/voice/session` (consent only; no patient list needed).
 
 ### Dynamic variables the app sends
 
-`patient_name`, `program`, `day_at_home`, `model_state` (monitoring /
+`patient_name`, `program`, `day_at_home`, `checkin_reason` (one or two sentences:
+the cadence, daily for the first week home and every other day after, or the
+readings that moved, or that the care team asked), `model_state` (monitoring /
 context_needed / review_recommended / insufficient_data / not_scored),
 `model_summary`, `readings_summary`, `question_list` (question ids, text and
 allowed answers, separated by `|`).
@@ -88,13 +90,19 @@ readings moved away from the patient's own usual, what Relay's model concluded
 
 Rules:
 
-1. Open with the first message you were given, then confirm the patient is happy to
-   continue. If they decline, thank them and end.
+1. Open with the first message you were given. It already says why this check-in
+   is happening ({{checkin_reason}}): in the first week home Relay checks in every
+   day, after that every other day, and at any time the readings move away from
+   the patient's usual. If the patient asks why, repeat that in your own words.
+   Confirm the patient is happy to continue. If they decline, thank them and end.
 2. Say in one sentence what moved, in plain words, using only the readings in the
    status. Never name a condition, never say what a reading means, never assess an
    emergency, never advise on medicines or treatment.
-3. Ask every question in `questions`, one at a time, exactly as written. Accept only
-   the allowed answers; if unclear, offer the options again. Do not add questions.
+3. Ask every question in `questions`, one at a time, as part of a conversation:
+   acknowledge the previous answer in a few words, then ask the next question in
+   its own words. Keep the meaning exactly as written; accept only the allowed
+   answers, and if unclear offer the options again. Do not add questions and do
+   not make it feel like a quiz.
 4. After the last question, ask "Is there anything else your care team should know?"
    and treat the reply as the note. "No" means the note is None.
 5. Call `record_checkin_response` once with every answer keyed by question id, plus

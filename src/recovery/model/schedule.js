@@ -4,6 +4,7 @@
 import {
   PROFILES,
   QUESTIONS,
+  SCHEDULE,
   isScheduledDay,
   toModelContext,
 } from "./profiles.js";
@@ -17,15 +18,46 @@ const sameDay = (a, b) =>
 
 // Is a routine check-in due today? Daily for the first week home, every other day
 // after that, and never twice in one day.
+// Two more reasons make a check-in due off-schedule: the readings have stayed away
+// from the patient's usual (the rules' pattern) or the model found the recent
+// windows unusual. Either is an alert the dashboard and the sidebar show at once.
 const RECENT_ANSWER = 18 * 3600000;
+export const readingsAsk = (p) => !!(p.pattern || p.analysis?.is_anomalous);
 export function checkinDue(p, now = Date.now()) {
   const answeredRecently = p.checkins.some(
     (c) => c.answeredAt && now - c.answeredAt < RECENT_ANSWER,
   );
   if (answeredRecently) return { due: false, reason: "answered" };
   if (p.pending) return { due: true, reason: "asked" };
+  if (readingsAsk(p)) return { due: true, reason: "readings" };
   if (isScheduledDay(p.dayHome)) return { due: true, reason: "scheduled" };
   return { due: false, reason: "not-scheduled" };
+}
+
+// Why this check-in, in the words the voice agent opens with and the dashboard
+// shows. Cadence: daily for the first week home, then every other day.
+export function checkinWhy(p, now = Date.now()) {
+  const due = checkinDue(p, now);
+  const cadence =
+    p.dayHome <= SCHEDULE.dailyUntil
+      ? `In your first week home we check in every day; this is day ${p.dayHome}.`
+      : `After the first week we check in every other day; this is day ${p.dayHome}.`;
+  const moved = p.moved.map((s) => s.plain.toLowerCase());
+  if (due.reason === "asked")
+    return `Your care team asked for this check-in. ${
+      moved.length
+        ? `Your ${list(moved)} ${moved.length === 1 ? "has" : "have"} moved away from your usual, and they want to understand why.`
+        : "They have a few questions about how you are doing."
+    }`;
+  if (due.reason === "readings")
+    return `${
+      moved.length
+        ? `Your ${list(moved)} ${moved.length === 1 ? "has" : "have"} been away from your usual`
+        : "Relay's model found an unusual pattern in your readings"
+    }${p.hours ? ` for about ${p.hours} hours` : ""}. A few answers tell your care team whether there is a simple explanation.`;
+  if (due.reason === "answered")
+    return "You have already checked in today. You can still talk to Relay if something has changed.";
+  return `${cadence} Your answers are read together with your readings, so your care team sees the whole picture without calling you in.`;
 }
 
 export function nextScheduledDay(day) {
@@ -180,24 +212,16 @@ export function notifications(p, now = Date.now()) {
       title:
         due.reason === "asked"
           ? "Your care team has questions for you"
-          : `Day ${p.dayHome} check-in`,
+          : due.reason === "readings"
+            ? "Your readings changed. Please check in"
+            : `Day ${p.dayHome} check-in`,
       body:
-        due.reason === "asked"
-          ? "Your readings changed. A few questions help them understand why."
-          : "A few quick questions about today. About two minutes.",
+        due.reason === "scheduled"
+          ? "A short conversation with Relay about today. About two minutes."
+          : checkinWhy(p, now),
       href: "#/patient/checkin",
-      cta: "Answer now",
+      cta: "Start check-in",
     });
-  if (p.analysis?.is_anomalous && !due.due && !p.answered) {
-    out.push({
-      id: "model-asks",
-      kind: "action",
-      title: "Relay's model found an unusual pattern",
-      body: "A few questions help your care team understand why.",
-      href: "#/patient/checkin",
-      cta: "Answer now",
-    });
-  }
   if (p.answered && !p.pending) {
     const i = insight(p);
     if (i.level === "send" && !alreadySent(p, p.answered.answeredAt))

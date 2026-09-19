@@ -1,277 +1,446 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, ChevronLeft, Mic, Volume2 } from "lucide-react";
-import { actions, useRecovery } from "../useRecovery.js";
+import {
+  CheckCircle2,
+  ChevronLeft,
+  Mic,
+  PhoneCall,
+  PhoneOff,
+} from "lucide-react";
+import { actions } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
-import { checkinDue } from "../model/schedule.js";
+import { checkinDue, checkinWhy } from "../model/schedule.js";
 import { useAnalysis } from "./useAnalysis.js";
+import { startPatientVoiceSession, voiceAvailable } from "./voice.js";
+
+// The check-in is one conversation. Relay opens by saying why it is checking in
+// (daily for the first week home, every other day after, or because the readings
+// moved), then talks through the profile's questions. With ELEVENLABS_API_KEY on
+// the server the ElevenLabs agent runs it, reading the readings and the model's
+// result first. Without it the browser speaks and listens itself; the questions,
+// the answers and what happens afterwards are the same either way.
 
 const canSpeak = () => typeof speechSynthesis !== "undefined";
-function speak(text) {
-  if (!canSpeak()) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate = 0.95;
-  speechSynthesis.speak(u);
+const Recognition =
+  typeof window !== "undefined"
+    ? window.SpeechRecognition || window.webkitSpeechRecognition
+    : null;
+
+function matchOption(text, options) {
+  const t = (text || "").trim().toLowerCase();
+  if (!t) return null;
+  const direct = options.find((o) => o.toLowerCase() === t);
+  if (direct) return direct;
+  const has = (...words) => words.some((w) => t.includes(w));
+  if (
+    options.includes("A lot") &&
+    has("a lot", "lot", "much", "very", "really", "worse", "badly")
+  )
+    return "A lot";
+  if (
+    options.includes("A little") &&
+    has("little", "bit", "slight", "some", "kind of", "somewhat")
+  )
+    return "A little";
+  if (
+    options.includes("Not sure") &&
+    has("not sure", "unsure", "don't know", "dont know", "maybe", "hard to say")
+  )
+    return "Not sure";
+  if (
+    options.includes("Yes") &&
+    has("yes", "yeah", "yep", "i have", "i did", "i am")
+  )
+    return "Yes";
+  if (
+    options.includes("No") &&
+    has(
+      "no",
+      "nope",
+      "not really",
+      "haven't",
+      "havent",
+      "didn't",
+      "didnt",
+      "same",
+    )
+  )
+    return "No";
+  return null;
 }
 
-// question -> review -> more -> done. The required answers are sent at "review",
-// so skipping the free-text step never loses them. Questions come from the watch
-// profile and map one-to-one onto the ML model's context fields.
+const STATUS = {
+  "": "Not started",
+  connecting: "Connecting…",
+  connected: "Listening",
+  ended: "Call ended",
+  browser: "Listening",
+};
+
 export default function Checkin({ patient: p }) {
-  const { capabilities } = useRecovery();
   const questions = p.questions || p.profile.questions;
   const due = checkinDue(p);
-  const [mode, setMode] = useState("question");
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [agreed, setAgreed] = useState(false);
-  const [note, setNote] = useState("");
-  const [sentNote, setSentNote] = useState(false);
-  const [aloud, setAloud] = useState(false);
+  const why = checkinWhy(p);
   const { run: score } = useAnalysis(p);
-  const spoken = useRef(null);
+  const [phase, setPhase] = useState("idle"); // idle | live | done
+  const [engine, setEngine] = useState(null); // elevenlabs | browser
+  const [log, setLog] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [stage, setStage] = useState({ kind: "question", i: 0 });
+  const [voice, setVoice] = useState({
+    available: false,
+    status: "",
+    error: "",
+  });
+  const [listening, setListening] = useState(false);
+  const [noteDraft, setNoteDraft] = useState("");
+  const sessionRef = useRef(null);
+  const recRef = useRef(null);
+  const endRef = useRef(null);
+  const answersRef = useRef({});
+
   useEffect(() => {
-    if (mode === "question" && aloud && spoken.current !== step) {
-      spoken.current = step;
-      speak(
-        `${QUESTIONS[questions[step]].text} ${QUESTIONS[questions[step]].options.join(", or ")}?`,
-      );
+    let live = true;
+    voiceAvailable().then(
+      (ok) => live && setVoice((v) => ({ ...v, available: ok })),
+    );
+    return () => {
+      live = false;
+      sessionRef.current?.endSession?.();
+      recRef.current?.stop?.();
+      if (canSpeak()) speechSynthesis.cancel();
+    };
+  }, []);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "end" });
+  }, [log]);
+
+  const say = (who, text) => setLog((l) => [...l, { who, text }]);
+
+  const finish = (all, note) => {
+    actions.submitCheckin(p.id, all);
+    if (note) actions.sendNote(p.id, note);
+    score(all); // the model re-scores with the answers in the background
+    setPhase("done");
+  };
+
+  // ---- ElevenLabs path -------------------------------------------------------
+  const startAgent = async () => {
+    setEngine("elevenlabs");
+    setPhase("live");
+    setVoice((v) => ({ ...v, status: "connecting", error: "" }));
+    try {
+      sessionRef.current = await startPatientVoiceSession({
+        patient: p,
+        questions,
+        consent: true,
+        onStatus: (st) => setVoice((v) => ({ ...v, status: st })),
+        onAgentSaid: (text) => say("relay", text),
+        onAnswers: (a, note) => {
+          const merged = { ...answersRef.current, ...a };
+          answersRef.current = merged;
+          setAnswers(merged);
+          say(
+            "you",
+            Object.entries(a)
+              .map(([q, v]) => `${QUESTIONS[q].short}: ${v}`)
+              .join(". ") + (note ? `. ${note}` : ""),
+          );
+          if (questions.every((q) => merged[q])) finish(merged, note);
+        },
+        onRecommendation: ({ action, reason }) => {
+          say(
+            "relay",
+            `Recommendation: ${
+              action === "send_report"
+                ? "send a report to your care team"
+                : action === "message_care_team"
+                  ? "message your care team"
+                  : "nothing to do now"
+            }. ${reason}`,
+          );
+          if (action !== "none")
+            sessionStorage.setItem(
+              "rx-voice-recommendation",
+              JSON.stringify({ action, reason }),
+            );
+        },
+        onError: (e) =>
+          setVoice((v) => ({ ...v, error: e?.message || String(e) })),
+        onDisconnect: () => setVoice((v) => ({ ...v, status: "ended" })),
+      });
+    } catch (e) {
+      setVoice((v) => ({ ...v, status: "", error: e.message || String(e) }));
+      setPhase("idle");
+      setEngine(null);
     }
-  }, [mode, step, aloud, questions]);
-  useEffect(() => () => canSpeak() && speechSynthesis.cancel(), []);
-  // The future ElevenLabs adapter listens for this event. Keeping the entry point
-  // here lets voice replace the same structured check-in without changing the
-  // patient's navigation or the doctor-facing evidence contract.
-  const startVoice = (entry) =>
-    window.dispatchEvent(
-      new CustomEvent("relay:voice-checkin", {
-        detail: { patientId: p.id, entry, questions },
+  };
+
+  // ---- Browser speech path -----------------------------------------------------
+  const speak = (text, then) => {
+    say("relay", text);
+    if (!canSpeak()) return then?.();
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.97;
+    u.onend = () => then?.();
+    speechSynthesis.speak(u);
+  };
+  const listen = (onText) => {
+    if (!Recognition) return;
+    const rec = new Recognition();
+    recRef.current = rec;
+    rec.lang = navigator.language || "en-US";
+    rec.interimResults = false;
+    rec.onresult = (e) => onText(e.results[0][0].transcript);
+    rec.onend = () => setListening(false);
+    rec.onerror = () => setListening(false);
+    setListening(true);
+    rec.start();
+  };
+  const askQuestion = (i, prefix = "") => {
+    const q = QUESTIONS[questions[i]];
+    setStage({ kind: "question", i });
+    speak(`${prefix}${q.text}`, () =>
+      listen((text) => {
+        const match = matchOption(text, q.options);
+        if (match) return answerBrowser(i, match, text);
+        say("you", text);
+        speak(
+          `I did not catch that. You can say ${q.options.join(", or ")}.`,
+          () =>
+            listen((again) => {
+              const m = matchOption(again, q.options);
+              if (m) answerBrowser(i, m, again);
+              else say("you", again);
+            }),
+        );
       }),
     );
-
-  if (mode === "question") {
-    const id = questions[step];
-    return (
-      <>
-        <header className="rx-p-stephead">
-          <div>
-            {step === 0 ? (
-              <a className="rx-p-back" href="#/patient">
-                <ChevronLeft size={20} /> Home
-              </a>
-            ) : (
-              <button
-                type="button"
-                className="rx-p-back"
-                onClick={() => setStep(step - 1)}
-              >
-                <ChevronLeft size={20} /> Back
-              </button>
-            )}
-            <span>
-              Question {step + 1} of {questions.length}
-            </span>
-          </div>
-          <div className="rx-p-progress" aria-hidden="true">
-            {questions.map((q, i) => (
-              <i key={q} className={i <= step ? "on" : ""} />
-            ))}
-          </div>
-        </header>
-        {step === 0 && (
-          <p className="rx-p-fine">
-            {due.reason === "asked"
-              ? "Your readings changed. These questions help your care team understand why."
-              : `Day ${p.dayHome} check-in. Your answers are scored together with your readings.`}
-          </p>
-        )}
-        <h1 className="rx-p-question">{QUESTIONS[id].text}</h1>
-        {step === 0 && (
-          <p className="rx-p-question-help">
-            {p.questionReason ||
-              "These answers give your care team context for the readings they see."}
-          </p>
-        )}
-        <div className="rx-p-options" role="group" aria-label="Your answer">
-          {QUESTIONS[id].options.map((option) => (
-            <button
-              type="button"
-              key={option}
-              aria-pressed={answers[id] === option}
-              onClick={() => {
-                setAnswers({ ...answers, [id]: option });
-                if (step === questions.length - 1) setMode("review");
-                else setStep(step + 1);
-              }}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-        <div className="rx-p-stack bottom">
-          {canSpeak() && (
-            <button
-              type="button"
-              className="rx-p-btn"
-              aria-pressed={aloud}
-              onClick={() => {
-                const next = !aloud;
-                setAloud(next);
-                spoken.current = null;
-                if (!next) speechSynthesis.cancel();
-              }}
-            >
-              <Volume2 size={22} aria-hidden="true" />{" "}
-              {aloud ? "Stop reading aloud" : "Read the questions aloud"}
-            </button>
-          )}
-          {capabilities.voice && (
-            <button
-              type="button"
-              className="rx-p-btn"
-              data-voice-entry="checkin-answers"
-              onClick={() => startVoice("answers")}
-            >
-              <Mic size={22} aria-hidden="true" /> Answer by voice instead
-            </button>
-          )}
-          <a className="rx-p-textbtn" href="#/patient/assistant">
-            Prefer to talk it through? Use the assistant
-          </a>
-        </div>
-      </>
+  };
+  const answerBrowser = (i, option, spokenText) => {
+    const next = { ...answersRef.current, [questions[i]]: option };
+    answersRef.current = next;
+    setAnswers(next);
+    say("you", spokenText || option);
+    if (i + 1 < questions.length) askQuestion(i + 1, i === 0 ? "Thanks. " : "");
+    else {
+      setStage({ kind: "note" });
+      speak(
+        "Thank you. Is there anything else you want your care team to know? Say no if not.",
+        () =>
+          listen((text) => {
+            say("you", text);
+            const none =
+              /^(no|nope|nothing|no thanks|that's all|thats all)\b/i.test(
+                text.trim(),
+              );
+            finishBrowser(none ? null : text);
+          }),
+      );
+    }
+  };
+  const finishBrowser = (note) => {
+    setStage({ kind: "done" });
+    speak(
+      "Sent to your care team together with your readings. The app will now show what this means for you today.",
     );
-  }
-
-  if (mode === "review")
-    return (
-      <>
-        <h1 className="rx-p-title">Check your answers</h1>
-        <div className="rx-p-card list">
-          {questions.map((id, i) => (
-            <div className="rx-p-answer" key={id}>
-              <div>
-                <span>{QUESTIONS[id].short}</span>
-                <strong>{answers[id]}</strong>
-              </div>
-              <button
-                type="button"
-                onClick={() => (setStep(i), setMode("question"))}
-              >
-                Change
-              </button>
-            </div>
-          ))}
-        </div>
-        <label className="rx-p-consent">
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
-          />
-          <span>Share these answers with my care team.</span>
-        </label>
-        <button
-          type="button"
-          className="rx-p-btn primary bottom"
-          disabled={!agreed}
-          onClick={() => {
-            actions.submitCheckin(p.id, answers);
-            score(answers); // the model re-scores with the answers in the background
-            setMode("more");
-          }}
-        >
-          Send to my care team
-        </button>
-      </>
+    finish(answersRef.current, note);
+  };
+  const startBrowser = () => {
+    setEngine("browser");
+    setPhase("live");
+    setVoice((v) => ({ ...v, status: "browser", error: "" }));
+    speak(
+      `Hi ${p.first}. This is Relay, checking in on day ${p.dayHome} of your recovery after ${p.profile.after}. ${why} I have ${questions.length} short questions. Nothing I say is a diagnosis.`,
+      () => askQuestion(0),
     );
+  };
 
-  if (mode === "more")
-    return (
-      <>
-        <div className="rx-p-sent">
-          <span>
-            <CheckCircle2 size={22} aria-hidden="true" /> Your answers were sent
-          </span>
-          <h1 className="rx-p-title small">
-            Is there anything else you want your care team to know?
-          </h1>
-        </div>
-        <div className="rx-p-field">
-          <label htmlFor="rx-note">Add a note (optional)</label>
-          <textarea
-            id="rx-note"
-            rows="4"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="For example: how you slept, a new symptom, or a question."
-          />
-        </div>
-        {capabilities.voice && (
-          <button
-            type="button"
-            className="rx-p-btn"
-            data-voice-entry="checkin-note"
-            onClick={() => startVoice("note")}
-          >
-            <Mic size={22} aria-hidden="true" /> Say it instead
-          </button>
-        )}
-        <p className="rx-p-fine">
-          Your care team reads messages during working hours, not right away. If
-          you feel very unwell, follow the emergency instructions in your
-          discharge papers.
-        </p>
-        <div className="rx-p-stack bottom">
-          <button
-            type="button"
-            className="rx-p-btn primary"
-            disabled={!note.trim()}
-            onClick={() => {
-              actions.sendNote(p.id, note.trim());
-              setSentNote(true);
-              setMode("done");
-            }}
-          >
-            Send my message
-          </button>
-          <button
-            type="button"
-            className="rx-p-textbtn"
-            onClick={() => setMode("done")}
-          >
-            No, I am finished
-          </button>
-        </div>
-      </>
-    );
+  const stop = () => {
+    sessionRef.current?.endSession?.();
+    sessionRef.current = null;
+    recRef.current?.stop?.();
+    if (canSpeak()) speechSynthesis.cancel();
+    setVoice((v) => ({ ...v, status: "ended" }));
+    if (phase !== "done") setPhase("idle");
+  };
+
+  // Tapping an answer works in both engines: it is the fallback when the room is
+  // loud or the microphone is refused, and the demo never stalls on it.
+  const tap = (option) => {
+    const missing = questions.filter((q) => !answersRef.current[q]);
+    if (!missing.length) return;
+    const q = missing[0];
+    const i = questions.indexOf(q);
+    if (engine === "browser") {
+      recRef.current?.stop?.();
+      if (canSpeak()) speechSynthesis.cancel();
+      answerBrowser(i, option);
+    } else {
+      const next = { ...answersRef.current, [q]: option };
+      answersRef.current = next;
+      setAnswers(next);
+      say("you", `${QUESTIONS[q].short}: ${option}`);
+      if (questions.every((k) => next[k])) finish(next, null);
+    }
+  };
+  const nextMissing = questions.find((q) => !answers[q]) || null;
+  const current =
+    phase === "live" && nextMissing && stage.kind !== "note"
+      ? QUESTIONS[nextMissing]
+      : null;
+  const status = STATUS[voice.status] ?? voice.status;
 
   return (
     <>
-      <div className="rx-p-done">
-        <CheckCircle2
-          size={56}
-          strokeWidth={1.8}
-          color="#2f7a62"
-          aria-hidden="true"
-        />
-        <h1 className="rx-p-title">All done. Thank you.</h1>
-        <p>
-          {sentNote
-            ? "Your answers and your message were sent. "
-            : "Your answers were sent. "}
-          They are scored together with your readings. See what that means for
-          you today.
-        </p>
-      </div>
-      <div className="rx-p-stack bottom">
-        <a className="rx-p-btn primary" href="#/patient/insight">
-          What this means for me
-        </a>
-        <a className="rx-p-textbtn" href="#/patient">
-          Back to home
-        </a>
-      </div>
+      <a className="rx-p-back" href="#/patient">
+        <ChevronLeft size={18} /> Home
+      </a>
+      <header className="rx-p-top">
+        <div>
+          <span className="rx-p-kicker">
+            {due.reason === "asked"
+              ? "Your care team asked"
+              : due.reason === "readings"
+                ? "Your readings changed"
+                : `Day ${p.dayHome} check-in`}
+          </span>
+          <h1 className="rx-p-title">Talk to Relay</h1>
+          <p className="rx-p-lead">{why}</p>
+        </div>
+      </header>
+
+      <section className="rx-p-card rx-p-callcard" aria-label="Check-in call">
+        <div className="rx-p-callrow">
+          <span className={`rx-p-pill ${phase}`}>
+            {phase === "done" ? "Sent" : listening ? "Listening" : status}
+          </span>
+          <span className="rx-p-fine">
+            {questions.length} questions, about two minutes. Speak naturally;
+            you can also tap an answer.
+          </span>
+        </div>
+        {phase === "idle" && (
+          <div className="rx-p-stack">
+            <button
+              type="button"
+              className="rx-p-btn primary"
+              onClick={voice.available ? startAgent : startBrowser}
+            >
+              <PhoneCall size={18} aria-hidden="true" /> Start check-in
+            </button>
+            {!voice.available && (
+              <small className="rx-p-fine">
+                Using this browser's own voice. The ElevenLabs agent takes over
+                when the server has its key.
+              </small>
+            )}
+          </div>
+        )}
+        {phase === "live" && (
+          <button type="button" className="rx-p-btn" onClick={stop}>
+            <PhoneOff size={18} aria-hidden="true" /> End
+          </button>
+        )}
+        {voice.error && (
+          <p className="rx-p-error" role="alert">
+            {voice.error}
+          </p>
+        )}
+      </section>
+
+      {log.length > 0 && (
+        <div
+          className="rx-p-chat rx-p-transcript"
+          role="log"
+          aria-live="polite"
+        >
+          {log.map((m, i) => (
+            <div key={i} className={`rx-p-bubble ${m.who}`}>
+              {m.text}
+            </div>
+          ))}
+          <div ref={endRef} />
+        </div>
+      )}
+
+      {current && (
+        <div className="rx-p-quick" role="group" aria-label="Tap an answer">
+          {listening && (
+            <span className="rx-p-pill live">
+              <Mic size={13} aria-hidden="true" /> {current.short}
+            </span>
+          )}
+          {current.options.map((o) => (
+            <button key={o} type="button" onClick={() => tap(o)}>
+              {o}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {phase === "live" && stage.kind === "note" && engine === "browser" && (
+        <form
+          className="rx-p-quick rx-p-noteform"
+          role="group"
+          aria-label="Anything else"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const text = noteDraft.trim();
+            recRef.current?.stop?.();
+            if (canSpeak()) speechSynthesis.cancel();
+            if (text) say("you", text);
+            finishBrowser(text || null);
+          }}
+        >
+          <input
+            type="text"
+            value={noteDraft}
+            onChange={(e) => setNoteDraft(e.target.value)}
+            placeholder="Or type anything else here"
+            aria-label="Anything else for your care team"
+          />
+          <button type="submit">
+            {noteDraft.trim() ? "Send and finish" : "Nothing else, finish"}
+          </button>
+        </form>
+      )}
+
+      {Object.keys(answers).length > 0 && (
+        <div className="rx-p-answers" aria-label="Recorded answers">
+          {questions
+            .filter((q) => answers[q])
+            .map((q) => (
+              <span key={q} className="rx-p-chip">
+                {QUESTIONS[q].short}: <strong>{answers[q]}</strong>
+              </span>
+            ))}
+        </div>
+      )}
+
+      {phase === "done" && (
+        <section className="rx-p-card" aria-label="Sent">
+          <p className="rx-p-sent">
+            <span>
+              <CheckCircle2 size={18} aria-hidden="true" /> Sent to your care
+              team, together with your readings
+            </span>
+          </p>
+          <div className="rx-p-stack">
+            <a className="rx-p-btn primary" href="#/patient/insight">
+              What this means for me
+            </a>
+            <a className="rx-p-textbtn" href="#/patient">
+              Back to home
+            </a>
+          </div>
+        </section>
+      )}
+
+      <p className="rx-p-fine">
+        Nothing Relay says is a diagnosis. Feeling very unwell? Follow the
+        emergency instructions in your discharge papers.
+      </p>
     </>
   );
 }

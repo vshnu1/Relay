@@ -27,34 +27,39 @@ chooses to send.
    MER-9855 Clara Moreau, LAK-1482 Arthur Bennett, LAK-9985 Mei Tanaka, TAM-6507
    Rosa Iglesias, TAM-1604 Amara Nwosu.
 
-2. **Home**: day of recovery, notifications (check-in due, report recommended,
-   appointment soon, unread nurse message, device to connect), quick actions, today's
-   readings in plain words, device status.
-3. **Me** (`#/patient/profile`): discharge details, the doctor's notes, medicines, what
-   is watched, links to data and journal, sign out.
-4. **Your data** (`#/patient/connect`): connect a wearable through an "Allow Relay to
+2. **Home**: what the patient needs the moment the app opens. A one-line header
+   (day at home, condition, hospital, progress and the next check-in), then alerts
+   (check-in due, report recommended, appointment soon, unread nurse message, device
+   to connect), then two columns: **From your hospital** (discharge date and
+   clinician, the doctor's notes, prescriptions, the next follow-up) and **Your
+   readings today** (value and usual/changed per signal, the model's line with a
+   score button, device status). The care team writes the notes, medicines and
+   appointments from the clinician view; nothing is seeded.
+3. **Check-in** (`#/patient/checkin`): one voice conversation. Relay opens by saying
+   why it is checking in (daily for the first week at home, every other day after,
+   `SCHEDULE` in `model/profiles.js`; or because the readings moved; or because the
+   care team asked), then talks through the profile's questions. With
+   `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on the server the ElevenLabs agent
+   runs it: it reads the readings and the model's result through a client tool,
+   records the answers, and returns one recommendation. Without the key the browser
+   speaks and listens itself. Tapping an answer always works. When every question is
+   answered the app submits, re-scores with the model, and offers **What this
+   means** (`#/patient/insight`).
+   Check-in alerts: `checkinDue` also fires off-schedule when the rules see a
+   persistent pattern or the model marks the recent windows anomalous
+   (`reason: "readings"`); the sidebar badge and the home alert show it at once.
+4. **Readings** (`#/patient/readings`): one chart at a time, same chart as the doctor
+   view, patient wording, plus a form to enter temperature, weight or pain by hand.
+   Links to **Record something** (`#/patient/journal`, timestamped notes of anything
+   unusual) and to what is watched.
+5. **Care team** (`#/patient/care`): appointments, two-way messages, and **Send a
+   report**: a confirmation sheet, a preview, then a pre-filled email draft. Nothing
+   is sent automatically; the app only records that the patient chose to send.
+6. **Your data** (`#/patient/connect`): connect a wearable through an "Allow Relay to
    read…" sheet (simulated; readings then flow from the stream), pause sharing, and
    import the iPhone Health app's `export.zip` or `export.xml`. The import is parsed in
    a Web Worker with the browser's own `DecompressionStream`; nothing is uploaded.
    Readings before admission become the patient's "usual".
-5. **Readings** (`#/patient/readings`): one chart at a time, same chart as the doctor
-   view, patient wording, plus a form to enter temperature, weight or pain by hand.
-6. **Check-in** (`#/patient/checkin`): the profile's questions, one per screen, with
-   optional read-aloud. Due daily for the first week at home, then every other day
-   (`SCHEDULE` in `model/profiles.js`), and whenever the care team or the readings ask.
-7. **Assistant** (`#/patient/assistant`): the same questions as a chat; tap, type or
-   speak (browser speech recognition and synthesis). Scripted, not a chatbot. When the
-   server has `ELEVENLABS_API_KEY`, a "Talk to Relay by voice" call appears: the agent
-   reads the readings and the model's result through a client tool, asks the
-   condition's questions, records the answers, and returns one recommendation
-   (send a report, message the care team, or nothing). The prompt and tools are in
-   `docs/voice-agent.md`.
-8. **Record something** (`#/patient/journal`): timestamped notes of anything unusual.
-9. **What this means** (`#/patient/insight`): the plain-words result of the last
-   check-in against the readings, with one action. Never a diagnosis.
-10. **Care team** (`#/patient/care`): appointments, nurse messages, and **Send a report**:
-    a confirmation sheet, a preview, then a pre-filled email draft. Nothing is sent
-    automatically; the app only records that the patient chose to send.
 
 ## The model in the patient view
 
