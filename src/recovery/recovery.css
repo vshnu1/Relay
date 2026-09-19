@@ -1286,6 +1286,111 @@ p.rx-row-summary {
   transform: translateX(26px);
 }
 
+/* Patient experience: one clear loop from signal to context to care team. */
+.rx-p-top > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rx-p-top .rx-brand {
+  padding: 0;
+}
+.rx-p-greeting {
+  color: var(--faint);
+  font-size: 13px;
+}
+.rx-p-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #69826d;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rx-p-card > .rx-p-eyebrow {
+  margin-bottom: -5px;
+}
+.rx-p-insight {
+  gap: 13px;
+  padding: 20px 22px;
+}
+.rx-p-sectionhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rx-p-sectionhead h2 {
+  margin-top: 3px;
+  font-size: 20px;
+  letter-spacing: -0.025em;
+}
+.rx-p-sectionhead a {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--pine);
+  background: var(--sage);
+}
+.rx-p-insight-lead {
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1.42;
+}
+.rx-p-signal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.rx-p-signal-chips span {
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: var(--amber-tint);
+  color: var(--amber-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.rx-p-explain-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 15px;
+  border: 1px solid #dce8da;
+  border-radius: 14px;
+  background: #eef5ec;
+  color: #315641;
+}
+.rx-p-explain-card svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.rx-p-explain-card strong,
+.rx-p-explain-card span {
+  display: block;
+}
+.rx-p-explain-card strong {
+  font-size: 15px;
+}
+.rx-p-explain-card span {
+  margin-top: 3px;
+  color: #536b58;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.rx-p-question-help {
+  margin-top: -9px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.42;
+}
+.rx-p-btn[data-voice-entry] {
+  border-style: dashed;
+}
+
 /* Landing page */
 .rx-landing {
   min-height: 100vh;
@@ -1917,5 +2022,11 @@ p.rx-row-summary {
   }
   .rx-demobar-right {
     min-width: 0;
+  }
+  .rx-p-greeting {
+    font-size: 12px;
+  }
+  .rx-p-top > div:first-child {
+    gap: 7px;
   }
 }

@@ -1,10 +1,13 @@
 import {
   Activity,
+  ArrowRight,
   CheckCircle2,
   ChevronRight,
   CircleAlert,
+  CircleCheck,
   Home as HomeIcon,
   MessageSquare,
+  Sparkles,
   Watch,
 } from "lucide-react";
 import { ago } from "../format.js";
@@ -25,15 +28,20 @@ const TABS = [
 
 function Home({ patient: p }) {
   const watch = p.devices.watch;
+  const changed = p.changedForPatient;
+  const hasChange = changed.length > 0;
   return (
     <>
       <header className="rx-p-top">
-        <span className="rx-brand">
-          <span className="rx-brand-mark">
-            <Activity size={18} strokeWidth={2.4} />
+        <div>
+          <span className="rx-brand">
+            <span className="rx-brand-mark">
+              <Activity size={18} strokeWidth={2.4} />
+            </span>
+            relay
           </span>
-          relay
-        </span>
+          <span className="rx-p-greeting">{p.first}&apos;s recovery</span>
+        </div>
         <a className="rx-p-help" href="#/patient/watching">
           Help
         </a>
@@ -53,23 +61,76 @@ function Home({ patient: p }) {
       <section className="rx-p-card" aria-label="Today">
         {p.pending ? (
           <>
-            <h1>Your care team has a few questions for you</h1>
-            <p>It takes about two minutes. It is not a diagnosis.</p>
+            <span className="rx-p-eyebrow">
+              <Sparkles size={15} /> A quick check-in
+            </span>
+            <h1>Your care team wants a little context</h1>
+            <p>
+              Relay noticed a change in your usual readings. Your answers help
+              your care team understand what may be going on.
+            </p>
             <a className="rx-p-btn primary" href="#/patient/checkin">
-              Answer now
+              Answer questions <ArrowRight size={19} />
             </a>
           </>
         ) : (
           <>
-            <h1>Nothing is needed from you today</h1>
+            <span className="rx-p-eyebrow">
+              <CircleCheck size={15} /> You&apos;re up to date
+            </span>
+            <h1>
+              {hasChange
+                ? "Your care team is keeping an eye on a change"
+                : "Your readings look steady"}
+            </h1>
             <p>
-              Your care team can see your watch readings. We will let you know
-              if they have questions.
+              {hasChange
+                ? "You can add context any time. It will appear beside the readings your care team sees."
+                : "Your care team can see your watch readings. We will let you know if they have questions."}
             </p>
             <a className="rx-p-btn" href="#/patient/checkin">
-              Tell them how you feel
+              Tell them how you feel <ArrowRight size={19} />
             </a>
           </>
+        )}
+      </section>
+      <section
+        className="rx-p-card rx-p-insight"
+        aria-label="What Relay noticed"
+      >
+        <div className="rx-p-sectionhead">
+          <div>
+            <span className="rx-p-eyebrow">Your recovery picture</span>
+            <h2>What Relay noticed</h2>
+          </div>
+          <a
+            href="#/patient/watching"
+            aria-label="Learn what Relay is watching"
+          >
+            <ChevronRight size={20} />
+          </a>
+        </div>
+        {hasChange ? (
+          <>
+            <p className="rx-p-insight-lead">
+              {changed.length} of the readings your care team watches have moved
+              away from your usual range.
+            </p>
+            <div className="rx-p-signal-chips">
+              {changed.slice(0, 3).map((s) => (
+                <span key={s.id}>{s.plain}</span>
+              ))}
+            </div>
+            <p className="rx-p-fine">
+              A change is not a diagnosis. Your care team asks questions before
+              deciding what it means.
+            </p>
+          </>
+        ) : (
+          <p className="rx-p-insight-lead">
+            The readings your care team watches are close to what is usual for
+            you.
+          </p>
         )}
       </section>
       <section className="rx-p-card list" aria-label="Your watch">
@@ -93,7 +154,7 @@ function Home({ patient: p }) {
           </div>
         </div>
         <a className="rx-p-rowlink" href="#/patient/watching">
-          What is my care team watching?
+          See what your care team is watching
           <ChevronRight size={20} aria-hidden="true" />
         </a>
       </section>

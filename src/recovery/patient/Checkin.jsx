@@ -14,6 +14,15 @@ export default function Checkin({ patient: p }) {
   const [agreed, setAgreed] = useState(false);
   const [note, setNote] = useState("");
   const [sentNote, setSentNote] = useState(false);
+  // The future ElevenLabs adapter listens for this event. Keeping the entry point
+  // here lets voice replace the same structured check-in without changing the
+  // patient's navigation or the doctor-facing evidence contract.
+  const startVoice = (entry) =>
+    window.dispatchEvent(
+      new CustomEvent("relay:voice-checkin", {
+        detail: { patientId: p.id, entry, questions },
+      }),
+    );
 
   if (mode === "question") {
     const id = questions[step];
@@ -45,6 +54,11 @@ export default function Checkin({ patient: p }) {
           </div>
         </header>
         <h1 className="rx-p-question">{QUESTIONS[id].text}</h1>
+        {step === 0 && (
+          <p className="rx-p-question-help">
+            These answers give your care team context for the readings they see.
+          </p>
+        )}
         <div className="rx-p-options" role="group" aria-label="Your answer">
           {QUESTIONS[id].options.map((option) => (
             <button
@@ -62,7 +76,12 @@ export default function Checkin({ patient: p }) {
           ))}
         </div>
         {capabilities.voice && (
-          <button type="button" className="rx-p-btn bottom">
+          <button
+            type="button"
+            className="rx-p-btn bottom"
+            data-voice-entry="checkin-answers"
+            onClick={() => startVoice("answers")}
+          >
             <Mic size={22} aria-hidden="true" /> Answer by voice instead
           </button>
         )}
@@ -96,7 +115,7 @@ export default function Checkin({ patient: p }) {
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
           />
-          <span>Share these answers with my care team at [HOSPITAL NAME].</span>
+          <span>Share these answers with my care team.</span>
         </label>
         <button
           type="button"
@@ -124,7 +143,7 @@ export default function Checkin({ patient: p }) {
           </h1>
         </div>
         <div className="rx-p-field">
-          <label htmlFor="rx-note">Your message. You can skip this.</label>
+          <label htmlFor="rx-note">Add a note (optional)</label>
           <textarea
             id="rx-note"
             rows="4"
@@ -134,7 +153,12 @@ export default function Checkin({ patient: p }) {
           />
         </div>
         {capabilities.voice && (
-          <button type="button" className="rx-p-btn">
+          <button
+            type="button"
+            className="rx-p-btn"
+            data-voice-entry="checkin-note"
+            onClick={() => startVoice("note")}
+          >
             <Mic size={22} aria-hidden="true" /> Say it instead
           </button>
         )}
