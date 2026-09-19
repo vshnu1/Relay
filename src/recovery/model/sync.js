@@ -61,7 +61,9 @@ export function createSync({
   let timer = null;
   let onEvents = null;
   let onStatus = null;
-  let status = "off";
+  // Starts unknown, so the first verdict ("off", "live" or "offline") always
+  // reaches the store instead of matching a placeholder and going unreported.
+  let status = null;
   const setStatus = (next) => {
     if (next === status) return;
     status = next;
@@ -123,7 +125,12 @@ export function createSync({
   function signedOut() {
     try {
       if (typeof sessionStorage === "undefined") return false;
-      return !sessionStorage.getItem("rx-code");
+      // An open local demo (no codes configured, flagged by Root) has nothing
+      // to wait for; a gated deployment waits until a code is held.
+      return (
+        !sessionStorage.getItem("rx-code") &&
+        !sessionStorage.getItem("rx-open-demo")
+      );
     } catch {
       return false;
     }
