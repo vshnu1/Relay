@@ -41,6 +41,32 @@ export const TYPES = {
     { degC: 1, degF: null },
     "mean",
   ],
+  HKQuantityTypeIdentifierWalkingSpeed: [
+    "walkingSpeed",
+    { "m/s": 1, "km/hr": 0.2777778, "mi/hr": 0.44704 },
+    "mean",
+  ],
+  HKQuantityTypeIdentifierWalkingStepLength: [
+    "stepLength",
+    { cm: 1, in: 2.54, m: 100 },
+    "mean",
+  ],
+  HKQuantityTypeIdentifierWalkingAsymmetryPercentage: [
+    "asymmetry",
+    { "%": 100 },
+    "mean",
+  ],
+  HKQuantityTypeIdentifierWalkingDoubleSupportPercentage: [
+    "doubleSupport",
+    { "%": 100 },
+    "mean",
+  ],
+  HKQuantityTypeIdentifierAppleWalkingSteadiness: [
+    "steadiness",
+    { "%": 100 },
+    "mean",
+  ],
+  HKQuantityTypeIdentifierStepCount: ["steps", { count: 1 }, "sum"],
   HKCategoryTypeIdentifierSleepAnalysis: ["sleep", null, "sum-hours"],
 };
 const ASLEEP =
@@ -128,7 +154,7 @@ export function createScanner() {
             v: Number(
               (reduce === "last"
                 ? c.last
-                : reduce === "sum-hours"
+                : reduce === "sum-hours" || reduce === "sum"
                   ? c.sum
                   : c.sum / c.n
               ).toFixed(3),

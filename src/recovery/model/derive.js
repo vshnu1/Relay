@@ -313,7 +313,7 @@ export function derive(p, now) {
     const spread = (Math.max(...starts) - Math.min(...starts)) / HOUR;
     findings.push({
       label: "Onset",
-      text: `${sentence(countPhrase, false)} crossed ${moved.length === 1 ? "its threshold" : `their thresholds ${spread < 12 ? "on the same night" : `within ${numberWord(Math.ceil(spread / 24))} days of each other`}`} and have stayed there for ${hours} hours.`,
+      text: `${sentence(countPhrase, false)} crossed ${moved.length === 1 ? "its threshold" : `their thresholds ${spread < 12 ? "on the same night" : `within ${numberWord(Math.ceil(spread / 24))} ${Math.ceil(spread / 24) === 1 ? "day" : "days"} of each other`}`} and have stayed there for ${hours} hours.`,
     });
   }
   if (pattern || spiked) {

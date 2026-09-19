@@ -40,7 +40,6 @@ const SUMMARY = [
     className: "monitoring",
     detail: "No new persistent pattern to review",
   },
-
 ];
 
 const STATUS = {
@@ -73,7 +72,8 @@ function PatientRow({ patient }) {
           </span>
         </div>
         <p className="rx-home-patient-context">
-          {patient.profile.name} · Day {patient.dayHome} of {patient.windowDays} at home
+          {patient.profile.name} · Day {patient.dayHome} of {patient.windowDays}{" "}
+          at home
         </p>
         <p className="rx-serif rx-home-patient-finding">{patient.line}</p>
       </div>
@@ -100,12 +100,23 @@ export default function DoctorHome({ cohort }) {
     .filter((patient) => patient.group === activeGroup)
     .slice(0, 4);
 
+  const HRRP = new Set([
+    "heartFailure",
+    "pneumonia",
+    "copd",
+    "jointReplacement",
+  ]);
+  const hrrpCount = cohort.filter((patient) =>
+    HRRP.has(patient.profileId),
+  ).length;
+
   return (
     <div className="rx-page rx-home">
       <header className="rx-home-hero">
         <div className="rx-home-hero-copy">
           <span className="rx-eyebrow">
-            <HeartPulse size={14} /> Clinician workspace · {dateLong(Date.now())}
+            <HeartPulse size={14} /> Clinician workspace ·{" "}
+            {dateLong(Date.now())}
           </span>
           <h1>{greeting()}, care team.</h1>
           <p>
@@ -142,6 +153,36 @@ export default function DoctorHome({ cohort }) {
       </header>
 
       <section
+        className="rx-home-hrrp"
+        aria-label="Readmission programme alignment"
+      >
+        <div>
+          <span className="rx-eyebrow">Why these thirty days</span>
+          <h2>
+            {hrrpCount} of {cohort.length} patients are on a condition CMS
+            penalises for 30-day readmission.
+          </h2>
+          <p>
+            Heart failure, pneumonia, COPD and hip or knee replacement are four
+            of the six conditions in the Hospital Readmissions Reduction
+            Program. Relay&apos;s monitoring window is that programme&apos;s
+            window. About three quarters of eligible hospitals pay a penalty;
+            the statutory maximum is 3% of Medicare inpatient revenue.
+          </p>
+        </div>
+        <dl className="rx-home-hrrp-ops">
+          <div>
+            <dt>Need review today</dt>
+            <dd>{reviewCount}</dd>
+          </div>
+          <div>
+            <dt>Instead of manual chart checks</dt>
+            <dd>{cohort.length}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section
         className="rx-home-summary"
         aria-label="Today’s caseload. Select a status to filter the patient list below."
       >
@@ -171,10 +212,7 @@ export default function DoctorHome({ cohort }) {
       </section>
 
       <div className="rx-home-queue-layout">
-        <section
-          className="rx-home-section"
-          id="rx-home-queue"
-        >
+        <section className="rx-home-section" id="rx-home-queue">
           <div className="rx-home-section-head">
             <div>
               <span className="rx-home-kicker">
@@ -206,17 +244,16 @@ export default function DoctorHome({ cohort }) {
           )}
           {counts[activeGroup] > visiblePatients.length && (
             <p className="rx-home-queue-note">
-              Showing {visiblePatients.length} of {counts[activeGroup]}. Open the
-              full recovery watch to see everyone.
+              Showing {visiblePatients.length} of {counts[activeGroup]}. Open
+              the full recovery watch to see everyone.
             </p>
           )}
         </section>
-
-
       </div>
 
       <footer className="rx-home-footnote">
-        Synthetic demo · Illustrative thresholds · Clinical decisions stay with the care team.
+        Synthetic demo · Illustrative thresholds · Clinical decisions stay with
+        the care team.
       </footer>
     </div>
   );

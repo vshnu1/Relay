@@ -1,7 +1,8 @@
 import { ArrowUp, ChevronDown, ChevronLeft } from "lucide-react";
 import { actions, usePatient } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
-import { ago, clock, dateLong, list } from "../format.js";
+import { ago, clock, dateLong } from "../format.js";
+import ModelCard from "./ModelCard.jsx";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";
 import CareTeamPanel from "./CareTeamPanel.jsx";
@@ -26,9 +27,6 @@ export default function PatientOverview({ id }) {
   const asked = p.answered
     ? (p.questions || p.profile.questions).filter((q) => p.answered.answers[q])
     : [];
-  // Read the watched/recorded split straight off the profile, never hardcoded.
-  const countedNames = p.counted.map((s) => s.short);
-  const recordedNames = p.signals.filter((s) => !s.counted).map((s) => s.short);
   const activeDevices = Object.values(p.devices).filter(
     (d) => d.sharing,
   ).length;
@@ -60,12 +58,8 @@ export default function PatientOverview({ id }) {
         </div>
         <dl className="rx-context">
           <div>
-            <dt>Reason for admission</dt>
+            <dt>Discharge pathway</dt>
             <dd>{p.profile.name}</dd>
-          </div>
-          <div>
-            <dt>Discharged with</dt>
-            <dd>Home monitoring after {p.profile.after}</dd>
           </div>
           <div>
             <dt>From</dt>
@@ -78,25 +72,13 @@ export default function PatientOverview({ id }) {
             </dd>
           </div>
           <div>
-            <dt>Monitoring window</dt>
+            <dt>Recovery period</dt>
             <dd>
               Day {p.dayHome} of {p.windowDays} · {p.windowDays}-day window
             </dd>
           </div>
           <div>
-            <dt>Counted for {p.profile.after}</dt>
-            <dd>{list(countedNames)}</dd>
-          </div>
-          <div>
-            <dt>Recorded, not counted</dt>
-            <dd>{recordedNames.length ? list(recordedNames) : "None"}</dd>
-          </div>
-          <div>
-            <dt>Consent</dt>
-            <dd>On file — agreed before each check-in, since discharge</dd>
-          </div>
-          <div>
-            <dt>Responsible clinician</dt>
+            <dt>Care lead</dt>
             <dd>{p.clinician}</dd>
           </div>
         </dl>
@@ -203,15 +185,24 @@ export default function PatientOverview({ id }) {
           >
             Day-by-day readings are below <ChevronDown size={15} />
           </a>
-        </section>
-
-        <div className="rx-aside">
-          <section className="rx-card rx-checkin" aria-label="Check-in">
-            {p.answered ? (
-              <>
+          <section className="rx-inline-checkin" aria-label="Patient context">
+            <div className="rx-inline-checkin-head">
+              <div>
+                <span className="rx-home-kicker">Patient context</span>
                 <h2>
-                  What {p.first} told us, {clock(p.answered.answeredAt)}
+                  {p.answered
+                    ? `What ${p.first} reported ${clock(p.answered.answeredAt)}`
+                    : "No check-in answered yet"}
                 </h2>
+              </div>
+              {p.pending && (
+                <span className="rx-context-pending">
+                  Sent {ago(Date.now() - p.pending.requestedAt)}
+                </span>
+              )}
+            </div>
+            {p.answered && (
+              <div className="rx-inline-checkin-body">
                 <dl>
                   {asked.map((q) => (
                     <div key={q}>
@@ -221,38 +212,27 @@ export default function PatientOverview({ id }) {
                   ))}
                 </dl>
                 {p.answered.note && (
-                  <div className="rx-note">
-                    <span>{p.first} also wrote</span>
-                    <p className="rx-serif">{p.answered.note}</p>
-                  </div>
+                  <blockquote>
+                    “{p.answered.note}”
+                  </blockquote>
                 )}
-              </>
-            ) : (
-              <h2>No check-in answered yet</h2>
-            )}
-            {p.pending && (
-              <p className="rx-pending">
-                Check-in sent {ago(Date.now() - p.pending.requestedAt)}, not
-                answered yet.
-              </p>
+              </div>
             )}
           </section>
-          <CareTeamPanel patient={p} />
-          <div className="rx-actions">
-            <button
-              type="button"
-              className="rx-btn primary tall"
-              disabled={p.status !== "review" || p.acknowledged}
-              onClick={() => actions.acknowledge(p.id)}
-            >
-              {p.acknowledged ? "Review acknowledged" : "Acknowledge review"}
-            </button>
-            <div>
+          <ModelCard patient={p} />
+          <details className="rx-followup-details">
+            <summary>Contact patient or record follow-up</summary>
+            <CareTeamPanel patient={p} embedded />
+            <div className="rx-actions rx-review-actions">
               <button
                 type="button"
-                className="rx-btn"
-                onClick={() => exportHandoff(p)}
+                className="rx-btn primary"
+                disabled={p.status !== "review" || p.acknowledged}
+                onClick={() => actions.acknowledge(p.id)}
               >
+                {p.acknowledged ? "Review acknowledged" : "Acknowledge review"}
+              </button>
+              <button type="button" className="rx-btn" onClick={() => exportHandoff(p)}>
                 Export handoff
               </button>
               <button
@@ -261,19 +241,11 @@ export default function PatientOverview({ id }) {
                 disabled={!!p.pending}
                 onClick={() => actions.requestCheckin(p.id)}
               >
-                {p.pending
-                  ? "Check-in sent"
-                  : p.answered
-                    ? "Ask again"
-                    : "Send check-in"}
+                {p.pending ? "Check-in sent" : "Request new check-in"}
               </button>
             </div>
-          </div>
-          <p className="rx-fine">
-            A description of readings against this patient's own baseline. Relay
-            does not diagnose or recommend treatment.
-          </p>
-        </div>
+          </details>
+        </section>
       </div>
 
       <Readings patient={p} />

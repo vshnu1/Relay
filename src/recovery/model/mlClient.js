@@ -14,6 +14,12 @@ export const METRIC_MAP = {
   avgHr: ["heart_rate", "bpm"],
   weight: ["weight", "kg"],
   temperature: ["temperature", "degC"],
+  walkingSpeed: ["walking_speed", "m/s"],
+  stepLength: ["step_length", "cm"],
+  asymmetry: ["walking_asymmetry", "%"],
+  doubleSupport: ["double_support", "%"],
+  steadiness: ["walking_steadiness", "%"],
+  steps: ["steps", "count"],
 };
 const SOURCE = {
   watch: "wearable",
@@ -110,21 +116,28 @@ export async function scoreWithModel(patient, answers = null, fetchFn = fetch) {
 }
 
 // Plain-words reading of the model's result for the patient.
-export function describeAnalysis(a) {
+export function describeAnalysis(a, profile = null) {
   if (!a) return null;
+  // The model's own `summary` is written for a clinician — "this patient's
+  // baseline", "robust deviation +1.4". Rendering it here would have the app
+  // say "this patient" to the patient, so patient-facing prose is written in
+  // the second person and the condition is named from the profile.
+  const after = profile?.after ? `Recovering after ${profile.after}, ` : "";
+  const lead = after ? after + "Relay's model" : "Relay's model";
   const top = (a.contributors || []).slice(0, 3);
   const names = top.map(
     (c) =>
       `${c.label.toLowerCase()} ${c.direction === "above_baseline" ? "higher" : "lower"} than your usual`,
   );
+  const listed = names.length ? `: ${names.join(", ")}` : "";
   switch (a.application_state) {
     case "review_recommended":
-      return `Relay's model finds an unusual pattern in your readings and your answers do not explain it${names.length ? `: ${names.join(", ")}` : ""}.`;
+      return `${lead} finds an unusual pattern in your readings and your answers do not explain it${listed}.`;
     case "context_needed":
-      return `Relay's model finds an unusual pattern in your readings${names.length ? `: ${names.join(", ")}` : ""}. Your answers help explain it.`;
+      return `${lead} finds an unusual pattern in your readings${listed}. Your answers help explain it.`;
     case "insufficient_data":
-      return `Relay's model does not have enough recent readings to judge${a.missing_signals?.length ? ` (missing: ${a.missing_signals.map((m) => m.metric.replace("_", " ")).join(", ")})` : ""}.`;
+      return `${lead} does not have enough recent readings to judge${a.missing_signals?.length ? ` (missing: ${a.missing_signals.map((m) => m.metric.replace("_", " ")).join(", ")})` : ""}.`;
     default:
-      return "Relay's model finds nothing unusual in your recent readings.";
+      return `${lead} finds nothing unusual in your recent readings.`;
   }
 }

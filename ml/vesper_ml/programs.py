@@ -122,7 +122,7 @@ PROGRAMS = {
         protocol_rules=(
             ProtocolRule("shortness_of_breath", True, "Patient reported new shortness of breath during check-in."),
         ),
-        note="Monitors recovery only. It cannot detect a new embolism; acute symptoms follow emergency guidance outside this model.",
+        note="Monitors recovery only. It cannot detect a new embolism; acute symptoms follow the discharge letter's instructions, outside this model.",
     ),
     "sleep_apnoea_titration": Program(
         key="sleep_apnoea_titration",
@@ -145,6 +145,27 @@ PROGRAMS = {
         ),
         note="Recovery after birth. Blood pressure is not collected, so conditions defined by it are out of scope.",
     ),
+    "joint_replacement_recovery": Program(
+        key="joint_replacement_recovery",
+        title="Hip or knee replacement recovery",
+        metrics=("walking_speed", "step_length", "double_support", "steps", "walking_asymmetry", "walking_steadiness", "rhr", "sleep", "heart_rate"),
+        core=("walking_speed", "step_length", "double_support", "steps"),
+        context_fields=COMMON_CONTEXT + ("pain_change", "swelling", "falls", "wound_concern"),
+        protocol_rules=(ProtocolRule("falls", True, "Patient reported a fall during check-in."),),
+        min_coordinated=2,
+        min_persistence_hours=48.0,
+        note="A CMS HRRP condition. Gait speed, step length and double-support are the recovery markers over 13-24 weeks. Monitors functional recovery only.",
+    ),
+    "post_chemotherapy": Program(
+        key="post_chemotherapy",
+        title="Recovery after chemotherapy",
+        metrics=("temperature", "rhr", "hrv", "respiratory", "spo2", "sleep", "heart_rate", "weight", "steps"),
+        core=("temperature", "rhr", "hrv", "respiratory"),
+        context_fields=COMMON_CONTEXT + ("fever_symptoms", "mouth_sores", "nausea_vomiting"),
+        protocol_rules=(ProtocolRule("fever_symptoms", True, "Patient reported fever symptoms during check-in."),),
+        min_coordinated=2,
+        note="Watches for the temperature and heart-rate pattern that precedes febrile neutropenia. Surfaces the pattern; it does not detect or exclude infection.",
+    ),
     "stroke_rehabilitation": Program(
         key="stroke_rehabilitation",
         title="Stroke rehabilitation (functional recovery only)",
@@ -153,7 +174,7 @@ PROGRAMS = {
         context_fields=COMMON_CONTEXT + ("falls", "dizziness", "therapy_adherence"),
         protocol_rules=(ProtocolRule("falls", True, "Patient reported a fall during check-in."),),
         min_persistence_hours=48.0,
-        note="Monitors functional recovery. It does not detect or rule out a new stroke; new neurological symptoms follow emergency guidance outside this model.",
+        note="Monitors functional recovery. It does not detect or rule out a new stroke; new neurological symptoms follow the discharge letter's instructions, outside this model.",
     ),
     "cardiac_recovery": Program(
         key="cardiac_recovery",
