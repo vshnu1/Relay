@@ -1,0 +1,125 @@
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 237px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.panel {
+  background: #fff;
+  border: 1px solid #e1e6df;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.panel-heading {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-heading > svg {
+  color: #98a58c;
+}
+.panel-heading p {
+  font-size: 10px;
+  margin-top: 6px;
+}
+.number {
+  border-radius: 4px;
+  background: #f1f4ed;
+  color: #85927d;
+  padding: 3px 6px;
+  font-size: 10px;
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e4e8df;
+  background: #fafbf8;
+  margin: 0 15px 19px;
+  padding: 0 9px;
+  border-radius: 5px;
+  color: #9ba68f;
+}
+.search input {
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 9px 0;
+  font-size: 10px;
+}
+.list-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #a0aa98;
+  padding: 0 18px 10px;
+}
+.patient-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  background: #fff;
+  border: 0;
+  border-top: 1px solid #f0f2ec;
+  text-align: left;
+  padding: 18px 13px;
+}
+.patient-card.selected {
+  background: #f1f5ed;
+  border-left: 3px solid #5d7e4f;
+  padding-left: 10px;
+}
+.patient-card strong {
+  font-size: 11px;
+  display: block;
+  margin: 2px 0 5px;
+}
+.patient-card small {
+  font-size: 8px;
+  color: #939d8b;
+  display: block;
+  margin-bottom: 9px;
+}
+.patient-card > svg {
+  margin-left: auto;
+  align-self: center;
+  color: #a1ac98;
+}
+.badge {
+  font-size: 9px;
+  font-weight: 500;
+  color: #74876a;
+  background: #f0f4e9;
+  border: 1px solid #e9eedf;
+  padding: 4px 7px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.badge.context {
+  color: #b09055;
+  background: #fbf3e8;
+  border-color: #f1e7d5;
+}
+.badge.review {
+  color: #608479;
+  background: #edf4f0;
+  border-color: #e0ece5;
+}
+.queue-note {
+  display: flex;
+  gap: 9px;
+  margin: 24px 16px 19px;
+  padding-top: 18px;
+  border-top: 1px solid #eef0e9;
+  color: #96a18b;
+}
+.queue-note p {
+  font-size: 9px;
+  color: #9aa28f;
+}

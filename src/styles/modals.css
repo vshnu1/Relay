@@ -1,0 +1,130 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #172d2566;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  z-index: 50;
+}
+.modal {
+  position: relative;
+  background: #fffefb;
+  border: 1px solid #e4e8db;
+  border-radius: 16px;
+  padding: 34px;
+  width: 480px;
+  max-height: 92vh;
+  overflow: auto;
+  box-shadow: 0 24px 100px #12312320;
+}
+.modal.wide {
+  width: 760px;
+}
+.modal-close {
+  position: absolute;
+  right: 17px;
+  top: 17px;
+}
+.modal h2 {
+  font-size: 25px;
+  margin: 10px 0 14px;
+  line-height: 1.3;
+  letter-spacing: -0.8px;
+}
+.modal > p {
+  font-size: 12px;
+  margin: 12px 0;
+}
+.modal-symbol {
+  background: #eef2e5;
+  color: #7e9367;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 22px;
+}
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  color: #697e5c;
+  margin: 18px 0;
+}
+.form-field select {
+  font-size: 12px;
+  padding: 11px;
+}
+.consent-box {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #f4f6ee;
+  padding: 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #829071;
+  margin: 20px 0;
+}
+.consent-box input {
+  accent-color: #426548;
+  margin: 3px 0 0;
+}
+.fine-print {
+  font-size: 10px !important;
+  margin-bottom: 20px !important;
+  color: #9da48f;
+}
+.modal pre {
+  font-size: 10px;
+  max-height: 420px;
+  overflow: auto;
+  background: #f1f4ed;
+  border: 1px solid #e5e9dc;
+  border-radius: 7px;
+  padding: 20px;
+  line-height: 1.7;
+  margin: 20px 0;
+}
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 15px;
+  border: 1px dashed #b5c2a5;
+  background: #f7f9f1;
+  border-radius: 8px;
+  position: relative;
+  gap: 12px;
+  color: #81966c;
+  margin: 25px 0;
+  cursor: pointer;
+}
+.upload-zone span {
+  font-size: 10px;
+}
+.upload-zone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+.empty-chart {
+  padding: 25px;
+  font-size: 10px;
+  color: #9aab88;
+}
+.modal form > input {
+  width: 100%;
+  margin: 20px 0;
+}
+.modal .alert {
+  margin-top: 15px;
+}

@@ -1,0 +1,132 @@
+.evidence-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 266px;
+  gap: 18px;
+  align-items: start;
+}
+.timeline .panel-heading {
+  padding-bottom: 17px;
+}
+.tabs {
+  display: flex;
+  padding: 0 19px;
+  border-bottom: 1px solid #e8ece3;
+  gap: 20px;
+}
+.tabs button {
+  padding: 0 0 12px;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: #939d8b;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tabs button.chosen {
+  border-color: #4f7151;
+  color: #416442;
+  font-weight: 600;
+}
+.tabs button span {
+  font-size: 8px;
+  background: #f0f1e8;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  padding: 14px 20px 5px;
+  font-size: 8px;
+  color: #9aa58f;
+}
+.chart-legend span {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.chart-legend i {
+  width: 14px;
+  border-top: 1px dashed #b4bcae;
+}
+.chart-legend i.window {
+  width: 8px;
+  height: 8px;
+  background: #f8eee3;
+  border: 0;
+}
+.signal {
+  padding: 16px 19px 10px;
+  border-bottom: 1px solid #f1f3ed;
+}
+.signal-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+.signal-label > div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.signal-label strong {
+  font-size: 10px;
+  font-weight: 500;
+}
+.signal-label small {
+  font-size: 8px;
+  color: #a6af9e;
+}
+.signal-label > div:first-child > small {
+  margin-left: 3px;
+}
+.signal-label b {
+  font-size: 14px;
+  font-family: Manrope, sans-serif;
+  font-weight: 600;
+}
+.metric-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 3px;
+}
+.delta {
+  font-size: 8px;
+  margin-left: 4px;
+  background: #f2f5ed;
+  border-radius: 3px;
+  padding: 3px 5px;
+  color: #8f9c80;
+}
+.delta.flagged {
+  color: #af8255;
+  background: #fbf0e3;
+}
+.signal svg {
+  display: block;
+  width: 100%;
+  height: 74px;
+  margin-top: 9px;
+  overflow: hidden;
+}
+.signal-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: #a4ac9b;
+}
+.signal-foot span:last-child:not(:first-child) {
+  color: #b79568;
+}
+.timeline-footer {
+  padding: 13px 20px;
+  display: flex;
+  justify-content: space-between;
+  color: #a4ad9b;
+  font-size: 8px;
+}

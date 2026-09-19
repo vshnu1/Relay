@@ -1,0 +1,8 @@
+# These are Prettier's defaults, written out on purpose: once a project config
+# exists, editor extensions stop applying per-user settings, so every machine
+# formats identically and nobody reformats a file they only meant to tweak.
+printWidth: 80
+tabWidth: 2
+semi: true
+singleQuote: false
+trailingComma: all
