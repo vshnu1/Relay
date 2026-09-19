@@ -64,6 +64,8 @@ function selectRelevantSymptoms(ranked, links, signals, limit) {
 }
 
 function promptFor(patient, focusSignals, mode) {
+  if (patient.profile?.ml === "stroke_rehabilitation")
+    return "Is there anything else about your recovery or rehabilitation routine that you would like your care team to know? You can say no.";
   if (mode === "routine")
     return "What have you been doing today, and has anything changed with your activity, meals, or drinks? You can also tell me if there is nothing to add.";
   if (mode === "insufficient")
@@ -86,6 +88,14 @@ function promptFor(patient, focusSignals, mode) {
   if (sleep)
     return "Around then, was anything different about your sleep schedule, activity, meals, or drinks? You can say no.";
   return `Around then, was anything different in your routine after ${patient.profile?.after || "discharge"}, such as activity, meals, or drinks? You can say no.`;
+}
+
+function planQuestionFor(profileId, allowed) {
+  const preferred =
+    profileId === "strokeRehabilitation"
+      ? ["mealPlan", "medicine", "activity"]
+      : ["medicine", "activity"];
+  return preferred.find((id) => allowed.includes(id));
 }
 
 // Stay within the discharge profile; wearable findings only prioritize relevant
@@ -131,18 +141,14 @@ export function buildCheckinPlan(patient, analysis = patient.analysis) {
     }
     // Finish with one discharge-plan check rather than stacking medicine and
     // activity prompts on top of several symptoms.
-    const planQuestion = ["medicine", "activity"].find((id) =>
-      allowed.includes(id),
-    );
+    const planQuestion = planQuestionFor(profileId, allowed);
     if (planQuestion && selected.length < 3) selected.push(planQuestion);
   } else {
     // Routine follow-up stays short: one symptom from this discharge plan and
     // one check on the plan itself. The optional context question comes after.
     const firstSymptom = ranked.find(({ id }) => !CONTEXT_ONLY.has(id));
     if (firstSymptom) selected.push(firstSymptom.id);
-    const planQuestion = ["medicine", "activity"].find((id) =>
-      allowed.includes(id),
-    );
+    const planQuestion = planQuestionFor(profileId, allowed);
     if (planQuestion && selected.length < 2) selected.push(planQuestion);
   }
   return {
