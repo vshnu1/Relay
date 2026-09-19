@@ -5702,11 +5702,115 @@ p.rx-row-summary {
   border-radius: 16px;
   background: var(--surface);
 }
+.rx-pweb .rx-p-chat-label {
+  align-self: flex-start;
+  margin: 0 0 2px 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
 .rx-pweb .rx-p-bubble {
   max-width: min(88%, 680px);
   padding: 12px 15px;
   font-size: 15px;
   line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.rx-pweb .rx-p-mode-choice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.rx-pweb .rx-p-mode-choice legend {
+  margin-bottom: 9px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+}
+.rx-pweb .rx-p-mode-choice label {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfcfa;
+  cursor: pointer;
+}
+.rx-pweb .rx-p-mode-choice label.selected {
+  border-color: var(--pine);
+  background: #edf3ec;
+  box-shadow: 0 0 0 1px var(--pine);
+}
+.rx-pweb .rx-p-mode-choice input {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  accent-color: var(--pine);
+}
+.rx-pweb .rx-p-mode-choice strong,
+.rx-pweb .rx-p-mode-choice small {
+  display: block;
+}
+.rx-pweb .rx-p-mode-choice strong {
+  font-size: 14px;
+}
+.rx-pweb .rx-p-mode-choice small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.rx-pweb .rx-p-text-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.rx-pweb .rx-p-text-reply label {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+}
+.rx-pweb .rx-p-text-reply textarea {
+  width: 100%;
+  min-height: 78px;
+  padding: 12px 14px;
+  resize: vertical;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.rx-pweb .rx-p-text-reply textarea:focus-visible,
+.rx-pweb .rx-p-mode-choice label:focus-within {
+  outline: 3px solid #b8d1bd;
+  outline-offset: 2px;
+}
+.rx-pweb .rx-p-text-reply-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.rx-pweb .rx-p-text-reply-actions small {
+  margin-right: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+.rx-pweb .rx-p-text-reply-actions .rx-p-btn {
+  min-height: 42px;
 }
 .rx-pweb .rx-p-live-controls {
   display: flex;
@@ -5854,6 +5958,22 @@ p.rx-row-summary {
   }
   .rx-pweb .rx-p-callcard .rx-p-btn {
     width: 100%;
+  }
+  .rx-pweb .rx-p-mode-choice {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rx-pweb .rx-p-transcript {
+    min-height: 140px;
+    max-height: 55vh;
+    padding: 13px;
+  }
+  .rx-pweb .rx-p-bubble {
+    max-width: 94%;
+    padding: 11px 13px;
+  }
+  .rx-pweb .rx-p-text-reply-actions .rx-p-btn {
+    flex: 1 1 100%;
+    justify-content: center;
   }
 }
 
