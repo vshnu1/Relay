@@ -320,7 +320,14 @@ export default function Assurance() {
             <span className="rx-assurance-live">
               {" · "}
               {live.identity.accountsRequired
-                ? `${live.identity.accounts} ${live.identity.accounts === 1 ? "account" : "accounts"}, ${live.identity.openSessions} open ${live.identity.openSessions === 1 ? "session" : "sessions"}`
+                ? [
+                    `${live.identity.accounts} ${live.identity.accounts === 1 ? "account" : "accounts"}`,
+                    live.identity.demoPrincipals > 0 &&
+                      `${live.identity.demoPrincipals} demo ${live.identity.demoPrincipals === 1 ? "identity" : "identities"}`,
+                    `${live.identity.openSessions} open ${live.identity.openSessions === 1 ? "session" : "sessions"}`,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")
                 : "this deployment still accepts the shared demo codes"}
             </span>
           )}
