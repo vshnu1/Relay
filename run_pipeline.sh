@@ -7,10 +7,13 @@
 # intermediates are gitignored.
 set -euo pipefail
 
+# data/ is gitignored, so it will not exist on a fresh clone.
+mkdir -p data/raw
+
 XML="${1:-data/raw/apple_health_export/export.xml}"
 if [[ ! -f "$XML" ]]; then
   echo "no export at $XML" >&2
-  echo "unzip your Apple Health export into data/raw/ first" >&2
+  echo "unzip your Apple Health export into data/raw/ first, or pass a path" >&2
   exit 1
 fi
 
