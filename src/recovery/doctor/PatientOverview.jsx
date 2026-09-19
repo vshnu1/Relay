@@ -50,7 +50,7 @@ export default function PatientOverview({ id }) {
             <h1>{p.name}</h1>
             <p>
               {p.age} years old. Discharged after {p.profile.after}, day{" "}
-              {p.dayHome} of {p.windowDays} at home.
+              {p.dayHome + 1} of {p.windowDays} at home.
             </p>
           </div>
           <span
@@ -81,7 +81,7 @@ export default function PatientOverview({ id }) {
           <div>
             <dt>Recovery period</dt>
             <dd>
-              Day {p.dayHome} of {p.windowDays} · {p.windowDays}-day window
+              Day {p.dayHome + 1} of {p.windowDays} · {p.windowDays}-day window
             </dd>
           </div>
           <div>

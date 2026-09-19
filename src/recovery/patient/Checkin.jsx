@@ -378,7 +378,7 @@ export default function Checkin({ patient: p }) {
               ? "Your care team asked"
               : due.reason === "readings"
                 ? "Priority check-in"
-                : `Day ${p.dayHome} check-in`}
+                : `Day ${p.dayHome + 1} check-in`}
           </span>
           <h1 className="rx-p-title">Talk to Relay</h1>
           <p className="rx-p-lead">

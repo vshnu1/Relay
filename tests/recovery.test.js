@@ -62,6 +62,27 @@ test("statuses are derived from readings and check-ins, not stored", async () =>
       victor: "monitoring",
     },
   );
+  const summaryCounts = Object.groupBy(
+    Object.values(v),
+    (patient) => patient.group,
+  );
+  assert.deepEqual(
+    {
+      review: summaryCounts.review.length,
+      context: summaryCounts.context.length,
+      nodata: summaryCounts.nodata.length,
+      monitoring: summaryCounts.monitoring.length,
+    },
+    { review: 2, context: 12, nodata: 2, monitoring: 12 },
+  );
+  assert.equal(
+    Object.values(summaryCounts).reduce(
+      (total, group) => total + group.length,
+      0,
+    ),
+    Object.keys(v).length,
+    "the four status totals account for every patient",
+  );
   assert.equal(v.maya.moved.length, 4);
   // Discharge times are spread across the cohort so the watchlist does not
   // print one identical persistence figure down the whole column, so pin the

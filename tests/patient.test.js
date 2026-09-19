@@ -22,6 +22,7 @@ const {
   checkinTriggerKey,
   insight,
   notifications,
+  nextScheduledDay,
   buildReport,
 } = await import("../src/recovery/model/schedule.js");
 const { importHealthFile, createScanner } =
@@ -81,9 +82,8 @@ test("every question maps onto a field the ML model scores", () => {
   assert.equal(stroke.diet_change, "Change reported");
 });
 
-test("check-ins are daily for the first week, then every other day", () => {
-  assert.deepEqual([0, 1, 7, 8, 9, 10, 11, 29, 31].map(isScheduledDay), [
-    true,
+test("check-ins are daily for patient days 1–7, then every other day", () => {
+  assert.deepEqual([1, 7, 8, 9, 10, 11, 29, 30, 31].map(isScheduledDay), [
     true,
     true,
     false,
@@ -91,8 +91,10 @@ test("check-ins are daily for the first week, then every other day", () => {
     false,
     true,
     true,
+    false,
     false,
   ]);
+  assert.equal(nextScheduledDay(9), 11, "internal day 9 is patient day 10");
 });
 
 test("readings that stay away from usual make a check-in due off-schedule, and the opening says why", async () => {
@@ -104,7 +106,7 @@ test("readings that stay away from usual make a check-in due off-schedule, and t
     pending: false,
     pattern: false,
     analysis: null,
-    dayHome: 12,
+    dayHome: 11,
   };
   assert.equal(isScheduledDay(12), false);
   assert.deepEqual(checkinDue(quiet), { due: false, reason: "not-scheduled" });
@@ -117,7 +119,7 @@ test("readings that stay away from usual make a check-in due off-schedule, and t
   assert.ok(alerts.includes("checkin"), "the dashboard alerts the patient");
   const routine = { ...quiet, dayHome: 3 };
   assert.equal(checkinDue(routine).reason, "scheduled");
-  assert.match(checkinWhy(routine), /first week home we check in every day/);
+  assert.match(checkinWhy(routine), /day 4/);
   assert.match(checkinWhy({ ...quiet, dayHome: 9 }), /every other day/);
 });
 
@@ -237,7 +239,7 @@ test("due, insight and notifications follow the readings and the answers", async
   const aisha = view("aisha");
   assert.equal(insight(aisha).level, "fine");
   const report = buildReport(after);
-  assert.match(report.subject, /Maya Okafor, day 9/);
+  assert.match(report.subject, /Maya Okafor, day 10/);
   assert.ok(
     report.body.includes(`${QUESTIONS.breathing.short}: A lot`),
     "check-in answers are in the report",

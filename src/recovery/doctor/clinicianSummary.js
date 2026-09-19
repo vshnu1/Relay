@@ -125,7 +125,7 @@ export function buildClinicianSummary(patient, analysis = patient.analysis) {
     );
   } else if (!concerns.length && patient.profile?.after) {
     parts.push(
-      `Recovery after ${patient.profile.after} is on day ${patient.dayHome} of ${patient.windowDays}.`,
+      `Recovery after ${patient.profile.after} is on day ${patient.dayHome + 1} of ${patient.windowDays}.`,
     );
   }
 

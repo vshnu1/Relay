@@ -277,7 +277,7 @@ export default function HomeHospital({ patient: p }) {
           <div>
             <dt>Recovery window</dt>
             <dd>
-              {p.windowDays} days at home · today is day {p.dayHome}
+              {p.windowDays} days at home · today is day {p.dayHome + 1}
             </dd>
           </div>
           <div>

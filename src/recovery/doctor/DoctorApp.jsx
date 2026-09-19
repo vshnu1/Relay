@@ -2,6 +2,7 @@ import {
   Activity,
   House,
   ListChecks,
+  LogOut,
   ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react";
@@ -12,7 +13,13 @@ import PatientOverview from "./PatientOverview.jsx";
 import Profiles from "./Profiles.jsx";
 import Assurance from "./Assurance.jsx";
 
-export default function DoctorApp({ route, cohort, sourceLabel }) {
+export default function DoctorApp({
+  route,
+  cohort,
+  sourceLabel,
+  canSignOut,
+  onSignOut,
+}) {
   const page =
     route[1] === "p"
       ? "patient"
@@ -76,6 +83,17 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
             <ShieldCheck size={16} aria-hidden="true" /> Security
           </span>
         </a>
+        {canSignOut && (
+          <button
+            type="button"
+            className="rx-navlink rx-signout-link"
+            onClick={onSignOut}
+          >
+            <span className="rx-navlink-label">
+              <LogOut size={16} aria-hidden="true" /> Sign out
+            </span>
+          </button>
+        )}
       </nav>
       <main className="rx-main" id="rx-main" tabIndex={-1}>
         <IntendedUse />

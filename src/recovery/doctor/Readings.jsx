@@ -40,7 +40,7 @@ function useWidth() {
 const dayName = (d) =>
   d < 0
     ? `${-d} ${-d === 1 ? "day" : "days"} before admission`
-    : `Day ${d} at home`;
+    : `Day ${d + 1} at home`;
 const unitWord = (s) => (s.unit === "%" ? "%" : s.unit);
 const dirWord = (s) =>
   s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase();
@@ -326,7 +326,7 @@ export function SignalChart({
         {before.map((d, i) =>
           i === 0 || i === before.length - 1 ? (
             <text key={d.day} x={d.x} y={H - 22} textAnchor="middle">
-              {d.day}
+              {d.day < 0 ? d.day : d.day + 1}
             </text>
           ) : null,
         )}
@@ -340,7 +340,7 @@ export function SignalChart({
               textAnchor="middle"
               style={{ fontWeight: d === last ? 700 : 400 }}
             >
-              {d.day}
+              {d.day + 1}
             </text>
           ) : null,
         )}
@@ -389,7 +389,7 @@ function summaryLine(s, profile) {
     return `No reading today. Counted for ${profile.after}.`;
   if (s.today === null) return "No reading today. Recorded, not counted.";
   if (s.moved)
-    return `Past its threshold since day ${s.runStart}: ${s.fmt(s.today)} ${unitWord(s)} today against a usual ${s.fmt(s.usual)}.`;
+    return `Past its threshold since day ${s.runStart + 1}: ${s.fmt(s.today)} ${unitWord(s)} today against a usual ${s.fmt(s.usual)}.`;
   if (s.towardDays > 0)
     return `Drifting ${dirWord(s)} for ${numberWord(s.towardDays)} ${s.towardDays === 1 ? "day" : "days"}, not yet past the threshold.`;
   if (!s.counted)
@@ -410,7 +410,7 @@ function describe(s, p, homeFrom) {
     parts.push(
       `Usual ${s.fmt(s.usual)} · threshold ${s.fmt(s.threshold)} · today ${s.fmt(s.today)} ${unitWord(s)}.`,
       s.moved
-        ? `Past the threshold since day ${s.runStart}.`
+        ? `Past the threshold since day ${s.runStart + 1}.`
         : `${s.change} from usual; ${s.towardDays > 0 ? `moving ${dirWord(s)}, below the threshold` : "inside the usual range"}.`,
     );
   else
@@ -515,12 +515,13 @@ function SignalPanel({
 // The compact day grid from the first version: one square per day per signal.
 function DayGrid({ patient: p, homeFrom }) {
   const [ref, width] = useWidth();
+  const [selected, setSelected] = useState(null);
   const homeCount = p.dayHome + 1 - homeFrom;
   const cols = width ? dayColumns(width, 7, homeCount, 4) : [];
   const labels = [
     ...[7, 6, 5, 4, 3, 2, 1].map((b) => `-${b}`),
     "stay",
-    ...Array.from({ length: homeCount }, (_, i) => String(homeFrom + i)),
+    ...Array.from({ length: homeCount }, (_, i) => String(homeFrom + i + 1)),
   ];
   const bracket =
     p.pattern && p.patternStartDay >= homeFrom && cols.length
@@ -554,29 +555,42 @@ function DayGrid({ patient: p, homeFrom }) {
             <span style={{ fontSize: 15, fontWeight: s.counted ? 600 : 400 }}>
               {s.name}
             </span>
-            <div
-              className="rx-cells"
-              role="img"
-              aria-label={`${s.name}: ${s.moved ? `past its threshold since day ${s.runStart}` : "no persistent change"}.`}
-            >
+            <div className="rx-cells">
               {cols.map((c, i) => {
                 const d = days[i];
                 const empty = !d || d.level === null;
+                const isStay = i === 7;
+                const selectedCell =
+                  selected?.signalId === s.id && selected?.index === i;
+                const label = isStay
+                  ? "Hospital stay; no home reading"
+                  : !d
+                    ? "No reading"
+                    : d.v === null
+                      ? "No reading"
+                      : `${s.fmt(d.v)} ${s.unit}, ${s.usual === null ? "usual unavailable" : `usual ${s.fmt(s.usual)}`}`;
                 return (
-                  <i
+                  <button
+                    type="button"
                     key={i}
-                    className={empty ? "hatch" : ""}
+                    className={`rx-day-cell${empty ? " hatch" : ""}${selectedCell ? " selected" : ""}`}
+                    disabled={isStay}
+                    aria-label={`${s.name}, ${isStay ? "hospital stay" : dayName(d?.day ?? homeFrom + i - 8)}: ${label}`}
+                    aria-pressed={selectedCell}
+                    onClick={() =>
+                      !isStay &&
+                      setSelected({
+                        signalId: s.id,
+                        index: i,
+                        day: d?.day ?? homeFrom + i - 8,
+                        value: d?.v ?? null,
+                      })
+                    }
                     style={{
                       width: c.w,
                       background: empty ? undefined : FILL[d.level],
                     }}
-                    title={
-                      d
-                        ? d.v === null
-                          ? `${dayName(d.day)}: no reading`
-                          : `${dayName(d.day)}: ${s.fmt(d.v)} ${s.unit}, usual ${s.fmt(s.usual)}`
-                        : "In hospital"
-                    }
+                    title={`${isStay ? "Hospital stay" : dayName(d?.day ?? homeFrom + i - 8)}: ${label}`}
                   />
                 );
               })}
@@ -589,6 +603,34 @@ function DayGrid({ patient: p, homeFrom }) {
           </div>
         );
       })}
+      {selected &&
+        (() => {
+          const signal = p.signals.find((s) => s.id === selected.signalId);
+          if (!signal) return null;
+          const value = selected.value;
+          const comparison =
+            value === null || signal.usual === null
+              ? null
+              : `${value - signal.usual >= 0 ? "+" : "−"}${Math.abs(value - signal.usual).toFixed(signal.digits || 1)} ${signal.unit === "%" ? "points" : signal.unit} from usual`;
+          return (
+            <div className="rx-grid-detail" role="status" aria-live="polite">
+              <strong>
+                {signal.name} · {dayName(selected.day)}
+              </strong>
+              {value === null ? (
+                <span>No reading recorded for this day.</span>
+              ) : (
+                <span>
+                  {signal.fmt(value)} {signal.unit}
+                  {comparison ? ` · ${comparison}` : ""}
+                  {signal.usual !== null
+                    ? ` · usual ${signal.fmt(signal.usual)} ${signal.unit}`
+                    : ""}
+                </span>
+              )}
+            </div>
+          );
+        })()}
       <ul
         className="rx-legend"
         aria-label="Square colours"

@@ -77,7 +77,6 @@ def build_restraint(signals, program, model, dq, application_state, rule_coordin
             "checks": checks,
             "near_miss": False,
             "closest_gate": None,
-            "note": "This day was surfaced. The ledger records the gates as evaluated.",
         }
 
     # How close did the closest gate come? Reported so a quiet day is legible

@@ -53,7 +53,7 @@ export function recoveryStatus(
     // cannot answer "what about my sleep?" for a patient whose program
     // records sleep but does not watch it.
     recorded_not_counted: (p.others || []).map((s) => s.plain),
-    day_at_home: p.dayHome,
+    day_at_home: p.dayHome + 1,
     window_days: p.windowDays,
     hospital: p.hospital,
     readings: p.counted.map((s) => ({
@@ -214,7 +214,7 @@ export async function startPatientVoiceSession({
     dynamicVariables: {
       patient_name: p.first,
       program: p.profile.name,
-      day_at_home: String(p.dayHome),
+      day_at_home: String(p.dayHome + 1),
       checkin_reason: why,
       model_state: status.model.state,
       model_summary: status.model.summary,

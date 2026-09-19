@@ -5,6 +5,7 @@ import {
   CircleAlert,
   Clock3,
   CheckCircle2,
+  Database,
 } from "lucide-react";
 import { list, numberWord } from "../format.js";
 import { STATUS } from "./watchStatus.js";
@@ -41,6 +42,7 @@ export default function Watchlist({ cohort }) {
   const reviews = cohort.filter((p) => p.group === "review").length;
   const context = cohort.filter((p) => p.group === "context").length;
   const monitoring = cohort.filter((p) => p.group === "monitoring").length;
+  const noData = cohort.filter((p) => p.group === "nodata").length;
   return (
     <div className="rx-page rx-watchlist">
       <header className="rx-pagehead">
@@ -74,6 +76,9 @@ export default function Watchlist({ cohort }) {
         </span>
         <span className="rx-watch-stat">
           <CheckCircle2 size={16} /> <strong>{monitoring}</strong> monitoring
+        </span>
+        <span className="rx-watch-stat nodata">
+          <Database size={16} /> <strong>{noData}</strong> not enough data
         </span>
       </div>
       {query.trim() && !shown.length && (
@@ -135,7 +140,7 @@ export default function Watchlist({ cohort }) {
                     <div>
                       <span>{p.profile.name}</span>
                       <small>
-                        Day {p.dayHome} of {p.windowDays}
+                        Day {p.dayHome + 1} of {p.windowDays}
                       </small>
                     </div>
                     <p className="rx-watch-finding">

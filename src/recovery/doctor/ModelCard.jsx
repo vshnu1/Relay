@@ -273,16 +273,15 @@ export default function ModelCard({ patient: p }) {
                   </li>
                 ))}
               </ul>
-              <p className="rx-model-fine">
-                {/* restraint.py already opens `note` with this exact sentence
-                    on a near miss, so bolding a hard-coded copy of it printed
-                    it twice in a row. Bold the sentence the model sent. */}
-                {a.restraint.near_miss ? (
-                  <strong>{a.restraint.note}</strong>
-                ) : (
-                  a.restraint.note
-                )}
-              </p>
+              {!a.restraint.escalated && a.restraint.note && (
+                <p className="rx-model-fine">
+                  {a.restraint.near_miss ? (
+                    <strong>{a.restraint.note}</strong>
+                  ) : (
+                    a.restraint.note
+                  )}
+                </p>
+              )}
             </>
           )}
 
