@@ -352,9 +352,23 @@ export function derive(p, now) {
           ? `${d.name} synced ${ago(now - d.lastSync)}`
           : `${d.name} is connected`,
     );
+  // Day nought has no night behind it, and day one has exactly one, so the
+  // plural has to be earned. "Readings cover all one nights since coming home"
+  // was what a patient saw on their first evening at home.
+  const nights = (n) => `${numberWord(n)} ${n === 1 ? "night" : "nights"}`;
+  const coverage =
+    totalNights === 0
+      ? "No full night at home yet."
+      : coveredNights === totalNights
+        ? totalNights === 1
+          ? "Readings cover the first night since coming home."
+          : `Readings cover all ${numberWord(totalNights)} nights since coming home.`
+        : coveredNights === 0
+          ? `No readings for ${nights(totalNights)} since coming home.`
+          : `Readings cover ${numberWord(coveredNights)} of ${nights(totalNights)} since coming home.`;
   findings.push({
     label: "Data coverage",
-    text: `${coveredNights === totalNights ? `Readings cover all ${numberWord(totalNights)} nights since coming home.` : `Readings cover ${numberWord(coveredNights)} of ${numberWord(totalNights)} nights since coming home.`}${deviceNotes.length ? ` ${deviceNotes.join(". ")}.` : ""}`,
+    text: `${coverage}${deviceNotes.length ? ` ${deviceNotes.join(". ")}.` : ""}`,
   });
 
   return {

@@ -440,6 +440,19 @@ export const QUESTIONS = {
     ml: "mouth_sores",
     toModel: worse,
   },
+  device: {
+    text: "Have you had any nights without your CPAP machine since your last check-in?",
+    short: "Nights without the CPAP machine",
+    options: NYS,
+    reports: "nights without the CPAP machine",
+    ml: "device_adherence",
+    toModel: (a) =>
+      a === "Yes"
+        ? "Missed nights"
+        : a === "No"
+          ? "Used every night"
+          : "Unsure",
+  },
   medicine: {
     text: "Have you missed, changed, or stopped any medicines from your discharge plan?",
     short: "Medicine changes since discharge",
@@ -479,7 +492,11 @@ export function toModelContext(profileId, answers) {
       context[def.ml] = value;
   }
   const adherence = PROFILES[profileId]?.adherence;
-  if (adherence && context.medication !== undefined)
+  if (
+    adherence &&
+    context[adherence] === undefined &&
+    context.medication !== undefined
+  )
     context[adherence] = context.medication;
   return context;
 }
@@ -553,7 +570,7 @@ export const QUESTION_SIGNAL_MAP = {
   sleepApnoea: {
     sleepiness: ["sleep", "deepSleep", "oxygen"],
     breathing: ["breathing", "oxygen"],
-    medicine: [],
+    device: [],
     activity: [],
   },
   postpartum: {
@@ -697,10 +714,10 @@ export const PROFILES = {
     ],
   },
   sepsisWatch: {
-    name: "Post-discharge recovery after surgery",
+    name: "Recovery after a serious infection",
     ml: "sepsis_watch",
     adherence: "antibiotic_adherence",
-    after: "surgery",
+    after: "a serious infection",
     minMoved: 3,
     counted: [
       counted("restingHr"),
@@ -770,7 +787,7 @@ export const PROFILES = {
       counted("restingHr"),
     ],
     recorded: ["breathing", "hrv"],
-    questions: ["sleepiness", "breathing", "medicine", "activity"],
+    questions: ["sleepiness", "breathing", "device", "activity"],
   },
   postpartum: {
     name: "Postpartum recovery",
