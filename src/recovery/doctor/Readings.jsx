@@ -497,7 +497,7 @@ function SignalPanel({
       <p className="rx-signal-watch">
         {s.counted
           ? `Counted for ${p.profile.after}. Watching for ${dirWord(s)} than usual.`
-          : `Recorded only. Not counted for ${p.profile.after}.`}{" "}
+          : `Watched for context. Not one of the readings that asks for a review on ${p.profile.after}.`}{" "}
         Source:{" "}
         {p.devices[s.device]?.name ||
           (s.device === "manual" ? "patient entry" : "wearable")}

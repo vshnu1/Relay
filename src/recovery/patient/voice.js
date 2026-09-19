@@ -50,10 +50,15 @@ export function recoveryStatus(
     // other screen speaks: "recovering after a COPD flare-up", not "recovering
     // after COPD flare-up".
     recovering_after: p.profile.after,
-    // What this condition deliberately does not count. Without it the agent
-    // cannot answer "what about my sleep?" for a patient whose program
-    // records sleep but does not watch it.
-    recorded_not_counted: (p.others || []).map((s) => s.plain),
+    // The readings this pathway watches for context. Without them the agent
+    // cannot answer "what about my sleep?" for a patient whose pathway shows
+    // sleep but does not use it to ask for a review.
+    //
+    // Note for whoever owns the agent: this is not currently reaching it. The
+    // dashboard prompt says "use only these session facts" and lists eleven
+    // variables, and this is not one of them, so today the agent cannot answer
+    // that question at all.
+    watched_for_context: (p.others || []).map((s) => s.plain),
     day_at_home: p.dayHome + 1,
     window_days: p.windowDays,
     hospital: p.hospital,
@@ -127,17 +132,20 @@ export function adaptiveTurnGuidance(
       asksFollowUp: false,
     };
   }
-  const followUp = {
-    mealPlan: "What did you eat or drink, and which instruction differed?",
-    medicine: "Which medicine changed, and when?",
-    activity: "What activity, and when?",
-  }[questionId] || "When did it start, or how often?";
+  const followUp =
+    {
+      mealPlan: "What did you eat or drink, and which instruction differed?",
+      medicine: "Which medicine changed, and when?",
+      activity: "What activity, and when?",
+    }[questionId] || "When did it start, or how often?";
   if (!answer) {
-    const clarification = {
-      mealPlan: "Was it outside your discharge instructions?",
-      medicine: "Which medicine changed, if any?",
-      activity: "Was that more activity than your plan?",
-    }[questionId] || `Could you say more about ${question.short.toLowerCase()}?`;
+    const clarification =
+      {
+        mealPlan: "Was it outside your discharge instructions?",
+        medicine: "Which medicine changed, if any?",
+        activity: "Was that more activity than your plan?",
+      }[questionId] ||
+      `Could you say more about ${question.short.toLowerCase()}?`;
     return {
       message: `The answer about “${question.short}” is unclear. Ask only: “${clarification}” Do not suggest an answer. Keep the acknowledgment under 8 words, then continue.`,
       asksFollowUp: true,
