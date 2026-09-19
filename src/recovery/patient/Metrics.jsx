@@ -177,7 +177,18 @@ export default function Metrics({ patient: p }) {
           {counted.map(item)}
           {others.length > 0 && (
             <>
-              <span className="rx-ph-kicker gap">Recorded, not counted</span>
+              {/* "Recorded, not counted" told a patient what the app had
+                  declined to do and left them to guess why. It says what is
+                  true instead: the reading is watched and their care team sees
+                  it, and it is not one of the ones that asks for a review on
+                  this pathway. It does not say the reading does not matter,
+                  because nobody clinically qualified has decided that. */}
+              <span className="rx-ph-kicker gap">Watched for context</span>
+              <p className="rx-ph-note">
+                Your care team sees these too. They are not part of what asks
+                them to take a look for {p.profile.after}, so a change here on
+                its own will not prompt one.
+              </p>
               {others.map(item)}
             </>
           )}

@@ -387,13 +387,14 @@ function summaryLine(s, profile) {
   if (s.usual === null) return "No usual yet: no readings before admission.";
   if (s.today === null && s.counted)
     return `No reading today. Counted for ${profile.after}.`;
-  if (s.today === null) return "No reading today. Recorded, not counted.";
+  if (s.today === null)
+    return `No reading today. Watched for context on ${profile.after}.`;
   if (s.moved)
     return `Past its threshold since day ${s.runStart}: ${s.fmt(s.today)} ${unitWord(s)} today against a usual ${s.fmt(s.usual)}.`;
   if (s.towardDays > 0)
     return `Drifting ${dirWord(s)} for ${numberWord(s.towardDays)} ${s.towardDays === 1 ? "day" : "days"}, not yet past the threshold.`;
   if (!s.counted)
-    return `Recorded, not counted for ${profile.after}. ${s.fmt(s.today)} ${unitWord(s)} today, usual ${s.fmt(s.usual)}.`;
+    return `${s.fmt(s.today)} ${unitWord(s)} today, usual ${s.fmt(s.usual)}. Watched for context: this is not one of the readings that asks for a review on ${profile.after}.`;
   return `Inside the usual range: ${s.fmt(s.today)} ${unitWord(s)} today, usual ${s.fmt(s.usual)}.`;
 }
 
@@ -415,7 +416,7 @@ function describe(s, p, homeFrom) {
     );
   else
     parts.push(
-      `Usual ${s.fmt(s.usual)} · today ${s.fmt(s.today)} ${unitWord(s)}. Recorded for context only.`,
+      `Usual ${s.fmt(s.usual)} · today ${s.fmt(s.today)} ${unitWord(s)}. Watched for context, not one of the readings that asks for a review.`,
     );
   if (missing > 0)
     parts.push(
@@ -739,7 +740,9 @@ export default function Readings({ patient: p }) {
               )}
               {recorded.length > 0 && (
                 <details className="rx-picker-more">
-                  <summary>{recorded.length} additional readings</summary>
+                  <summary>
+                    {recorded.length} more readings, watched for context
+                  </summary>
                   <div className="rx-picker-list">
                     {recorded.map((s) => (
                       <SignalButton

@@ -13,6 +13,10 @@ function phrase(s) {
 }
 
 export default function Watching({ patient: p }) {
+  // The page was called "what your care team is watching" and listed only the
+  // signals that can ask for a review, so a patient who had just read "watched
+  // for context" on the previous screen came here and found no mention of them.
+  const context = p.signals.filter((s) => !s.counted);
   const changed = p.changedForPatient;
   const started = Math.max(0, ...changed.map((s) => s.towardDays));
   return (
@@ -27,6 +31,17 @@ export default function Watching({ patient: p }) {
         {numberWord(p.counted.length)} signals from your connected devices. Each
         one is compared with what was usual for you before your hospital stay.
       </p>
+      {context.length > 0 && (
+        <p className="rx-p-lead">
+          {numberWord(context.length, true)} more{" "}
+          {context.length === 1 ? "reading is" : "readings are"} collected and
+          shown to you and to your care team, and{" "}
+          {context.length === 1 ? "it is" : "they are"} listed further down.
+          Relay does not use {context.length === 1 ? "it" : "them"} to ask for a
+          review after {p.profile.after}, so a change there on its own will not
+          prompt one.
+        </p>
+      )}
       <div className="rx-p-explain-card">
         <CircleCheck size={21} aria-hidden="true" />
         <div>
@@ -51,6 +66,27 @@ export default function Watching({ patient: p }) {
           </div>
         ))}
       </div>
+      {context.length > 0 && (
+        <>
+          <h2 className="rx-p-subhead">Watched for context</h2>
+          <p className="rx-p-lead">
+            Your care team sees these alongside the ones above. Which readings
+            ask for a review is set per recovery pathway, and these are not on
+            that list for {p.profile.after}.
+          </p>
+          <div className="rx-p-card list">
+            {context.map((s) => (
+              <div className="rx-p-signal" key={s.id}>
+                <div>
+                  <strong>{s.plain}</strong>
+                  <span className="rx-p-chip">Context</span>
+                </div>
+                <small>{s.what}</small>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
       <div className="rx-p-explain">
         <h2>What a change means</h2>
         <p>

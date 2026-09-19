@@ -7075,3 +7075,18 @@ p.rx-row-summary {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* The sentence under "Watched for context". A patient reading their own screen
+   at home has nobody to ask what a section heading meant. */
+.rx-ph-note {
+  margin: -2px 0 10px;
+  padding: 0 2px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.rx-p-subhead {
+  margin: 26px 0 8px;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
