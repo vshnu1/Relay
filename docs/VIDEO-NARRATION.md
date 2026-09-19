@@ -42,9 +42,9 @@ until the patient approves it.
 _[Cut to the laptop. Clinician workspace, ward list. Point at the four state
 cards.]_
 
-On the other side, twenty-eight patients, and today two need a clinician. Not
-twenty-eight charts, two. Medicare penalises six conditions on a thirty-day
-readmission window; four are pathways here.
+On the other side, twenty-eight patients, and today one needs a clinician. Not
+twenty-eight charts, one. Most tools cannot tell a quiet patient from one
+nobody can see.
 
 _[Open Maya Okafor. Left summary, her own words, then "Listen to summary".]_
 
@@ -62,10 +62,10 @@ ninety-fifth percentile of their own validation split.
 _[Scroll slowly through "why it stayed quiet" so all four gates read. Hold
 longest.]_
 
-And look what it did. It scored above its own line, so the model alone would
-have spoken. It stayed quiet because the coordination gate failed. Four gates,
-each with what was required and what was observed. A product that tells you
-why it said nothing is doing the harder half.
+And look what it did. It scored above its own line, and the coordination gate
+held too, so it was surfaced, and the ledger shows every gate it checked to
+get there. A product that shows its working either way is doing the harder
+half.
 
 _[Render dashboard tab, latest run. Point at the execution ID as you say it.]_
 
@@ -103,6 +103,22 @@ rather than claim an exemption. Relay never diagnoses, never scores risk,
 never escalates by itself. A clinician decides.
 
 ---
+
+## Two lines change with the state. Read the screen.
+
+**The ward counts.** The status bar prints them: patients, need review,
+awaiting check-in, monitoring, not enough data. Last checked, **28, 1, 11, 14,
+2**. The sentence shape is fixed; the numbers are not.
+
+**The gate ledger has two headings, and it tells you which line to read.**
+
+- **"Why it was surfaced"** (last checked: score 0.56 against 0.50, coordination
+  3 of 3) — read the version above.
+- **"Why it stayed quiet"** — read this instead: _"And look what it did. It
+  scored above its own line, so the model alone would have spoken. It stayed
+  quiet because the coordination gate failed, and it shows you that rather than
+  hiding it. A product that tells a clinician why it said nothing is doing the
+  harder half."_
 
 ## Before you record
 
