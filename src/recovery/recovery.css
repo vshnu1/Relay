@@ -3022,11 +3022,6 @@ p.rx-row-summary {
   gap: 20px;
   font-size: 16px;
 }
-.rx-pweb .rx-navlink > span:first-child {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
 .rx-pweb .rx-side-foot button {
   align-self: flex-start;
   padding: 0;
@@ -4592,9 +4587,14 @@ p.rx-row-summary {
   padding-top: 15px;
   border-top: 1px solid var(--line-soft);
 }
-.rx-followup-details > summary,
-.rx-legend-details > summary {
+.rx-followup-details > summary {
   cursor: pointer;
+  color: var(--pine);
+  font-size: 13px;
+  font-weight: 700;
+}
+.rx-legend-details > h3 {
+  margin: 0;
   color: var(--pine);
   font-size: 13px;
   font-weight: 700;
@@ -5031,7 +5031,7 @@ p.rx-row-summary {
   color: var(--faint);
 }
 
-/* Model view, the clinician's second opinion beside the rule. */
+/* Model view, alongside the reading-based recovery status. */
 .rx-model .rx-model-head {
   display: flex;
   justify-content: space-between;
@@ -5073,6 +5073,21 @@ p.rx-row-summary {
   font-size: 14px;
   color: var(--muted);
   line-height: 1.55;
+}
+.rx-model-fallback {
+  margin-top: 16px;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+}
+.rx-model-fallback .rx-model-state {
+  margin-top: 0;
+}
+.rx-model-rundown {
+  margin: 10px 0 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
 }
 .rx-model-state {
   display: flex;
@@ -5185,98 +5200,6 @@ p.rx-row-summary {
 .rx-pill-insufficient_data {
   background: #eceee9;
   color: #5c6158;
-}
-
-/* Readmission-programme alignment, on the clinician home. */
-.rx-home-hrrp {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(250px, 340px);
-  gap: clamp(20px, 3vw, 40px);
-  align-items: center;
-  margin: 2px 0 0;
-  padding: clamp(20px, 2.4vw, 30px);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: linear-gradient(115deg, #f8faf6, #f1f5ef);
-}
-.rx-home-hrrp .rx-eyebrow {
-  margin-bottom: 8px;
-}
-.rx-home-hrrp h2 {
-  margin: 0 0 8px;
-  font-size: clamp(19px, 2vw, 24px);
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1.2;
-}
-.rx-home-hrrp p {
-  margin: 0;
-  max-width: 68ch;
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.5;
-}
-.rx-home-hrrp-ops {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-}
-.rx-home-hrrp-ops div {
-  position: relative;
-  min-width: 0;
-  min-height: 126px;
-  padding: 14px;
-  border: 1px solid #dce6da;
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.82);
-}
-.rx-home-hrrp-icon {
-  display: grid;
-  place-items: center;
-  width: 29px;
-  height: 29px;
-  margin-bottom: 13px;
-  border-radius: 9px;
-  background: #e9f0e7;
-  color: var(--pine);
-}
-.rx-home-hrrp-ops .priority .rx-home-hrrp-icon {
-  background: #fbf0d9;
-  color: #86651f;
-}
-.rx-home-hrrp-ops dt {
-  font-size: 11.5px;
-  color: var(--muted);
-  line-height: 1.25;
-}
-.rx-home-hrrp-ops dd {
-  position: absolute;
-  top: 13px;
-  right: 14px;
-  margin: 0;
-  font-size: 31px;
-  font-weight: 600;
-  color: var(--pine);
-  font-variant-numeric: tabular-nums;
-}
-@media (max-width: 980px) {
-  .rx-home-hrrp {
-    grid-template-columns: 1fr;
-  }
-  .rx-home-hrrp-ops {
-    max-width: 420px;
-    width: 100%;
-  }
-}
-@media (max-width: 560px) {
-  .rx-home-hrrp-ops div {
-    min-height: 116px;
-    padding: 12px;
-  }
-  .rx-home-hrrp-ops dd {
-    right: 12px;
-  }
 }
 
 /* ---------- Patient web: compact pass ----------
@@ -6141,7 +6064,10 @@ p.rx-row-summary {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
-  font: 12px/1.5 ui-monospace, Menlo, monospace;
+  font:
+    12px/1.5 ui-monospace,
+    Menlo,
+    monospace;
   white-space: pre-wrap;
 }
 .rx-sync i {
@@ -6292,7 +6218,7 @@ p.rx-row-summary {
     font-size: 10px;
     line-height: 1.1;
   }
-  .rx-pweb .rx-navlink > span:first-child {
+  .rx-pweb .rx-navlink-label {
     min-width: 0;
     flex-direction: column;
     gap: 3px;

@@ -37,14 +37,20 @@ test("clinician briefing states watch status, readings, and model evidence", () 
     },
     true,
   );
-  assert.match(text, /review recommended/);
-  assert.match(text, /16\.5 per min, \+16% from usual/);
+  assert.match(text, /clinician review is recommended/);
+  assert.match(text, /16\.5 per minute, about 16 percent above usual/);
   assert.match(
     text,
-    /Fresh Relay model result: unusual pattern; clinician review is recommended/,
+    /The latest Relay model assessment is unusual pattern; clinician review is recommended/,
   );
-  assert.match(text, /Breathing rate higher than this patient's usual/);
-  assert.match(text, /breathing: A little/);
+  assert.match(
+    text,
+    /The strongest model signals were Breathing rate higher than this patient's usual/,
+  );
+  assert.match(
+    text,
+    /the patient reported a little worsening in breathing with usual activity/,
+  );
   assert.doesNotMatch(text, /Demo Person|Sensitive free text|synthetic-1/);
 });
 
@@ -53,10 +59,10 @@ test("without a score the briefing clearly identifies its readings-only fallback
     { ...patient, moved: [], status: "monitoring" },
     null,
   );
-  assert.match(text, /no review currently requested/);
+  assert.match(text, /No clinician review is requested right now/);
   assert.match(
     text,
-    /No counted wearable signal is currently past its persistent watch threshold/,
+    /No watched reading is currently past its persistent threshold/,
   );
-  assert.match(text, /Relay has not returned a score/);
+  assert.match(text, /A trained-model score is not included in this briefing/);
 });

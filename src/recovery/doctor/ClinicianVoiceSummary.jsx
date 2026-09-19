@@ -97,8 +97,8 @@ export default function ClinicianVoiceSummary({ patient }) {
         fresh
           ? "Fresh Relay score included."
           : patient.analysis
-            ? "Scoring was unavailable; the most recent model result is labeled in the summary."
-            : "Scoring was unavailable; this summary uses the recovery watch readings only.",
+            ? "Using the most recent Relay score."
+            : "Using wearable readings and recovery-watch status.",
       );
       try {
         await audio.play();
@@ -113,18 +113,14 @@ export default function ClinicianVoiceSummary({ patient }) {
         briefing || buildClinicianSummary(patient, patient.analysis, false);
       setSummary(text);
       if (typeof speechSynthesis !== "undefined") {
-        setMessage(
-          error.message?.includes("text_to_speech")
-            ? "The ElevenLabs key needs text_to_speech permission; using this device’s voice for now."
-            : "ElevenLabs is unavailable; using this device’s voice for now.",
-        );
+        setMessage("Summary is playing with this device’s voice.");
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.onend = () => setPlaying(false);
         utterance.onerror = () => setPlaying(false);
         speechSynthesis.speak(utterance);
         setPlaying(true);
       } else {
-        setMessage(error.message || "Voice summary could not be prepared.");
+        setMessage("Voice playback is unavailable. Please try again.");
       }
     } finally {
       setBusy(false);

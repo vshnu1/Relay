@@ -42,7 +42,7 @@ export default function SignIn({ onSignedIn }) {
       <main className="rx-landing-inner">
         <div className="rx-brand">
           <span className="rx-brand-mark" aria-hidden="true" />
-          <span className="rx-brand-word">relay</span>
+          <span className="rx-brand-word">Relay</span>
         </div>
         <h1 className="rx-landing-lede">Sign in to continue.</h1>
         <p className="rx-signin-sub">

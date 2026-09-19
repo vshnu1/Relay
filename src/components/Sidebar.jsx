@@ -21,7 +21,7 @@ export default function Sidebar({
         <div className="brand-mark">
           <Activity size={25} />
         </div>
-        relay<span>®</span>
+        Relay<span>®</span>
       </a>
       <div className="workspace-label">CARE WORKSPACE</div>
       <button

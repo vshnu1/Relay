@@ -576,15 +576,23 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
           "xi-api-key": process.env.ELEVENLABS_API_KEY,
           "content-type": "application/json",
         },
-        body: JSON.stringify({ text, model_id: "eleven_multilingual_v2" }),
+        body: JSON.stringify({
+          text,
+          model_id: "eleven_multilingual_v2",
+          voice_settings: {
+            stability: 0.4,
+            similarity_boost: 0.78,
+            style: 0.2,
+            use_speaker_boost: true,
+            speed: 0.96,
+          },
+        }),
         signal: AbortSignal.timeout(30000),
       },
     );
     if (!speech.ok) {
       if (speech.status === 401)
-        throw new Error(
-          "The ElevenLabs API key needs the text_to_speech permission.",
-        );
+        throw new Error("ElevenLabs audio is unavailable.");
       throw new Error(`ElevenLabs speech request failed (${speech.status}).`);
     }
     const audio = Buffer.from(await speech.arrayBuffer());
@@ -598,10 +606,8 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
     res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("Cache-Control", "no-store");
     res.status(200).send(audio);
-  } catch (error) {
-    res
-      .status(503)
-      .json({ error: error.message || "Unable to prepare voice summary." });
+  } catch {
+    res.status(503).json({ error: "Voice playback is unavailable." });
   }
 });
 

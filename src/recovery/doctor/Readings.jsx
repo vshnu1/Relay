@@ -65,7 +65,9 @@ export function SignalChart({
   height,
 }) {
   const [hover, setHover] = useState(null);
-  const M = compact ? { top: 20, right: 86, bottom: 36, left: 36 } : MARGIN;
+  // The compact chart still has to hold "counts past 15.6 per min" on the
+  // right and the unit on the left, so its gutters are sized for the text.
+  const M = compact ? { top: 20, right: 168, bottom: 36, left: 56 } : MARGIN;
   const inner = width - M.left - M.right;
   // A container mid-layout can report a width narrower than the axes it has to
   // hold. Drawing then gives every rect a negative width, which the browser
@@ -495,13 +497,8 @@ function SignalPanel({
           ? `Counted for ${p.profile.after}. Watching for ${dirWord(s)} than usual.`
           : `Recorded only. Not counted for ${p.profile.after}.`}{" "}
         Source:{" "}
-        {s.device === "whoop"
-          ? "WHOOP"
-          : s.device === "phone"
-            ? "phone"
-            : s.device === "manual"
-              ? "entered by hand"
-              : "watch"}
+        {p.devices[s.device]?.name ||
+          (s.device === "manual" ? "patient entry" : "wearable")}
         .
       </p>
       <div ref={ref} className="rx-signal-plot">
@@ -747,8 +744,8 @@ export default function Readings({ patient: p }) {
               )}
             </div>
           </div>
-          <details className="rx-legend-details">
-            <summary>How to read this chart</summary>
+          <section className="rx-legend-details" aria-label="Chart legend">
+            <h3>How to read this chart</h3>
             <ul className="rx-chart-legend" aria-label="How to read the chart">
               <li>
                 <i className="band" /> Usual range before admission
@@ -772,7 +769,7 @@ export default function Readings({ patient: p }) {
                 <i className="tick" /> Day with no reading
               </li>
             </ul>
-          </details>
+          </section>
         </>
       )}
     </section>
