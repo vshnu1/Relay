@@ -44,3 +44,15 @@ Set tool type to Client and enable waiting for the response. JSON parameters:
 ```
 
 The client SDK populates the form; the API validates consent and allowed enum values on final submission. There is no webhook ingestion or unreviewed automatic update. Restrict agent allowed origins to your deployed app and localhost during development. Verify current dashboard settings against ElevenLabs documentation when configuring.
+
+## Configured hackathon agent
+
+- Agent: `Relay — Patient Context Check-in`
+- Agent ID: `agent_9801m2vjn1y6ej99abhbyevwv2fh`
+- [Open agent](https://elevenlabs.io/app/agents/agents/agent_9801m2vjn1y6ej99abhbyevwv2fh/agent)
+- Published with the consent-first three-question script and `record_checkin_response` client tool.
+- Authentication enabled; 30 calls/day, 2 concurrent calls, bursting disabled.
+- A server-side `ELEVENLABS_API_KEY` is still required to mint signed URLs. No key was created or committed. The local `.env` has the agent ID prefilled. Restart the API after adding a key.
+- Voice has not been tested end-to-end. Text check-in is tested and available.
+
+Render workflow code is ready on `feat/relay-initial-mvp`. Dashboard configuration used name `relay-monitoring`, Node, build `npm ci`, and start `node workflows/tasks.js`. Deployment was blocked by Render's card-on-file requirement despite the workspace credit. No live Render workflow is claimed.
