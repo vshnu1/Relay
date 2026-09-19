@@ -37,7 +37,8 @@ git checkout Anson
 
 ```bash
 mkdir -p data/lifesnaps && cd data/lifesnaps
-curl -L -o rais.zip "https://zenodo.org/records/7229547/files/rais_anonymized.zip?download=1"
+# -C - resumes; the plain download has been seen to die on a TLS error partway
+curl -L -C - --retry 10 -o rais.zip "https://zenodo.org/records/7229547/files/rais_anonymized.zip?download=1"
 unzip rais.zip
 cd ../..
 ```

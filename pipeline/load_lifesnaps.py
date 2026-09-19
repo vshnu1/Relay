@@ -44,7 +44,15 @@ REQUIRED = {"subject", "date"}
 MIN_METRICS = 2
 
 OUT_FIELDS = ["patient_id", "date", "resting_heart_rate", "hr_night", "hrv_sdnn",
-              "respiratory_rate", "spo2", "sleep_hours", "steps"]
+              "respiratory_rate", "spo2", "sleep_hours", "steps", "hrv_measure"]
+
+# LifeSnaps ships RMSSD; our own export is genuinely SDNN. They are different
+# HRV measures and their absolute values are not comparable. We write RMSSD
+# into the hrv_sdnn column for schema compatibility and record the truth in
+# hrv_measure. This is safe here because the cohort is only ever used for
+# within-subject z-scores, where the choice of HRV measure cancels out --- but
+# never quote a LifeSnaps HRV number as SDNN.
+HRV_MEASURE_BY_COLUMN = {"rmssd": "rmssd", "sdnn": "sdnn", "hrv": "unknown"}
 
 
 def discover(header, overrides):
@@ -144,6 +152,10 @@ def main():
                 value = normalise(metric, record.get(mapping[metric]))
                 out[metric] = "" if value is None else value
                 present += value is not None
+            source = (mapping.get("hrv_sdnn") or "").lower()
+            out["hrv_measure"] = next(
+                (v for k, v in HRV_MEASURE_BY_COLUMN.items() if k in source), "unknown"
+            ) if out.get("hrv_sdnn") != "" else ""
             for metric in OUT_FIELDS:
                 out.setdefault(metric, "")
             if present < MIN_METRICS:
@@ -158,6 +170,12 @@ def main():
         writer = csv.DictWriter(handle, fieldnames=OUT_FIELDS)
         writer.writeheader()
         writer.writerows(rows)
+
+    measures = {r["hrv_measure"] for r in rows if r.get("hrv_measure")}
+    if measures and measures != {"sdnn"}:
+        print(f"\n  NOTE: HRV in this file is {'/'.join(sorted(measures))}, not SDNN. It is written to")
+        print( "  the hrv_sdnn column for schema compatibility. Within-subject z-scores are")
+        print( "  unaffected, but never quote these values as SDNN.")
 
     subjects = {r["patient_id"] for r in rows}
     dates = sorted(r["date"] for r in rows)

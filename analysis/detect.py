@@ -23,7 +23,22 @@ from datetime import datetime, timezone
 from baseline import MIN_OBSERVATIONS, SIGNALS, baselines, load
 from language_guard import enforce
 
-THRESHOLD_SD = 1.5
+# Calibrated against 71 LifeSnaps subjects (fixtures/calibration.json). Nobody
+# in that cohort is post-surgical, so every trigger there is a false alarm:
+#
+#   1.5  sd   6.92% of subject-days   0.97 false alarms per patient per 14 days
+#   1.75 sd   3.35%                   0.47
+#   2.0  sd   1.97%                   0.28
+#
+# 2.0 halves the rate again but loses the one real coordinated deviation we
+# have: on 2026-10-15 HRV sits at -1.98 sd and drops out, taking the day from
+# two signals to one. 1.75 is the tightest setting that still catches it.
+#
+# MIN_SIGNALS stays at 2. Requiring 3 looks better on false alarms but repeats
+# the mistake documented in docs/INTEROP.md: only ~40 of 71 subjects have
+# usable baselines for three signals at once, so a 3-signal rule buys quiet by
+# being unable to fire.
+THRESHOLD_SD = 1.75
 MIN_SIGNALS = 2
 BASELINE_WINDOW = None  # None = all history before the day under test
 

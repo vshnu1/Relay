@@ -99,3 +99,73 @@ The default is a development placeholder and the tool warns when it is used.
 Roughly 90 seconds end to end on the 284MB export. Intermediates
 (`data/events.csv`, `data/daily.csv`) are gitignored; `fixtures/daily_deid.csv`
 and `fixtures/evidence.json` are the committed outputs.
+
+## Threshold calibration against a real cohort
+
+`fixtures/lifesnaps_daily.csv` holds 4,453 subject-days from 71 LifeSnaps
+participants. Nobody in that cohort is post-surgical, so every trigger the
+rule produces there is a false alarm — which makes it a false-positive rate.
+
+| Threshold | Fires on | Per patient / 14 days | Keeps the real event |
+|---|---|---|---|
+| 1.5 sd | 6.92% | 0.97 | yes |
+| 1.7 sd | 4.03% | 0.56 | yes |
+| **1.75 sd** | **3.35%** | **0.47** | **yes** |
+| 1.8 sd | 3.08% | 0.43 | no |
+| 2.0 sd | 1.97% | 0.28 | no |
+
+At the original 1.5 sd the rule fired about once per patient per fortnight on
+healthy people. For a product whose premise is *fewer* alerts, that is the
+number a clinical judge pushes on.
+
+2.0 sd looks better still, but it deletes the only real coordinated deviation
+we have: on 2026-10-15 HRV sits at -1.98 sd and drops out, taking the day
+from two signals to one. That event is the demo, and it is the one Isolation
+Forest independently ranks most anomalous of 45 windows.
+
+**1.75 sd is the tightest setting that halves the false-alarm rate and still
+catches it.** `analysis/detect.py` now uses it. The surfaced events drop from
+6 to 5; 2026-11-06 is the one lost.
+
+`MIN_SIGNALS` stays at 2. Requiring 3 scores better on false alarms and
+repeats the mistake in [INTEROP.md](INTEROP.md): only about 40 of 71 subjects
+have usable baselines for three signals at once, so a 3-signal rule buys
+quiet by being unable to fire.
+
+### What this does not establish
+
+This is a false-positive rate with no matching true-positive rate, because no
+one in LifeSnaps is deteriorating. Tightening to 1.75 costs sensitivity and
+this cohort cannot say how much. We have exactly one known true positive, and
+it is what bounds the threshold from above. The honest claim is "we measured
+the false-alarm side and tuned against it", not "we validated the rule".
+
+### Between-person spread, the case for personal baselines
+
+| Signal | Subjects | Range across people | Within one person | Ratio |
+|---|---|---|---|---|
+| Resting HR | 66 | 47.3 – 78.3 bpm | 2.42 sd | 2.8x |
+| HRV | 39 | 19.7 – 100.4 ms | 9.47 sd | 1.9x |
+| Respiratory rate | 40 | 11.2 – 19.8 /min | 1.00 sd | 2.3x |
+| Nocturnal HR | 39 | 48.4 – 77.5 bpm | 4.57 sd | 1.5x |
+| SpO2 | 24 | 94.3 – 97.2 % | 0.91 sd | 0.75x |
+
+Resting heart rate spans 31 bpm between people against 2.42 bpm of day-to-day
+variation within one. A reading of 74 is a marked excursion for one subject
+and unremarkable for another. A fixed "HRV below 30 ms" rule would flag one
+participant permanently and never flag another.
+
+**SpO2 is the honest exception.** Its between-person spread (0.68) is smaller
+than its within-person variation (0.91), so a population threshold is
+defensible for oxygen saturation and personal baselining adds least there. It
+is also the thinnest row, 24 subjects. If asked, concede SpO2 — conceding one
+of five is what makes the other four credible.
+
+### A naming caveat
+
+LifeSnaps reports HRV as RMSSD; our own export is genuinely SDNN. They are
+different measures and their absolute values are not comparable. RMSSD is
+written into the `hrv_sdnn` column for schema compatibility and the truth is
+recorded in `hrv_measure`. This is safe because the cohort is only used for
+within-subject z-scores, where the choice of measure cancels. **Never quote a
+LifeSnaps HRV figure as SDNN.**
