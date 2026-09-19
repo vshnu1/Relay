@@ -3,7 +3,10 @@ services:
     name: relay-bayhacks
     runtime: node
     plan: starter
-    buildCommand: npm ci && npm run build
+    # NODE_ENV=production below tells npm to skip devDependencies, and vite is
+    # one of them, so a plain `npm ci` installs 101 packages and the build dies
+    # on `vite: not found`. The build needs them; the running server does not.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /
     disk:
