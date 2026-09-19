@@ -1488,7 +1488,7 @@ p.rx-row-summary {
   line-height: 1.45;
 }
 
-/* ---------- Readings: one chart per counted signal ---------- */
+/* ---------- Readings: one chart at a time ---------- */
 .rx-readings-head .rx-seg {
   display: inline-flex;
   flex-shrink: 0;
@@ -1518,18 +1518,69 @@ p.rx-row-summary {
   color: var(--muted);
   text-wrap: pretty;
 }
-.rx-chart-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 8px;
+.rx-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 10px;
+}
+.rx-picker-group {
+  margin-right: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.rx-picker-group.muted {
+  margin-left: 10px;
+}
+.rx-picker button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+.rx-picker button i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #cfd6cf;
+}
+.rx-picker button.drifting i {
+  background: #f0e1bb;
+  border: 1.5px solid var(--amber);
+}
+.rx-picker button.moved i {
+  background: var(--amber);
+}
+.rx-picker button.muted {
+  color: var(--muted);
+  background: var(--paper);
+}
+.rx-picker button[aria-selected="true"] {
+  border-color: var(--pine);
+  background: var(--pine);
+  color: #ffffff;
+  font-weight: 600;
+}
+.rx-picker button[aria-selected="true"] i {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
 }
 .rx-signal {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
-  padding: 16px 18px 14px;
+  padding: 18px 22px 16px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
@@ -1545,28 +1596,68 @@ p.rx-row-summary {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
+}
+.rx-signal-title {
+  min-width: 0;
+  padding-top: 4px;
+}
+.rx-signal-side {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-shrink: 0;
+}
+.rx-signal-nav {
+  display: inline-flex;
+  gap: 6px;
 }
 .rx-signal h3 {
-  font-size: 15.5px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 18px;
   font-weight: 600;
   line-height: 1.25;
 }
-.rx-signal > header small {
-  display: block;
-  margin-top: 3px;
+.rx-signal h3 small {
   font-size: 13px;
+  font-weight: 500;
   color: var(--faint);
+  white-space: nowrap;
+}
+.rx-signal-summary {
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.rx-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+}
+.rx-iconbtn:hover {
+  border-color: var(--pine);
+  color: var(--pine);
 }
 .rx-signal-now {
   display: flex;
   align-items: baseline;
   gap: 6px;
   flex-shrink: 0;
+  padding-top: 2px;
   font-variant-numeric: tabular-nums;
 }
 .rx-signal-now strong {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -1578,16 +1669,24 @@ p.rx-row-summary {
 .rx-signal-now .rx-change {
   margin-left: 6px;
 }
+.rx-signal-watch {
+  font-size: 13.5px;
+  color: var(--faint);
+}
 .rx-signal-plot {
   min-width: 0;
+}
+.rx-plot-wrap {
+  position: relative;
 }
 .rx-signal-plot svg {
   display: block;
   overflow: visible;
   font-family: inherit;
+  cursor: crosshair;
 }
 .rx-signal-plot text {
-  font-size: 11.5px;
+  font-size: 12px;
   fill: var(--faint);
   font-variant-numeric: tabular-nums;
 }
@@ -1596,6 +1695,9 @@ p.rx-row-summary {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+.rx-signal-plot .rx-axis-unit {
+  font-size: 11px;
 }
 .rx-signal-plot .rx-rule-label {
   font-weight: 600;
@@ -1611,20 +1713,51 @@ p.rx-row-summary {
   font-weight: 700;
   fill: var(--pine);
 }
-.rx-signal-note {
-  font-size: 13.5px;
+.rx-tip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+  padding: 8px 11px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.3;
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(31, 47, 42, 0.25);
+  white-space: nowrap;
+  z-index: 2;
+}
+.rx-tip span {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.rx-tip strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+.rx-tip small {
+  font-size: 12.5px;
+  opacity: 0.9;
+}
+.rx-signal-desc {
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 14.5px;
+  line-height: 1.5;
   color: var(--muted);
   text-wrap: pretty;
-}
-.rx-signal-note b {
-  font-weight: 600;
-  color: var(--amber-ink);
 }
 .rx-chart-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 18px;
-  margin-top: 4px;
+  gap: 10px 18px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
   font-size: 13px;
   color: var(--muted);
 }
@@ -1638,7 +1771,10 @@ p.rx-row-summary {
   display: inline-block;
   width: 18px;
   height: 0;
-  border-top: 2px solid var(--pine);
+  border-top: 2.5px solid var(--pine);
+}
+.rx-chart-legend i.before {
+  border-top-color: #7f9389;
 }
 .rx-chart-legend i.band {
   height: 10px;
@@ -1648,9 +1784,6 @@ p.rx-row-summary {
 }
 .rx-chart-legend i.threshold {
   border-top: 2px dashed var(--amber);
-}
-.rx-chart-legend i.usual {
-  border-top: 2px dashed #8fa398;
 }
 .rx-chart-legend i.run {
   height: 10px;
@@ -1664,30 +1797,18 @@ p.rx-row-summary {
   border-radius: 2px;
   background: repeating-linear-gradient(135deg, #f1f3f0 0 3px, #cfd5ce 3px 4px);
 }
-.rx-recorded {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line-soft);
-}
-.rx-recorded > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-.rx-recorded p {
-  font-size: 14.5px;
-  color: var(--muted);
-}
-.rx-recorded .rx-chart-grid {
-  margin-top: 14px;
+.rx-chart-legend i.tick {
+  width: 2px;
+  height: 8px;
+  border: 0;
+  background: #b8c0b9;
 }
 @media (max-width: 900px) {
-  .rx-chart-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .rx-readings-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .rx-signal > header {
+    flex-direction: column;
   }
 }

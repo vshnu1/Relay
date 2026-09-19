@@ -1,16 +1,18 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { list, numberWord } from "../format.js";
 import { dayColumns, domain, labelEvery, ticks } from "./chartScale.js";
 
-// One chart per signal the patient's watch profile counts, always open, with the
-// usual band, the counting threshold and the persistent run drawn and labelled, so a
-// clinician reads the rule off the picture instead of decoding colours. The day grid
-// from the first version stays available as a compact alternative.
+// One chart at a time, chosen from a strip of the signals the patient's watch profile
+// counts (and, set apart, the ones it only records). The chart draws the usual band,
+// the counting threshold and the persistent run, and every point has a hover readout
+// with the day and the value, so a clinician reads the rule off the picture. A short
+// summary sits above the chart and a plain description below it. The day grid from
+// the first version stays available as a compact alternative.
 
 const HOME_DAYS = 14;
-const CHART_H = 190;
-const M = { top: 22, right: 96, bottom: 26, left: 46 };
+const CHART_H = 240;
+const M = { top: 24, right: 118, bottom: 44, left: 50 };
 const FILL = {
   "-3": "#3d7ab8",
   "-2": "#8fb3d9",
@@ -38,6 +40,9 @@ const dayName = (d) =>
   d < 0
     ? `${-d} ${-d === 1 ? "day" : "days"} before admission`
     : `Day ${d} at home`;
+const unitWord = (s) => (s.unit === "%" ? "%" : s.unit);
+const dirWord = (s) =>
+  s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase();
 
 // Break the line at missing days instead of drawing through them.
 const segments = (points) =>
@@ -52,6 +57,7 @@ const segments = (points) =>
     .filter((s) => s.length);
 
 function SignalChart({ signal: s, homeFrom, width }) {
+  const [hover, setHover] = useState(null);
   const inner = width - M.left - M.right;
   const homeDays = s.home.slice(homeFrom);
   const cols = dayColumns(inner, s.before.length, homeDays.length);
@@ -60,7 +66,8 @@ function SignalChart({ signal: s, homeFrom, width }) {
     ...d,
     x: M.left + cols[s.before.length + 1 + i].mid,
   }));
-  const values = [...before, ...home].map((d) => d.v).filter((v) => v !== null);
+  const points = [...before, ...home];
+  const values = points.map((d) => d.v).filter((v) => v !== null);
   if (!values.length || s.usual === null)
     return (
       <p className="rx-fine">
@@ -88,130 +95,185 @@ function SignalChart({ signal: s, homeFrom, width }) {
   const every = labelEvery(cols[0].w);
   const beforeWidth = cols[s.before.length - 1].x + cols[s.before.length - 1].w;
   const right = M.left + inner;
-  const yTicks = ticks(lo, hi, 3);
-  const thresholdLabel =
-    s.threshold === null
-      ? null
-      : `counts past ${s.fmt(s.threshold)}${s.unit === "%" ? "%" : ""}`;
-  // Keep the two rule labels from sitting on top of each other.
+  const yTicks = ticks(lo, hi, 4);
   const usualY = y(s.usual);
   const thrY = s.threshold === null ? null : y(s.threshold);
   const crowded = thrY !== null && Math.abs(thrY - usualY) < 16;
+
+  // Nearest day column to the pointer, for the hover readout.
+  const pick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    let best = null;
+    for (const d of points)
+      if (best === null || Math.abs(d.x - px) < Math.abs(best.x - px)) best = d;
+    setHover(best && Math.abs(best.x - px) <= cols[0].w ? best : null);
+  };
+  const hovered = hover ?? null;
+  const delta = (d) =>
+    d.v === null
+      ? null
+      : s.thr.abs !== undefined
+        ? `${d.v - s.usual >= 0 ? "+" : "−"}${Math.abs(d.v - s.usual).toFixed(s.digits || 1)} ${s.unit === "%" ? "points" : s.unit}`
+        : `${d.v - s.usual >= 0 ? "+" : "−"}${Math.round((Math.abs(d.v - s.usual) / Math.abs(s.usual)) * 100)}%`;
+  const tipLeft = hovered ? Math.min(Math.max(hovered.x, 90), width - 90) : 0;
   return (
-    <svg
-      width={width}
-      height={CHART_H}
-      role="img"
-      aria-label={`${s.name}, one reading per day. Today ${s.fmt(s.today)} ${s.unit}; usual ${s.fmt(s.usual)}${s.threshold !== null ? `; counted past ${s.fmt(s.threshold)}` : ""}.`}
-    >
-      {/* block captions */}
-      <text x={M.left + cols[0].x} y={12} className="rx-axis-cap">
-        {beforeWidth >= 120 ? "Before admission" : "Before"}
-      </text>
-      <text
-        x={M.left + cols[s.before.length + 1].x}
-        y={12}
-        className="rx-axis-cap"
+    <div className="rx-plot-wrap">
+      <svg
+        width={width}
+        height={CHART_H}
+        role="img"
+        aria-label={`${s.name}, one reading per day. Today ${s.fmt(s.today)} ${s.unit}; usual ${s.fmt(s.usual)}${s.threshold !== null ? `; counted past ${s.fmt(s.threshold)}` : ""}.`}
+        onMouseMove={pick}
+        onMouseLeave={() => setHover(null)}
       >
-        At home
-      </text>
-      {/* value axis */}
-      {yTicks.map((t) => (
-        <g key={t}>
-          <line x1={M.left} x2={right} y1={y(t)} y2={y(t)} stroke="#edf0ea" />
-          <text x={M.left - 8} y={y(t) + 4} textAnchor="end">
-            {s.fmt(t)}
-          </text>
-        </g>
-      ))}
-      {/* hospital stay */}
-      <rect
-        x={M.left + stay.x}
-        y={M.top}
-        width={stay.w}
-        height={plotH}
-        rx="3"
-        fill="url(#rx-hatch)"
-      />
-      {/* persistent run */}
-      {runCol && (
+        <defs>
+          <pattern
+            id="rx-hatch"
+            width="5"
+            height="5"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(45)"
+          >
+            <rect width="5" height="5" fill="#f1f3f0" />
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="5"
+              stroke="#cfd5ce"
+              strokeWidth="1.5"
+            />
+          </pattern>
+        </defs>
+        {/* block captions */}
+        <text x={M.left + cols[0].x} y={13} className="rx-axis-cap">
+          {beforeWidth >= 120 ? "Before admission" : "Before"}
+        </text>
+        <text
+          x={M.left + cols[s.before.length + 1].x}
+          y={13}
+          className="rx-axis-cap"
+        >
+          At home
+        </text>
+        {/* value axis */}
+        {yTicks.map((t) => (
+          <g key={t}>
+            <line x1={M.left} x2={right} y1={y(t)} y2={y(t)} stroke="#edf0ea" />
+            <text x={M.left - 8} y={y(t) + 4} textAnchor="end">
+              {s.fmt(t)}
+            </text>
+          </g>
+        ))}
+        <text
+          x={M.left - 8}
+          y={M.top - 8}
+          textAnchor="end"
+          className="rx-axis-unit"
+        >
+          {s.unit}
+        </text>
+        {/* hospital stay */}
         <rect
-          x={M.left + runCol.x - 1.5}
+          x={M.left + stay.x}
           y={M.top}
-          width={right - (M.left + runCol.x) + 1.5}
+          width={stay.w}
           height={plotH}
           rx="3"
-          fill="#f3d9a0"
-          opacity="0.45"
+          fill="url(#rx-hatch)"
         />
-      )}
-      {/* usual band and line */}
-      <rect
-        x={M.left}
-        y={y(s.usual + band)}
-        width={inner}
-        height={Math.max(2, y(s.usual - band) - y(s.usual + band))}
-        rx="2"
-        fill="#e8f0e4"
-      />
-      <line
-        x1={M.left}
-        x2={right + 4}
-        y1={usualY}
-        y2={usualY}
-        stroke="#8fa398"
-        strokeDasharray="3 4"
-      />
-      <text
-        x={right + 8}
-        y={usualY + (crowded ? (thrY < usualY ? 11 : -7) : 4)}
-        className="rx-rule-label pine"
-      >
-        usual {s.fmt(s.usual)}
-      </text>
-      {/* threshold */}
-      {thrY !== null && (
-        <>
+        {/* persistent run */}
+        {runCol && (
+          <rect
+            x={M.left + runCol.x - 1.5}
+            y={M.top}
+            width={right - (M.left + runCol.x) + 1.5}
+            height={plotH}
+            rx="3"
+            fill="#f3d9a0"
+            opacity="0.45"
+          />
+        )}
+        {/* usual band and line */}
+        <rect
+          x={M.left}
+          y={y(s.usual + band)}
+          width={inner}
+          height={Math.max(2, y(s.usual - band) - y(s.usual + band))}
+          rx="2"
+          fill="#e8f0e4"
+        />
+        <line
+          x1={M.left}
+          x2={right + 4}
+          y1={usualY}
+          y2={usualY}
+          stroke="#8fa398"
+          strokeDasharray="3 4"
+        />
+        <text
+          x={right + 8}
+          y={usualY + (crowded ? (thrY < usualY ? 11 : -7) : 4)}
+          className="rx-rule-label pine"
+        >
+          usual {s.fmt(s.usual)} {unitWord(s)}
+        </text>
+        {/* threshold */}
+        {thrY !== null && (
+          <>
+            <line
+              x1={M.left}
+              x2={right + 4}
+              y1={thrY}
+              y2={thrY}
+              stroke="#a87a1f"
+              strokeDasharray="5 4"
+              strokeWidth="1.5"
+            />
+            <text
+              x={right + 8}
+              y={thrY + (crowded ? (thrY < usualY ? -7 : 11) : 4)}
+              className="rx-rule-label amber"
+            >
+              counts past {s.fmt(s.threshold)} {unitWord(s)}
+            </text>
+          </>
+        )}
+        {/* hover guide */}
+        {hovered && (
           <line
-            x1={M.left}
-            x2={right + 4}
-            y1={thrY}
-            y2={thrY}
-            stroke="#a87a1f"
-            strokeDasharray="5 4"
+            x1={hovered.x}
+            x2={hovered.x}
+            y1={M.top}
+            y2={M.top + plotH}
+            stroke="#24493d"
+            strokeOpacity="0.35"
             strokeWidth="1.5"
           />
-          <text
-            x={right + 8}
-            y={thrY + (crowded ? (thrY < usualY ? -7 : 11) : 4)}
-            className="rx-rule-label amber"
-          >
-            {thresholdLabel}
-          </text>
-        </>
-      )}
-      {/* lines */}
-      {[
-        ...segments(before).map((seg) => [seg, "#7f9389", 1.75]),
-        ...segments(home).map((seg) => [seg, "#24493d", 2.25]),
-      ].map(([seg, stroke, strokeWidth], i) => (
-        <polyline
-          key={i}
-          points={seg
-            .map((d) => `${d.x.toFixed(1)},${y(d.v).toFixed(1)}`)
-            .join(" ")}
-          fill="none"
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      ))}
-      {/* points, with a tooltip each */}
-      {[...before, ...home].map((d, i) =>
-        d.v === null ? (
-          <g key={`m${i}`}>
+        )}
+        {/* lines */}
+        {[
+          ...segments(before).map((seg) => [seg, "#7f9389", 1.75]),
+          ...segments(home).map((seg) => [seg, "#24493d", 2.25]),
+        ].map(([seg, stroke, strokeWidth], i) => (
+          <polyline
+            key={i}
+            points={seg
+              .map((d) => `${d.x.toFixed(1)},${y(d.v).toFixed(1)}`)
+              .join(" ")}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ))}
+        {/* points */}
+        {points.map((d, i) =>
+          d.v === null ? (
             <line
+              key={`m${i}`}
               x1={d.x}
               x2={d.x}
               y1={M.top + plotH - 6}
@@ -219,100 +281,148 @@ function SignalChart({ signal: s, homeFrom, width }) {
               stroke="#b8c0b9"
               strokeWidth="2"
             />
-            <title>{`${dayName(d.day)}: no reading`}</title>
-          </g>
-        ) : (
-          <circle
-            key={`p${i}`}
-            cx={d.x}
-            cy={y(d.v)}
-            r={d === last ? 5 : 3}
-            fill={d === last ? "#24493d" : d.day < 0 ? "#7f9389" : "#24493d"}
-            stroke="#ffffff"
-            strokeWidth={d === last ? 2 : 1}
-          >
-            <title>{`${dayName(d.day)}: ${s.fmt(d.v)} ${s.unit} (usual ${s.fmt(s.usual)})`}</title>
-          </circle>
-        ),
-      )}
-      {last && (
-        <text
-          x={last.x}
-          y={y(last.v) - 10 >= M.top + 6 ? y(last.v) - 10 : y(last.v) + 18}
-          textAnchor="middle"
-          className="rx-last-label"
-        >
-          {s.fmt(last.v)}
-        </text>
-      )}
-      {/* day axis */}
-      {before.map((d, i) =>
-        i === 0 || i === before.length - 1 ? (
-          <text key={d.day} x={d.x} y={CHART_H - 8} textAnchor="middle">
-            {d.day}
-          </text>
-        ) : null,
-      )}
-      {home.map((d, i) =>
-        i === home.length - 1 ||
-        (i % every === 0 && home.length - 1 - i >= every) ? (
+          ) : (
+            <circle
+              key={`p${i}`}
+              cx={d.x}
+              cy={y(d.v)}
+              r={d === hovered ? 6 : d === last ? 5 : 3.5}
+              fill={d.day < 0 ? "#7f9389" : "#24493d"}
+              stroke="#ffffff"
+              strokeWidth={d === hovered || d === last ? 2 : 1}
+            />
+          ),
+        )}
+        {last && !hovered && (
           <text
-            key={d.day}
-            x={d.x}
-            y={CHART_H - 8}
+            x={last.x}
+            y={y(last.v) - 10 >= M.top + 6 ? y(last.v) - 10 : y(last.v) + 18}
             textAnchor="middle"
-            style={{ fontWeight: d === last ? 700 : 400 }}
+            className="rx-last-label"
           >
-            {d.day}
+            {s.fmt(last.v)}
           </text>
-        ) : null,
-      )}
-      <defs>
-        <pattern
-          id="rx-hatch"
-          width="5"
-          height="5"
-          patternUnits="userSpaceOnUse"
-          patternTransform="rotate(45)"
+        )}
+        {/* day axis */}
+        {before.map((d, i) =>
+          i === 0 || i === before.length - 1 ? (
+            <text key={d.day} x={d.x} y={CHART_H - 22} textAnchor="middle">
+              {d.day}
+            </text>
+          ) : null,
+        )}
+        {home.map((d, i) =>
+          i === home.length - 1 ||
+          (i % every === 0 && home.length - 1 - i >= every) ? (
+            <text
+              key={d.day}
+              x={d.x}
+              y={CHART_H - 22}
+              textAnchor="middle"
+              style={{ fontWeight: d === last ? 700 : 400 }}
+            >
+              {d.day}
+            </text>
+          ) : null,
+        )}
+        <text
+          x={M.left + inner / 2}
+          y={CHART_H - 4}
+          textAnchor="middle"
+          className="rx-axis-unit"
         >
-          <rect width="5" height="5" fill="#f1f3f0" />
-          <line
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="5"
-            stroke="#cfd5ce"
-            strokeWidth="1.5"
-          />
-        </pattern>
-      </defs>
-    </svg>
+          days before admission · days at home
+        </text>
+      </svg>
+      {hovered && (
+        <div
+          className="rx-tip"
+          role="status"
+          style={{
+            left: tipLeft,
+            top:
+              hovered.v === null ? M.top + 8 : Math.max(0, y(hovered.v) - 74),
+          }}
+        >
+          <span>{dayName(hovered.day)}</span>
+          {hovered.v === null ? (
+            <strong>No reading</strong>
+          ) : (
+            <>
+              <strong>
+                {s.fmt(hovered.v)} {unitWord(s)}
+              </strong>
+              <small>
+                {delta(hovered)} against usual {s.fmt(s.usual)}
+              </small>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
-function signalNote(s, profile) {
+// One short line above the chart: what it will show.
+function summaryLine(s, profile) {
+  if (s.usual === null) return "No usual yet: no readings before admission.";
+  if (s.today === null && s.counted)
+    return `No reading today. Counted for ${profile.after}.`;
+  if (s.today === null) return "No reading today. Recorded, not counted.";
+  if (s.moved)
+    return `Past its threshold since day ${s.runStart}: ${s.fmt(s.today)} ${unitWord(s)} today against a usual ${s.fmt(s.usual)}.`;
+  if (s.towardDays > 0)
+    return `Drifting ${dirWord(s)} for ${numberWord(s.towardDays)} ${s.towardDays === 1 ? "day" : "days"}, not yet past the threshold.`;
+  if (!s.counted)
+    return `Recorded, not counted for ${profile.after}. ${s.fmt(s.today)} ${unitWord(s)} today, usual ${s.fmt(s.usual)}.`;
+  return `Inside the usual range: ${s.fmt(s.today)} ${unitWord(s)} today, usual ${s.fmt(s.usual)}.`;
+}
+
+// The plain description under the chart: exactly what is drawn, in order.
+function describe(s, p, homeFrom) {
+  const shownDays = p.dayHome + 1 - homeFrom;
+  const missing = s.home.slice(homeFrom).filter((d) => d.v === null).length;
+  const parts = [
+    `${s.name}, one reading per day: the seven days before admission on the left, the hospital stay hatched, then the last ${numberWord(shownDays)} ${shownDays === 1 ? "day" : "days"} at home.`,
+  ];
   if (s.usual === null)
-    return "No usual yet: the watch had no readings before admission.";
-  const parts = [];
-  if (s.counted && s.threshold !== null) {
-    if (s.moved)
-      parts.push(
-        `Past its threshold since day ${s.runStart}, and counted toward a review.`,
-      );
-    else if (s.towardDays > 0)
-      parts.push(
-        `Drifting ${s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase()} for ${numberWord(s.towardDays)} ${s.towardDays === 1 ? "day" : "days"}, not yet past the threshold.`,
-      );
-    else parts.push("Inside the usual range.");
     parts.push(
-      `Counts when ${s.fmt(s.threshold)} ${s.unit === "%" ? "%" : s.unit} or ${s.watchDir > 0 ? "more" : "less"} for 24 hours.`,
+      "There were no readings before admission, so there is no usual range to compare with.",
     );
-  } else parts.push(`Recorded, not counted for ${profile.after}.`);
-  if (s.today === null) parts.push("No reading today.");
+  else {
+    parts.push(
+      `The green band is ${p.first}'s usual range before admission, around ${s.fmt(s.usual)} ${unitWord(s)}.`,
+    );
+    if (s.counted && s.threshold !== null)
+      parts.push(
+        `The amber dashed line is where a change starts to count: ${s.fmt(s.threshold)} ${unitWord(s)} or ${s.watchDir > 0 ? "more" : "less"}, held for 24 hours.`,
+      );
+    else parts.push(`It is recorded but not counted for ${p.profile.after}.`);
+    if (s.today !== null)
+      parts.push(
+        s.moved
+          ? `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual, and the amber shading shows it has been past the line since day ${s.runStart}.`
+          : s.towardDays > 0
+            ? `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual: moving ${dirWord(s)} but not past the line.`
+            : `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual, inside the band.`,
+      );
+    else parts.push("There is no reading for today.");
+  }
+  if (missing > 0)
+    parts.push(
+      `${numberWord(missing, true)} of the ${numberWord(shownDays)} days at home ${missing === 1 ? "has" : "have"} no reading; the line breaks there.`,
+    );
   return parts.join(" ");
 }
 
-function SignalCard({ signal: s, profile, homeFrom, muted }) {
+function SignalPanel({
+  signal: s,
+  patient: p,
+  homeFrom,
+  onPrev,
+  onNext,
+  position,
+}) {
   const [ref, width] = useWidth();
   const state = s.moved
     ? "moved"
@@ -321,46 +431,69 @@ function SignalCard({ signal: s, profile, homeFrom, muted }) {
       : "usual";
   return (
     <article
-      className={`rx-signal ${state}${muted ? " muted" : ""}`}
+      className={`rx-signal ${state}${s.counted ? "" : " muted"}`}
       aria-label={s.name}
     >
       <header>
-        <div>
-          <h3>{s.name}</h3>
-          <small>
-            {s.counted
-              ? `Watching for ${s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase()} than usual`
-              : "Recorded only"}
-            {" · "}
-            {s.device === "whoop" ? "WHOOP" : "watch"}
-          </small>
+        <div className="rx-signal-title">
+          <h3>
+            {s.name}
+            <small>{position}</small>
+          </h3>
+          <p className="rx-signal-summary">{summaryLine(s, p.profile)}</p>
         </div>
-        <div className="rx-signal-now">
-          <strong>{s.today === null ? "—" : s.fmt(s.today)}</strong>
-          <span>{s.unit}</span>
-          {s.today !== null && s.usual !== null && (
-            <span className={`rx-change ${s.moved ? "moved" : ""}`}>
-              {s.moved && (
-                <ArrowUp
-                  size={13}
-                  strokeWidth={2.8}
-                  style={{
-                    transform: s.watchDir < 0 ? "rotate(180deg)" : undefined,
-                  }}
-                  aria-hidden="true"
-                />
-              )}
-              {s.change}
-            </span>
-          )}
+        <div className="rx-signal-side">
+          <div className="rx-signal-now">
+            <strong>{s.today === null ? "—" : s.fmt(s.today)}</strong>
+            <span>{s.unit}</span>
+            {s.today !== null && s.usual !== null && (
+              <span className={`rx-change ${s.moved ? "moved" : ""}`}>
+                {s.moved && (
+                  <ArrowUp
+                    size={13}
+                    strokeWidth={2.8}
+                    style={{
+                      transform: s.watchDir < 0 ? "rotate(180deg)" : undefined,
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
+                {s.change}
+              </span>
+            )}
+          </div>
+          <div className="rx-signal-nav">
+            <button
+              type="button"
+              className="rx-iconbtn"
+              aria-label="Previous signal"
+              onClick={onPrev}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              className="rx-iconbtn"
+              aria-label="Next signal"
+              onClick={onNext}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </header>
+      <p className="rx-signal-watch">
+        {s.counted
+          ? `Counted for ${p.profile.after}. Watching for ${dirWord(s)} than usual.`
+          : `Recorded only. Not counted for ${p.profile.after}.`}{" "}
+        Source: {s.device === "whoop" ? "WHOOP" : "watch"}.
+      </p>
       <div ref={ref} className="rx-signal-plot">
         {width > 0 && (
           <SignalChart signal={s} homeFrom={homeFrom} width={width} />
         )}
       </div>
-      <p className="rx-signal-note">{signalNote(s, profile)}</p>
+      <p className="rx-signal-desc">{describe(s, p, homeFrom)}</p>
     </article>
   );
 }
@@ -465,7 +598,7 @@ function DayGrid({ patient: p, homeFrom }) {
 }
 
 // Signals past their threshold first, then the ones drifting furthest, then the rest
-// in profile order, so the chart that matters most is top-left.
+// in profile order, so the chart that matters most opens first.
 const rank = (a, b) =>
   b.moved - a.moved ||
   Math.abs(b.todayLevel ?? 0) - Math.abs(a.todayLevel ?? 0) ||
@@ -473,11 +606,21 @@ const rank = (a, b) =>
 
 export default function Readings({ patient: p }) {
   const [mode, setMode] = useState("charts");
-  const [more, setMore] = useState(false);
   const homeFrom = Math.max(0, p.dayHome + 1 - HOME_DAYS);
   const counted = [...p.counted].sort(rank);
   const recorded = p.signals.filter((s) => !s.counted);
+  const order = [...counted, ...recorded];
+  const [openId, setOpenId] = useState(() => order[0]?.id ?? null);
+  const index = Math.max(
+    0,
+    order.findIndex((s) => s.id === openId),
+  );
+  const open = order[index];
+  const step = (by) =>
+    setOpenId(order[(index + by + order.length) % order.length].id);
   const profile = p.profile;
+  const shownDays = Math.min(HOME_DAYS, p.dayHome + 1);
+  const dot = (s) => (s.moved ? "moved" : s.towardDays > 0 ? "drifting" : "");
   return (
     <section
       id="rx-readings"
@@ -491,10 +634,9 @@ export default function Readings({ patient: p }) {
             After {profile.after}, Relay watches{" "}
             {list(p.counted.map((s) => s.short))}. A review is recommended when{" "}
             {numberWord(profile.minMoved)} of the {numberWord(p.counted.length)}{" "}
-            stay past their threshold for 24 hours, together. Below, the last{" "}
-            {Math.min(HOME_DAYS, p.dayHome + 1)}{" "}
-            {Math.min(HOME_DAYS, p.dayHome + 1) === 1 ? "day" : "days"} at home
-            {p.dayHome + 1 > HOME_DAYS ? ` of ${p.dayHome + 1}` : ""}, against
+            stay past their threshold for 24 hours, together. Pick a signal to
+            see its last {shownDays} {shownDays === 1 ? "day" : "days"} at home
+            {p.dayHome + 1 > HOME_DAYS ? ` of ${p.dayHome + 1}` : ""} against
             this patient's own usual.
           </p>
         </div>
@@ -504,7 +646,7 @@ export default function Readings({ patient: p }) {
             aria-pressed={mode === "charts"}
             onClick={() => setMode("charts")}
           >
-            Charts
+            Chart
           </button>
           <button
             type="button"
@@ -519,7 +661,52 @@ export default function Readings({ patient: p }) {
         <DayGrid patient={p} homeFrom={homeFrom} />
       ) : (
         <>
-          <ul className="rx-chart-legend" aria-label="How to read the charts">
+          <div className="rx-picker" role="tablist" aria-label="Signals">
+            <span className="rx-picker-group">Counted</span>
+            {counted.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                role="tab"
+                aria-selected={s.id === open?.id}
+                className={dot(s)}
+                onClick={() => setOpenId(s.id)}
+              >
+                <i aria-hidden="true" />
+                {s.name}
+              </button>
+            ))}
+            {recorded.length > 0 && (
+              <>
+                <span className="rx-picker-group muted">Recorded only</span>
+                {recorded.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={s.id === open?.id}
+                    className={`muted ${dot(s)}`}
+                    onClick={() => setOpenId(s.id)}
+                  >
+                    <i aria-hidden="true" />
+                    {s.name}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+          {open && (
+            <SignalPanel
+              key={open.id}
+              signal={open}
+              patient={p}
+              homeFrom={homeFrom}
+              onPrev={() => step(-1)}
+              onNext={() => step(1)}
+              position={`${index + 1} of ${order.length}`}
+            />
+          )}
+          <ul className="rx-chart-legend" aria-label="How to read the chart">
             <li>
               <i className="band" /> Usual range before admission
             </li>
@@ -530,56 +717,18 @@ export default function Readings({ patient: p }) {
               <i /> Readings at home
             </li>
             <li>
+              <i className="before" /> Readings before admission
+            </li>
+            <li>
               <i className="run" /> Past the threshold, still going
             </li>
             <li>
-              <i className="gap" /> Hospital stay or no reading
+              <i className="gap" /> Hospital stay
+            </li>
+            <li>
+              <i className="tick" /> Day with no reading
             </li>
           </ul>
-          <div className="rx-chart-grid">
-            {counted.map((s) => (
-              <SignalCard
-                key={s.id}
-                signal={s}
-                profile={profile}
-                homeFrom={homeFrom}
-              />
-            ))}
-          </div>
-          {recorded.length > 0 && (
-            <div className="rx-recorded">
-              <div>
-                <p>
-                  {list(recorded.map((s) => s.short))}{" "}
-                  {recorded.length === 1 ? "is" : "are"} recorded but not
-                  counted for {profile.after}.
-                </p>
-                <button
-                  type="button"
-                  className="rx-btn"
-                  aria-expanded={more}
-                  onClick={() => setMore(!more)}
-                >
-                  {more
-                    ? "Hide them"
-                    : `Show ${recorded.length} more ${recorded.length === 1 ? "chart" : "charts"}`}
-                </button>
-              </div>
-              {more && (
-                <div className="rx-chart-grid">
-                  {recorded.map((s) => (
-                    <SignalCard
-                      key={s.id}
-                      signal={s}
-                      profile={profile}
-                      homeFrom={homeFrom}
-                      muted
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </>
       )}
     </section>
