@@ -5,12 +5,12 @@ behind it, and what already exists in the repo so the estimate is honest.
 
 ## The judges, and what each actually judges
 
-| Judge | Role | What they will weigh |
-|---|---|---|
-| Jenn Bonilla, PhD | VP Portfolio Strategy, Moffitt Innovation & Entrepreneurship Office | A tech-transfer office. She judges ventures: value proposition, licensing path, and — at a cancer centre — whether oncology is in scope. |
-| Urvish Gajjar | Senior Test Manager, Health Care Service Corporation | HCSC is Blue Cross Blue Shield. A payer, and a QA lead. Two audiences in one: readmission economics, and test rigour. |
-| Alia Merchant | Director of Operations, Nucleate | Equity-free biotech accelerator. Venture readiness: team, commercialisation, scientific value proposition. |
-| Zois Syrgiannis, PhD | CEO, NanoNeurosciences | Nanomedicine and drug delivery, not wearables. He will judge scientific rigour and translational pathway. The "gait for the neuro judge" idea does not hold; gait earns its place on other grounds below. |
+| Judge                | Role                                                                | What they will weigh                                                                                                                                                                                      |
+| -------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Jenn Bonilla, PhD    | VP Portfolio Strategy, Moffitt Innovation & Entrepreneurship Office | A tech-transfer office. She judges ventures: value proposition, licensing path, and — at a cancer centre — whether oncology is in scope.                                                                  |
+| Urvish Gajjar        | Senior Test Manager, Health Care Service Corporation                | HCSC is Blue Cross Blue Shield. A payer, and a QA lead. Two audiences in one: readmission economics, and test rigour.                                                                                     |
+| Alia Merchant        | Director of Operations, Nucleate                                    | Equity-free biotech accelerator. Venture readiness: team, commercialisation, scientific value proposition.                                                                                                |
+| Zois Syrgiannis, PhD | CEO, NanoNeurosciences                                              | Nanomedicine and drug delivery, not wearables. He will judge scientific rigour and translational pathway. The "gait for the neuro judge" idea does not hold; gait earns its place on other grounds below. |
 
 ## The economic frame nobody has said out loud yet
 
@@ -55,7 +55,7 @@ physiology appear is the strongest single demo moment available, and it is
 promising it.** Then add the gait record types (item 2) so the import carries
 them too.
 
-*Speaks to:* every judge. *Effort:* 30 min to verify, plus whatever breaks.
+_Speaks to:_ every judge. _Effort:_ 30 min to verify, plus whatever breaks.
 
 ### 2. Hip and knee replacement — an HRRP condition powered by real gait data
 
@@ -73,7 +73,7 @@ Build: five gait `SIGNALS`, their `TYPES` in the importer, a
 `jointReplacement` profile, a `joint_replacement_recovery` ML program, two
 patients. This becomes the one program the real data can drive end to end.
 
-*Speaks to:* Gajjar (HRRP), Merchant (differentiation). *Effort:* ~2 h.
+_Speaks to:_ Gajjar (HRRP), Merchant (differentiation). _Effort:_ ~2 h.
 
 ### 3. Oncology — post-chemotherapy neutropenic-fever watch
 
@@ -87,7 +87,7 @@ Build: a `postChemotherapy` profile counting temperature, resting HR, HRV and
 breathing; questions for fever, mouth sores (new), nausea, fatigue, medicine;
 a mirrored ML program; two patients.
 
-*Speaks to:* Bonilla directly — Moffitt is a cancer centre. *Effort:* ~1 h.
+_Speaks to:_ Bonilla directly — Moffitt is a cancer centre. _Effort:_ ~1 h.
 
 ### 4. Promote weight to counted for heart failure
 
@@ -99,8 +99,8 @@ watch. Manual weight entry exists; the importer reads `BodyMass`.
 Build: `counted("weight")` with an absolute threshold, plus a cumulative
 multi-day rule in `derive.js`.
 
-*Speaks to:* Gajjar (HRRP HF is the largest penalty category), any clinician.
-*Effort:* ~45 min.
+_Speaks to:_ Gajjar (HRRP HF is the largest penalty category), any clinician.
+_Effort:_ ~45 min.
 
 ### 5. Medication adherence as a signal, not a question
 
@@ -113,37 +113,37 @@ Build: a daily "took my medicines" tap on the patient home screen, stored as
 a signal with a streak; a missed-dose run becomes a counted deviation; the
 clinician sees it beside the vitals.
 
-*Speaks to:* Gajjar, Bonilla. *Effort:* ~1.5 h.
+_Speaks to:_ Gajjar, Bonilla. _Effort:_ ~1.5 h.
 
 ### 6. Device silence is not quiet
 
 `schedule.js` has no notion of a watch that stopped syncing. RPM programs
 fail on wear adherence as often as on medication. Build: detect a stale
 source, nudge the patient on the home screen, and make the clinician's
-"not enough data" say *unobserved for N days* rather than nothing.
+"not enough data" say _unobserved for N days_ rather than nothing.
 
-*Effort:* ~1 h.
+_Effort:_ ~1 h.
 
 ### 7. Direction of travel
 
 "36 hours and still rising" and "36 hours and recovering" are clinically
-different and read identically today. *Effort:* ~1 h.
+different and read identically today. _Effort:_ ~1 h.
 
 ### 8. Say the HRRP alignment on the clinician home
 
 One panel: three programs are CMS HRRP conditions, the window is HRRP's
 window, 75% of hospitals pay, median 0.69%, max 3%. Then the operational
-line: *20 patients, 2 need review today — against 20 manual chart checks.*
+line: _20 patients, 2 need review today — against 20 manual chart checks._
 Not a risk prediction; a description of the work.
 
-*Speaks to:* Gajjar, Merchant, Bonilla. *Effort:* ~45 min, mostly copy.
+_Speaks to:_ Gajjar, Merchant, Bonilla. _Effort:_ ~45 min, mostly copy.
 
 ### 9. Make the test rigour visible
 
-Gajjar is a Senior Test Manager. 39 JS tests, 60 ML tests, an API
+Gajjar is a Senior Test Manager. 46 JS tests, 60 ML tests, an API
 integration suite, Python converter tests, a guard-parity check, and a
 false-alarm rate measured on 71 real subjects. A validation section in the
-README, with the numbers. *Effort:* 20 min.
+README, with the numbers. _Effort:_ 20 min.
 
 ## Do not build
 

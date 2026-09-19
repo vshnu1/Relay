@@ -63,8 +63,8 @@ curl -s localhost:3001/api/status # confirm what to say about voice
 If `voice` is `false`, say "a short consented check-in" and never "voice".
 
 **1. The watchlist, about 15 seconds.** Open the root URL. Four sections, and
-name all four: *review recommended* (2), *context needed* (12), *monitoring*
-(12), *not enough data* (2).
+name all four: _review recommended_ (2), _context needed_ (12), _monitoring_
+(12), _not enough data_ (2).
 
 Say the line that does the work: **most monitoring tools cannot tell you the
 difference between the last two.** One is a quiet patient, the other is one
@@ -75,9 +75,9 @@ Point out the signal counts — "4 of 4 signals", "2 of 4 signals" — and that
 
 **2. Maya Okafor, about 40 seconds. This is the demo.** Click Open.
 
-Read "What the data shows" down the left: *settled by day three, drifting on
+Read "What the data shows" down the left: _settled by day three, drifting on
 day seven, all four signals past threshold together for thirty-eight hours,
-no workout recorded that would explain it.*
+no workout recorded that would explain it._
 
 Then stop on **Also recorded — sleep is 5.9 hours against a usual 7.2, not
 counted for pneumonia.** Say why that sentence matters: the system is telling
@@ -85,23 +85,23 @@ you what it is deliberately ignoring.
 
 Then **Data coverage** — which device synced, and when.
 
-**3. Her answers, about 20 seconds.** The right panel: breathing harder, *a
-lot*. Fever, *not sure*. Medicines, *no*. More active than usual, *no* — that
-is what rules out exertion. Then her own words: *"I get out of breath walking
-to the kitchen, and the cough is worse at night."*
+**3. Her answers, about 20 seconds.** The right panel: breathing harder, _a
+lot_. Fever, _not sure_. Medicines, _no_. More active than usual, _no_ — that
+is what rules out exertion. Then her own words: _"I get out of breath walking
+to the kitchen, and the cough is worse at night."_
 
 **4. The squares, about 15 seconds.** Scroll to "Readings, day by day". One
 square per day against her own usual, from the hospital stay through day
-nine. Hatched squares are days with no reading. Note the footer: *thresholds
-are demo settings, not clinically validated.*
+nine. Hatched squares are days with no reading. Note the footer: _thresholds
+are demo settings, not clinically validated._
 
 **5. Close, about 10 seconds.** **Export handoff**, then the closing line:
 Relay never says what is wrong.
 
 **Optional, if there is time:** the Patient view toggle. Day 6 of 30, "your
 care team has a few questions", and the line that keeps the boundary —
-*feeling very unwell? Follow the emergency instructions in your discharge
-papers.*
+_feeling very unwell? Follow the emergency instructions in your discharge
+papers._
 
 ## Do not show
 
@@ -122,8 +122,8 @@ are on the screen. Unique user identification, emergency access, encryption at
 rest, stored-data authentication, person authentication. We would rather show
 you the gaps than have you find them."
 
-*Nothing else on this list is more likely to land. It is the artefact a
-security reviewer's whole argument says healthcare AI ships without.*
+_Nothing else on this list is more likely to land. It is the artefact a
+security reviewer's whole argument says healthcare AI ships without._
 
 **On the import beat.** "That is a 284 MB Apple Health export. It inflates and
 parses in the browser. Nothing is uploaded, and no third-party model sees it —
@@ -131,8 +131,8 @@ the one path that leaves this origin is the voice check-in, and the server
 refuses it for anyone outside the synthetic cohort. It sends a first name and a
 readings summary, never a surname or an identifier."
 
-*Shadow AI — staff reaching for tools without knowing where the data goes — is
-the named top risk in this field. Demonstrate it rather than assert it.*
+_Shadow AI — staff reaching for tools without knowing where the data goes — is
+the named top risk in this field. Demonstrate it rather than assert it._
 
 **On the model, or when asked about regulation.** "Our reading is that Relay is
 probably a regulated device. Clinical decision support is exempt under
@@ -140,8 +140,8 @@ probably a regulated device. Clinical decision support is exempt under
 analysing a pattern from a signal acquisition system, and that is exactly what
 we do. It is written up in the repository."
 
-*Scientists and licensing people trust teams that name their own failure
-modes. Conceding this costs nothing and buys the rest of the pitch.*
+_Scientists and licensing people trust teams that name their own failure
+modes. Conceding this costs nothing and buys the rest of the pitch._
 
 ### If asked about oncology
 
@@ -150,17 +150,17 @@ Hematology, on the post-chemotherapy program: temperature, resting heart rate,
 heart rate variability and breathing, with mouth-sore and fever questions —
 the neutropenic-fever watch. Open Grace, not a respiratory patient.
 
-| Claim | Source |
-|---|---|
-| 71 people, resting HR baselines span 31 bpm, individuals vary ~2.4 | `fixtures/calibration.json` |
-| Rule fires on 3.35% of subject-days on healthy people | `fixtures/calibration.json` |
-| The same rule on a trailing baseline fires on 6.04% | `fixtures/calibration.json` |
-| Sees a 2.0 sd coordinated change the next day; the same subjects' own noise takes five | `fixtures/sensitivity.json` |
-| On one real person's gait, 30 episodes: rule sees a 2 sd decline in a day; model catches 77–90% | `fixtures/sensitivity_gait.json` |
-| ML engine: 3.77%–5.77% of judged subjects across five programs; 5.77% for post-abdominal surgery | `fixtures/ml_calibration.json` |
-| The model is the quiet one: speaks on 9.8% of untouched subjects, the rule on 53.7% | `fixtures/sensitivity_ml.json` |
-| 99 days of real wearable data, one coordinated event found | `docs/DATA.md` |
-| 60 ML tests, 39 JS tests, API integration suite | run them |
+| Claim                                                                                            | Source                           |
+| ------------------------------------------------------------------------------------------------ | -------------------------------- |
+| 71 people, resting HR baselines span 31 bpm, individuals vary ~2.4                               | `fixtures/calibration.json`      |
+| Rule fires on 3.35% of subject-days on healthy people                                            | `fixtures/calibration.json`      |
+| The same rule on a trailing baseline fires on 6.04%                                              | `fixtures/calibration.json`      |
+| Sees a 2.0 sd coordinated change the next day; the same subjects' own noise takes five           | `fixtures/sensitivity.json`      |
+| On one real person's gait, 30 episodes: rule sees a 2 sd decline in a day; model catches 77–90%  | `fixtures/sensitivity_gait.json` |
+| ML engine: 3.77%–5.77% of judged subjects across five programs; 5.77% for post-abdominal surgery | `fixtures/ml_calibration.json`   |
+| The model is the quiet one: speaks on 9.8% of untouched subjects, the rule on 53.7%              | `fixtures/sensitivity_ml.json`   |
+| 99 days of real wearable data, one coordinated event found                                       | `docs/DATA.md`                   |
+| 60 ML tests, 46 JS tests, API integration suite                                                  | run them                         |
 
 Never quote the 3.35% and the 5.77% as though one beats the other — the
 first is per subject-day, the second per subject.

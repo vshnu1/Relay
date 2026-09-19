@@ -82,7 +82,7 @@ than needing to be said. Everything else is load-bearing.
 **The insight — 29 seconds**
 
 > The useful signal is rarely one number crossing a line. It is several systems
-> moving together, relative to what is normal *for that person*.
+> moving together, relative to what is normal _for that person_.
 >
 > We measured how much that matters. Across 71 people, resting heart rate
 > baselines span 31 beats, while any one person varies by about two and a half
@@ -103,7 +103,7 @@ than needing to be said. Everything else is load-bearing.
 > When context is missing it asks, and the patient's own words come back into
 > the evidence.
 >
-> *[demo: watchlist → Maya Okafor → day-by-day squares → her check-in answers]*
+> _[demo: watchlist → Maya Okafor → day-by-day squares → her check-in answers]_
 
 **The honesty — 29 seconds**
 
@@ -131,7 +131,7 @@ now lives at `#/classic`.
 That is a change of plan made deliberately: the new interface is better on
 every axis this pitch depends on. The four application states are its primary
 structure rather than badges on a list, so "nothing new" and "not enough
-data" are visible sections a judge can see. It states what it is *not*
+data" are visible sections a judge can see. It states what it is _not_
 counting — sleep is down, and it says sleep is not counted for pneumonia. It
 shows which device last synced and when. It covers 28 patients across 15
 recovery pathways instead of three synthetic cases. And the patient side
@@ -227,13 +227,13 @@ change is seen sooner, and a thirty-day readmission window is a race.
 **Sensitivity is unmeasured and we say so.** Nobody in the reference cohort
 deteriorated after a discharge, so there is no positive class to count.
 
-*Volunteering the 3.35-vs-6.04 distinction before anyone asks is the single
+_Volunteering the 3.35-vs-6.04 distinction before anyone asks is the single
 most credible thing in this pitch. It is the move of a team that measured
-carefully rather than one that found a good number.*
+carefully rather than one that found a good number._
 
 **"Is this a regulated device?"**
 
-*Probably yes, and say so first.* Clinical decision support is exempt under
+_Probably yes, and say so first._ Clinical decision support is exempt under
 FD&C Act 520(o)(1)(E) only if all four criteria hold, and we fail the first:
 it excludes software that analyses a pattern from a signal acquisition system,
 and reading a wearable stream and requiring 24 hours of persistence is exactly
@@ -273,14 +273,14 @@ patient says. No surname, no identifier, no stored note. The typefaces are serve
 from our own origin too, so not even a font request tells anyone who opened a
 record.
 
-*Staff reaching for tools without knowing where the data goes is the named top
-risk in this field. This is that claim demonstrated rather than asserted.*
+_Staff reaching for tools without knowing where the data goes is the named top
+risk in this field. This is that claim demonstrated rather than asserted._
 
 **"Isn't this just WHOOP?"**
 
 WHOOP shows a person their own data. Relay does the thing a clinician cannot
 do from screenshots: normalizes several sources onto one axis, compares to
-that individual's baseline, requires signals to move *together* and persist,
+that individual's baseline, requires signals to move _together_ and persist,
 asks the patient when the passive data is ambiguous, and produces one
 source-linked packet with an EHR handoff. The output is for the care team, not
 the wearer.
@@ -325,6 +325,31 @@ ourselves.
 Do not quote their accuracy figures beside ours: theirs are classification
 accuracies on curated sets, ours is a false-alarm rate per subject-day and a
 detection lag. They answer different questions.
+
+**"What happens when a patient types something you did not expect?"**
+
+_This is the question with a scar on it._ The check-in lets a patient answer in
+their own words, so something has to turn a sentence into the option a clinician
+reads. Ours matched bare substrings in a fixed order, and this is what it
+recorded:
+
+> "No, I have taken everything as prescribed." → **medicines missed: Yes**
+
+The words "i have" sit inside that sentence, and the Yes branch ran before the
+No branch, so the leading "No" was never reached. The same matching read "no"
+out of "nothing" and "cannot", and turned "not worse than yesterday" into "a
+lot" on the strength of the word "worse" — an inversion in the other direction,
+on a severity.
+
+It is fixed, in `src/recovery/patient/answerText.js`, on three rules: match
+whole words, let the opening word decide when the rest of the sentence
+disagrees with it, and **return nothing rather than guess**. Seven tests hold
+it, each named after a sentence that broke it.
+
+Say the last rule out loud, because it is the point. An answer Relay cannot read
+is handed back to the patient as buttons, which costs one tap. An answer Relay
+reads wrongly is never seen again by anyone, and arrives at a clinician as
+fact. For this component the safe failure is silence, not a best effort.
 
 **"If a cancer centre asked about oncology?"**
 
@@ -378,8 +403,8 @@ watchlist triggered it.
 
 ### The one remaining `[VERIFY]` claim
 
-| Claim | True when | Current |
-|---|---|---|
+| Claim                              | True when                         | Current                                            |
+| ---------------------------------- | --------------------------------- | -------------------------------------------------- |
 | "A live ElevenLabs voice check-in" | a real conversation has completed | `/api/status` → `voice:false`; key unset, untested |
 
 It falls back cleanly to a working text form. **If it is still false at demo
