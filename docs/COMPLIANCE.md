@@ -34,7 +34,7 @@ analytics SDK, a misconfigured third-party call — a reportable breach.
 
 | Cite | Safeguard | Status |
 |---|---|---|
-| (a)(1) | Access control | **Built, partially.** Role gate, an allow-list of the five routes the patient view uses, constant-time code comparison, deny by default |
+| (a)(1) | Access control | **Built.** Role gate, an allow-list of the five routes the patient view uses, constant-time code comparison, deny by default, and a patient scoped server-side to the one record their discharge code opens |
 | (a)(2)(i) | **Unique user identification** (required) | **Not met.** Two shared codes, not accounts. The audit log can name a *role*, never a person |
 | (a)(2)(ii) | Emergency access (required) | **Not met.** No break-glass path exists |
 | (a)(2)(iii) | **Automatic logoff** | **Built.** 15 minutes, warned at 14, activity measured from real user events so polling cannot hold a session open (`src/recovery/idleSignOut.jsx`). Client-side: the bearer code stays valid server-side because there is no session store |
@@ -42,7 +42,7 @@ analytics SDK, a misconfigured third-party call — a reportable breach.
 | (b) | **Audit controls** | **Built.** Every access is recorded — record views, roster views, recovery-log reads, consent changes, acknowledgements, exports, imports — with the acting role, carried through the model's awaits by an `AsyncLocalStorage` so one request cannot be attributed to another |
 | (c)(1) | Integrity | **Partial.** Atomic write via temp-and-rename; append-only audit log, but nothing prevents editing it |
 | (c)(2) | Authenticate ePHI | **Not met.** No checksums, no hash chain |
-| (d) | **Person or entity authentication** | **Not met as to persons.** A shared code authenticates a role. The server cannot tell which patient is signed in, so it cannot scope to a single record |
+| (d) | **Person or entity authentication** | **Not met as to persons.** The discharge code now authenticates *which record*, server-side, but not *which person* — it is shared with whoever the patient shows it to and never expires |
 | (e)(1) | Transmission security | **Built.** TLS terminated by Render; HSTS in production; CSP, nosniff, frame denial, `Referrer-Policy: no-referrer`, restrictive permissions policy, same-origin check on writes |
 
 ### The one that mattered most — now fixed
