@@ -1,6 +1,6 @@
 import { rememberUser } from "./model/currentUser.js";
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { Activity, ArrowRight } from "lucide-react";
 import { signIn as openPatientProfile } from "./patient/session.js";
 import { LANDING_URL } from "./landingUrl.js";
 
@@ -166,7 +166,9 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
               href={LANDING_URL}
               aria-label="Relay home page"
             >
-              <span className="rx-brand-mark" aria-hidden="true" />
+              <span className="rx-brand-mark" aria-hidden="true">
+                <Activity size={19} strokeWidth={2.4} />
+              </span>
               <span className="rx-brand-word">Relay</span>
             </a>
             <span className="rx-home-kicker">{door.kicker}</span>
