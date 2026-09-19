@@ -1,0 +1,2369 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#142b28" />
+    <title>Relay · Recovery support that comes home with you</title>
+    <meta
+      name="description"
+      content="Relay keeps you and your care team connected after discharge. A model watches your readings against your own usual, and when something changes, an AI check-in talks it through with you and hands your team one clear picture."
+    />
+    <meta property="og:title" content="Relay · Recovery support that comes home with you" />
+    <meta
+      property="og:description"
+      content="For the thirty days after discharge: a model watches your readings against your own usual, an AI check-in talks it through with you when something changes, and your care team sees one clear picture."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- The typefaces are served from this origin, like the rest of the app. No
+         third party learns who opened this page. -->
+    <link rel="stylesheet" href="/fonts/fonts.css" />
+    <style>
+      /* ------------------------------------------------------------------
+         Tokens, shared with the app in src/recovery/recovery.css. This page is
+         static and framework-free so it is served before the sign-in gate and
+         loads in one request on a phone.
+         ------------------------------------------------------------------ */
+      :root {
+        --paper: #f5f6f3;
+        --surface: #ffffff;
+        --ink: #1f2f2a;
+        --ink-2: #2b3b36;
+        --muted: #44534c;
+        --faint: #5a6862;
+        --line: #e1e6df;
+        --line-soft: #edf0ea;
+        --pine: #24493d;
+        --pine-deep: #142b28;
+        --moss: #4f7d63;
+        --sage: #e9efe5;
+        --mint: #dcebe1;
+        --amber: #a87a1f;
+        --amber-ink: #74541a;
+        --amber-tint: #fbf1dc;
+        --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+        --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --shadow: 0 1px 2px rgba(31, 47, 42, 0.05), 0 12px 32px -12px rgba(31, 47, 42, 0.18);
+        --shadow-lg: 0 2px 4px rgba(31, 47, 42, 0.06), 0 32px 64px -24px rgba(20, 43, 40, 0.35);
+        --nav-h: 68px;
+        --curve: 48px;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-padding-top: calc(var(--nav-h) + 20px);
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        overflow-x: hidden;
+      }
+      h1,
+      h2,
+      h3,
+      p,
+      ul,
+      ol,
+      figure {
+        margin: 0;
+      }
+      ul,
+      ol {
+        padding: 0;
+        list-style: none;
+      }
+      a {
+        color: var(--pine);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        background: none;
+        border: 0;
+        cursor: pointer;
+      }
+      svg {
+        display: block;
+      }
+      :focus-visible {
+        outline: 3px solid var(--amber);
+        outline-offset: 3px;
+        border-radius: 6px;
+      }
+      .wrap {
+        width: min(1120px, 100% - 40px);
+        margin-inline: auto;
+      }
+      .skip {
+        position: absolute;
+        left: 16px;
+        top: -60px;
+        background: var(--pine);
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 10px;
+        z-index: 100;
+      }
+      .skip:focus {
+        top: 12px;
+      }
+      .icon {
+        width: 1em;
+        height: 1em;
+        flex: none;
+      }
+
+      /* Type ------------------------------------------------------------ */
+      .display {
+        font-family: var(--serif);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+        font-size: clamp(2.5rem, 5.4vw, 4.25rem);
+      }
+      .display em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--pine);
+      }
+      h2.title {
+        font-family: var(--serif);
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        line-height: 1.12;
+        font-size: clamp(1.9rem, 3.4vw, 2.75rem);
+        max-width: 22ch;
+        text-wrap: balance;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--pine);
+      }
+      .eyebrow::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: none;
+        margin-top: 0.45em;
+        border-radius: 50%;
+        background: var(--pine);
+        box-shadow: 0 0 0 4px var(--mint);
+      }
+      /* Each band opens with its number, so the eye knows a new part began. */
+      .sec-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--pine);
+      }
+      .sec-label .num {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1.5px solid currentColor;
+        display: grid;
+        place-items: center;
+        font-family: var(--serif);
+        font-size: 0.95rem;
+        letter-spacing: 0;
+      }
+      .lead {
+        font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+        color: var(--muted);
+        max-width: 50ch;
+        text-wrap: pretty;
+      }
+      .section-head {
+        display: grid;
+        gap: 14px;
+        max-width: 720px;
+        margin-bottom: clamp(32px, 4.5vw, 52px);
+      }
+
+      /* Buttons ---------------------------------------------------------- */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 20px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 0.98rem;
+        line-height: 1.2;
+        border: 1.5px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        transition:
+          transform 0.25s var(--ease),
+          box-shadow 0.25s var(--ease),
+          background 0.2s,
+          border-color 0.2s;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
+        border-color: #cfd6cf;
+      }
+      .btn.primary {
+        background: var(--pine);
+        border-color: var(--pine);
+        color: #fff;
+      }
+      .btn.primary:hover {
+        background: var(--pine-deep);
+        border-color: var(--pine-deep);
+      }
+      .btn.tall {
+        padding: 15px 24px;
+        font-size: 1.04rem;
+        border-radius: 16px;
+      }
+      .btn .icon {
+        width: 18px;
+        height: 18px;
+        transition: transform 0.25s var(--ease);
+      }
+      .btn:hover .icon.arrow {
+        transform: translateX(3px);
+      }
+
+      /* Nav -------------------------------------------------------------- */
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        height: var(--nav-h);
+        display: flex;
+        align-items: center;
+        background: rgba(245, 246, 243, 0.82);
+        backdrop-filter: saturate(160%) blur(14px);
+        -webkit-backdrop-filter: saturate(160%) blur(14px);
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.3s;
+      }
+      .top.scrolled {
+        border-bottom-color: var(--line);
+      }
+      .top .wrap {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 1.15rem;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+      }
+      .brand:hover {
+        text-decoration: none;
+      }
+      .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--pine);
+        display: grid;
+        place-items: center;
+        color: #fff;
+      }
+      .mark svg {
+        width: 20px;
+        height: 20px;
+      }
+      /* On wide screens the menu wrapper is invisible to layout; below 1040px it
+         becomes the panel the menu button opens. */
+      .menu {
+        display: contents;
+      }
+      .links {
+        display: flex;
+        gap: 4px;
+        margin-inline: auto;
+      }
+      .links a {
+        position: relative;
+        padding: 8px 12px;
+        border-radius: 10px;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        transition:
+          background 0.2s,
+          color 0.2s;
+      }
+      .links a:hover {
+        text-decoration: none;
+        color: var(--ink);
+        background: var(--sage);
+      }
+      .links a.active {
+        color: var(--pine);
+        background: var(--sage);
+      }
+      .menu-btn {
+        display: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: 1.5px solid var(--line);
+        background: var(--surface);
+        place-items: center;
+        margin-left: auto;
+      }
+      .menu-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+      .menu-btn .close {
+        display: none;
+      }
+      .top.open .menu-btn .close {
+        display: block;
+      }
+      .top.open .menu-btn .burger {
+        display: none;
+      }
+
+      /* Bands: every section is a sheet with its own colour, laid over the
+         one before with rounded top corners, so the shift is unmistakable. */
+      .band {
+        position: relative;
+        padding: clamp(64px, 8vw, 104px) 0 calc(clamp(64px, 8vw, 104px) + var(--curve));
+        margin-top: calc(-1 * var(--curve));
+        border-radius: var(--curve) var(--curve) 0 0;
+        background: var(--paper);
+      }
+      .band.white {
+        background: var(--surface);
+      }
+      .band.sage {
+        background: var(--sage);
+      }
+      .band.dark {
+        background: var(--pine-deep);
+        color: #fff;
+      }
+      .band.dark .sec-label,
+      .band.dark .eyebrow {
+        color: #cfe0d5;
+      }
+      .band.dark .eyebrow::before {
+        background: #cfe0d5;
+        box-shadow: 0 0 0 4px rgba(207, 224, 213, 0.2);
+      }
+      .band.dark .title {
+        color: #fff;
+      }
+      .band.dark .lead {
+        color: rgba(255, 255, 255, 0.78);
+      }
+      .band.last {
+        padding-bottom: clamp(64px, 8vw, 104px);
+      }
+
+      /* Hero ------------------------------------------------------------- */
+      .hero {
+        position: relative;
+        padding: clamp(40px, 6vw, 80px) 0 calc(clamp(56px, 7vw, 96px) + var(--curve));
+        overflow: hidden;
+      }
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background:
+          radial-gradient(60% 50% at 85% 20%, rgba(220, 235, 225, 0.9), transparent 70%),
+          radial-gradient(40% 40% at 10% 90%, rgba(251, 241, 220, 0.7), transparent 70%),
+          linear-gradient(180deg, #fbfcfa 0%, var(--paper) 100%);
+      }
+      .hero-bg svg {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 58%;
+        width: 100%;
+        height: 160px;
+        opacity: 0.35;
+      }
+      .hero-bg .pulse {
+        fill: none;
+        stroke: var(--pine);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 2400;
+        stroke-dashoffset: 2400;
+        animation: draw 6s var(--ease) 0.4s forwards;
+      }
+      @keyframes draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: clamp(32px, 5vw, 64px);
+        align-items: center;
+      }
+      .hero-copy {
+        display: grid;
+        gap: 22px;
+        max-width: 600px;
+      }
+      .hero-copy .display {
+        max-width: 14ch;
+      }
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 6px;
+      }
+      .proof {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.93rem;
+        font-weight: 500;
+      }
+      .proof span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .proof .icon {
+        width: 18px;
+        height: 18px;
+        color: var(--moss);
+      }
+
+      /* Stage: a phone with real proportions, and three cards down its left. */
+      .stage {
+        position: relative;
+        display: grid;
+        align-items: center;
+        justify-items: end;
+        min-height: 600px;
+      }
+      .glow {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: -60px;
+        margin-block: auto;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(closest-side, rgba(36, 73, 61, 0.14), transparent);
+        filter: blur(10px);
+        animation: breathe 7s ease-in-out infinite;
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.9;
+        }
+        50% {
+          transform: scale(1.08);
+          opacity: 1;
+        }
+      }
+      .phone {
+        position: relative;
+        width: 292px;
+        margin-right: 6px;
+        border-radius: 44px;
+        background: linear-gradient(160deg, #22403a, var(--pine-deep));
+        padding: 11px;
+        box-shadow:
+          var(--shadow-lg),
+          inset 0 0 0 1.5px rgba(255, 255, 255, 0.12);
+        transform: rotate(-1.5deg);
+        animation: settle 1.2s var(--ease) both;
+      }
+      @keyframes settle {
+        from {
+          opacity: 0;
+          transform: translateY(24px) rotate(-1.5deg);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) rotate(-1.5deg);
+        }
+      }
+      .phone::before {
+        content: "";
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        width: 90px;
+        height: 24px;
+        transform: translateX(-50%);
+        background: var(--pine-deep);
+        border-radius: 14px;
+        z-index: 2;
+      }
+      .screen {
+        background: var(--paper);
+        border-radius: 34px;
+        height: 548px;
+        padding: 50px 14px 16px;
+        display: grid;
+        gap: 10px;
+        align-content: start;
+        font-size: 12.5px;
+        line-height: 1.4;
+        overflow: hidden;
+      }
+      .s-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11.5px;
+        color: var(--faint);
+      }
+      .s-top .brand {
+        font-size: 0.95rem;
+        gap: 7px;
+      }
+      .s-top .mark {
+        width: 22px;
+        height: 22px;
+        border-radius: 7px;
+      }
+      .s-top .mark svg {
+        width: 13px;
+        height: 13px;
+      }
+      .synced {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .synced i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--moss);
+        box-shadow: 0 0 0 3px rgba(79, 125, 99, 0.2);
+      }
+      .s-greet h3 {
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 1.25rem;
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+      }
+      .s-greet p {
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .progress {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--line);
+        margin-top: 8px;
+        overflow: hidden;
+      }
+      .progress i {
+        display: block;
+        height: 100%;
+        width: 30%;
+        border-radius: inherit;
+        background: var(--pine);
+        animation: grow 1.6s var(--ease) 0.6s both;
+      }
+      @keyframes grow {
+        from {
+          width: 0;
+        }
+      }
+      .s-banner {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        background: var(--sage);
+        border: 1px solid var(--mint);
+        border-radius: 14px;
+        padding: 10px 12px;
+        color: var(--ink-2);
+      }
+      .s-banner .icon {
+        width: 18px;
+        height: 18px;
+        color: var(--moss);
+        margin-top: 1px;
+      }
+      .s-banner strong {
+        display: block;
+        font-weight: 600;
+      }
+      .s-banner span {
+        color: var(--muted);
+        font-size: 11.5px;
+      }
+      .s-label {
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--faint);
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .tile {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 9px 10px 7px;
+        display: grid;
+        gap: 3px;
+        opacity: 0;
+        animation: pop 0.7s var(--ease) both;
+        animation-delay: calc(0.7s + var(--i, 0) * 0.12s);
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .tile small {
+        color: var(--faint);
+        font-size: 10.5px;
+      }
+      .tile strong {
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .tile strong sub {
+        vertical-align: baseline;
+        font-size: 10.5px;
+        color: var(--faint);
+        font-weight: 500;
+        margin-left: 2px;
+      }
+      .chip {
+        justify-self: start;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: var(--sage);
+        color: var(--pine);
+      }
+      .spark {
+        width: 100%;
+        height: 22px;
+        margin-top: 2px;
+      }
+      .spark polyline {
+        fill: none;
+        stroke: var(--pine);
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+      }
+      .spark .band {
+        fill: var(--sage);
+      }
+      .s-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 9px 12px;
+      }
+      .s-row .icon {
+        width: 18px;
+        height: 18px;
+        color: var(--pine);
+      }
+      .s-row strong {
+        display: block;
+        font-weight: 600;
+      }
+      .s-row span {
+        color: var(--faint);
+        font-size: 11px;
+      }
+      .float {
+        position: absolute;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 12px 14px;
+        box-shadow: var(--shadow);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-size: 0.9rem;
+        font-weight: 500;
+        max-width: 205px;
+        animation: floaty 6s ease-in-out infinite;
+      }
+      .float .icon {
+        width: 20px;
+        height: 20px;
+        color: var(--pine);
+        flex: none;
+      }
+      .float small {
+        display: block;
+        color: var(--faint);
+        font-weight: 400;
+        font-size: 0.8rem;
+      }
+      .float.a {
+        top: 10%;
+        left: -3%;
+        animation-delay: 0s;
+      }
+      .float.b {
+        top: 45%;
+        left: -5%;
+        animation-delay: -2s;
+      }
+      .float.c {
+        bottom: 10%;
+        left: -1%;
+        animation-delay: -4s;
+      }
+      @keyframes floaty {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      /* 01 What it is: three statements on a rule, then one picture --------- */
+      .facts {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0 clamp(20px, 3vw, 40px);
+      }
+      .fact {
+        padding: 26px 0 22px;
+        border-top: 2px solid var(--ink);
+        display: grid;
+        gap: 12px;
+        align-content: start;
+      }
+      .fact .ico {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--sage);
+        color: var(--pine);
+        display: grid;
+        place-items: center;
+      }
+      .fact .ico svg {
+        width: 22px;
+        height: 22px;
+      }
+      .fact h3 {
+        font-family: var(--serif);
+        font-size: 1.45rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+      }
+      .fact p {
+        color: var(--muted);
+      }
+      .why-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(28px, 4vw, 56px);
+        align-items: center;
+        margin-top: clamp(40px, 5vw, 64px);
+        padding: clamp(24px, 4vw, 44px);
+        background: var(--sage);
+        border-radius: 28px;
+      }
+      .why-grid h3 {
+        font-family: var(--serif);
+        font-size: clamp(1.5rem, 2.4vw, 2rem);
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        line-height: 1.15;
+        margin: 12px 0 14px;
+      }
+      .why-grid p {
+        color: var(--muted);
+      }
+      .stat {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(36, 73, 61, 0.15);
+      }
+      .stat strong {
+        font-family: var(--serif);
+        font-size: 2.4rem;
+        font-weight: 600;
+        line-height: 1;
+        color: var(--pine);
+        letter-spacing: -0.02em;
+      }
+      .stat span {
+        color: var(--faint);
+        font-size: 0.95rem;
+        max-width: 26ch;
+      }
+      .shot {
+        margin: 0;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+      .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .shot figcaption {
+        padding: 12px 16px;
+        font-size: 0.85rem;
+        color: var(--faint);
+        border-top: 1px solid var(--line-soft);
+      }
+      .phone-shot {
+        height: 460px;
+      }
+      .phone-shot img {
+        height: 100%;
+        object-fit: cover;
+        object-position: top;
+      }
+
+      /* 02 How it works: a line that draws itself, four stops on it -------- */
+      .tl {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        padding-top: 8px;
+      }
+      .tl::before {
+        content: "";
+        position: absolute;
+        top: 36px;
+        left: 12%;
+        right: 12%;
+        height: 2px;
+        background: var(--pine);
+        opacity: 0.35;
+        transform-origin: left center;
+        transform: scaleX(0);
+        transition: transform 1.4s var(--ease) 0.2s;
+      }
+      .tl.in::before {
+        transform: scaleX(1);
+      }
+      .tl-step {
+        display: grid;
+        gap: 12px;
+        justify-items: center;
+        text-align: center;
+        padding: 0 6px;
+      }
+      .tl-step .dot {
+        position: relative;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: var(--pine);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 0 0 8px var(--sage);
+      }
+      .tl-step .dot svg {
+        width: 24px;
+        height: 24px;
+      }
+      .tl-step .dot b {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--surface);
+        color: var(--pine);
+        border: 1.5px solid var(--pine);
+        font-family: var(--serif);
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: grid;
+        place-items: center;
+      }
+      .tl-step h3 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        line-height: 1.25;
+        margin-top: 8px;
+      }
+      .tl-step p {
+        color: var(--muted);
+        font-size: 0.97rem;
+        max-width: 26ch;
+      }
+      .how-cta {
+        margin-top: clamp(32px, 4vw, 48px);
+        display: flex;
+        justify-content: center;
+      }
+
+      /* 03 Your app: light panel on the dark sheet ------------------------ */
+      .tour {
+        display: grid;
+        grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+        gap: clamp(28px, 4vw, 56px);
+        align-items: start;
+      }
+      .tablist {
+        display: grid;
+        gap: 6px;
+        position: sticky;
+        top: calc(var(--nav-h) + 24px);
+      }
+      .tab {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 14px;
+        align-items: start;
+        text-align: left;
+        padding: 16px 18px;
+        border-radius: 16px;
+        border: 1px solid transparent;
+        color: #fff;
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+      }
+      .tab:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .tab[aria-selected="true"] {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.18);
+      }
+      .tab .ico {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        display: grid;
+        place-items: center;
+      }
+      .tab[aria-selected="true"] .ico {
+        background: var(--sage);
+        color: var(--pine);
+      }
+      .tab .ico svg {
+        width: 20px;
+        height: 20px;
+      }
+      .tab strong {
+        display: block;
+        font-weight: 600;
+        font-size: 1.05rem;
+      }
+      .tab span {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.93rem;
+      }
+      .panel {
+        display: none;
+        background: var(--paper);
+        color: var(--ink);
+        border-radius: 28px;
+        padding: clamp(22px, 3vw, 36px);
+        min-height: 420px;
+        animation: fade 0.45s var(--ease) both;
+      }
+      .panel.on {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 26px;
+        align-items: start;
+      }
+      .panel .copy {
+        display: grid;
+        gap: 14px;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .panel h3 {
+        font-family: var(--serif);
+        font-size: 1.6rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+      }
+      .panel p {
+        color: var(--muted);
+        max-width: 56ch;
+        font-size: 1.05rem;
+      }
+      /* Pathways: a slow marquee of chips, then three real questions ------- */
+      .marquee {
+        overflow: hidden;
+        margin: 0 calc(-1 * (100vw - 100%) / 2);
+        padding: 6px 0;
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+        mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+      }
+      .marquee .track {
+        display: flex;
+        gap: 10px;
+        width: max-content;
+        height: auto;
+        background: none;
+        animation: slide 48s linear infinite;
+      }
+      .marquee:hover .track {
+        animation-play-state: paused;
+      }
+      @keyframes slide {
+        to {
+          transform: translateX(-50%);
+        }
+      }
+      .marquee ul {
+        display: flex;
+        gap: 10px;
+        padding-right: 10px;
+      }
+      .marquee li {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px 10px 12px;
+        border-radius: 999px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .marquee .icon {
+        width: 18px;
+        height: 18px;
+        color: var(--pine);
+      }
+      .quote {
+        margin-top: clamp(24px, 4vw, 40px);
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .quote blockquote {
+        margin: 0;
+        padding: 20px 22px;
+        border-radius: 18px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        color: var(--ink-2);
+        font-family: var(--serif);
+        font-size: 1.08rem;
+        line-height: 1.4;
+        display: grid;
+        gap: 10px;
+      }
+      .quote blockquote small {
+        font-family: var(--sans);
+        font-size: 0.82rem;
+        color: var(--pine);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      /* 04 Will and will not: two columns, one rule per line ---------------- */
+      .ledger {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(24px, 4vw, 48px);
+      }
+      .ledger h3 {
+        font-family: var(--serif);
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        padding-bottom: 14px;
+        border-bottom: 2px solid var(--ink);
+      }
+      .ledger li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 14px;
+        align-items: start;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--line);
+        color: var(--ink-2);
+        font-size: 1.02rem;
+      }
+      .ledger .icon {
+        width: 22px;
+        height: 22px;
+        margin-top: 2px;
+      }
+      .ledger .will .icon {
+        color: var(--moss);
+      }
+      .ledger .wont .icon {
+        color: var(--amber);
+      }
+      .notes {
+        margin-top: clamp(24px, 4vw, 40px);
+        display: grid;
+        gap: 12px;
+      }
+      .note {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 14px;
+        align-items: start;
+        padding: 16px 20px;
+        border-radius: 16px;
+      }
+      .note .icon {
+        width: 22px;
+        height: 22px;
+        margin-top: 2px;
+      }
+      .note.warm {
+        background: var(--amber-tint);
+        border: 1px solid #efdcb0;
+        color: var(--ink-2);
+      }
+      .note.warm .icon {
+        color: var(--amber);
+      }
+      .note.quiet {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .note.quiet .icon {
+        color: var(--pine);
+      }
+      .note strong {
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      /* 05 Questions --------------------------------------------------------- */
+      .faq-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: clamp(28px, 4vw, 56px);
+        align-items: start;
+      }
+      .faq-grid .section-head {
+        margin-bottom: 0;
+        position: sticky;
+        top: calc(var(--nav-h) + 24px);
+      }
+      .faq {
+        display: grid;
+        gap: 10px;
+      }
+      details {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: box-shadow 0.3s var(--ease);
+      }
+      details[open] {
+        box-shadow: var(--shadow);
+      }
+      summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 22px;
+        font-weight: 600;
+        font-size: 1.05rem;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      summary .plus {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--sage);
+        color: var(--pine);
+        display: grid;
+        place-items: center;
+        flex: none;
+        transition: transform 0.3s var(--ease);
+      }
+      summary .plus svg {
+        width: 16px;
+        height: 16px;
+      }
+      details[open] summary .plus {
+        transform: rotate(45deg);
+      }
+      details .ans {
+        padding: 0 22px 20px;
+        color: var(--muted);
+        max-width: 64ch;
+      }
+
+      /* Get started -------------------------------------------------------- */
+      .start {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 36px;
+        padding: clamp(32px, 5vw, 64px);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: clamp(28px, 4vw, 56px);
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .start::after {
+        content: "";
+        position: absolute;
+        right: -10%;
+        top: -30%;
+        width: 50%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: radial-gradient(closest-side, var(--sage), transparent);
+        pointer-events: none;
+      }
+      .start > * {
+        position: relative;
+      }
+      .start ol {
+        display: grid;
+        gap: 14px;
+        counter-reset: s;
+        margin-top: 18px;
+      }
+      .start ol li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 14px;
+        align-items: start;
+        counter-increment: s;
+      }
+      .start ol li::before {
+        content: counter(s);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--pine);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .start ol strong {
+        display: block;
+        font-weight: 600;
+      }
+      .start ol span {
+        color: var(--muted);
+      }
+      .letter {
+        justify-self: center;
+        width: min(100%, 380px);
+        background: #fffdf8;
+        border: 1px solid #e9e3d3;
+        border-radius: 14px;
+        padding: 26px 26px 24px;
+        box-shadow: var(--shadow-lg);
+        transform: rotate(1.5deg);
+        font-size: 13px;
+        color: var(--muted);
+        display: grid;
+        gap: 12px;
+      }
+      .letter .lh {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ebe5d6;
+        padding-bottom: 12px;
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .letter .lh span {
+        font-weight: 400;
+        color: var(--faint);
+        font-size: 12px;
+      }
+      .letter .line {
+        height: 8px;
+        border-radius: 4px;
+        background: #efeadc;
+      }
+      .letter .line.s {
+        width: 60%;
+      }
+      .letter .code {
+        margin-top: 4px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: var(--sage);
+        border: 1.5px dashed var(--pine);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--ink);
+      }
+      .letter .code small {
+        display: block;
+        color: var(--pine);
+        font-weight: 600;
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .letter .code strong {
+        font-family: var(--serif);
+        font-size: 1.6rem;
+        letter-spacing: 0.04em;
+        font-weight: 600;
+      }
+      .letter .code .icon {
+        width: 26px;
+        height: 26px;
+        color: var(--pine);
+      }
+      .demo-note {
+        margin-top: 18px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.93rem;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: start;
+      }
+      .demo-note .icon {
+        width: 18px;
+        height: 18px;
+        color: var(--pine);
+        margin-top: 3px;
+      }
+      .demo-note code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.9em;
+        white-space: nowrap;
+        background: var(--sage);
+        color: var(--pine);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+
+      /* Footer ------------------------------------------------------------- */
+      footer {
+        padding: 40px 0 48px;
+        border-top: 1px solid var(--line);
+        color: var(--faint);
+        font-size: 0.92rem;
+        background: var(--paper);
+      }
+      footer .wrap {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 24px;
+        align-items: start;
+      }
+      footer .brand {
+        font-size: 1.05rem;
+      }
+      footer .mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+      }
+      footer .mark svg {
+        width: 17px;
+        height: 17px;
+      }
+      footer p {
+        margin-top: 10px;
+        max-width: 48ch;
+      }
+      footer nav {
+        display: grid;
+        gap: 8px;
+        text-align: right;
+      }
+      footer nav a {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      footer nav .staff {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+        color: var(--faint);
+        font-weight: 400;
+        font-size: 0.88rem;
+      }
+
+      /* Reveal on scroll, in four flavours so each band arrives differently.
+         Only once the script has run and marked <html>: if the script is ever
+         blocked or slow, the page is simply visible. ------------------------ */
+      html.js .reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition:
+          opacity 0.75s var(--ease),
+          transform 0.75s var(--ease);
+        transition-delay: calc(var(--i, 0) * 110ms);
+      }
+      html.js .reveal.left {
+        transform: translateX(-32px);
+      }
+      html.js .reveal.right {
+        transform: translateX(32px);
+      }
+      html.js .reveal.zoom {
+        transform: scale(0.94);
+      }
+      html.js .reveal.pop {
+        transform: translateY(14px) scale(0.9);
+      }
+      html.js .reveal.in {
+        opacity: 1;
+        transform: none;
+      }
+
+      /* Responsive ---------------------------------------------------------- */
+      @media (max-width: 1180px) and (min-width: 1041px) {
+        .float {
+          max-width: 182px;
+        }
+        .float.a {
+          left: -6%;
+        }
+        .float.b {
+          left: -8%;
+        }
+        .float.c {
+          left: -4%;
+        }
+      }
+      @media (max-width: 1040px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+        .hero-copy {
+          max-width: 640px;
+        }
+        .stage {
+          min-height: 0;
+          padding: 24px 0 8px;
+          justify-items: center;
+        }
+        .phone {
+          margin-right: 0;
+        }
+        .glow {
+          right: 0;
+          left: 0;
+          margin-inline: auto;
+        }
+        .float {
+          max-width: 200px;
+        }
+        .float.a {
+          left: 4%;
+        }
+        .float.b {
+          left: 2%;
+        }
+        .float.c {
+          left: 5%;
+        }
+        .menu {
+          display: none;
+        }
+        .menu-btn {
+          display: grid;
+        }
+        .top.open .menu {
+          display: grid;
+          position: absolute;
+          left: 16px;
+          right: 16px;
+          top: calc(var(--nav-h) + 4px);
+          background: var(--surface);
+          border: 1px solid var(--line);
+          border-radius: 18px;
+          padding: 10px;
+          box-shadow: var(--shadow-lg);
+          gap: 8px;
+        }
+        .top.open .links {
+          display: grid;
+          gap: 2px;
+          margin: 0;
+        }
+        .top.open .links a {
+          padding: 12px 14px;
+          font-size: 1.02rem;
+        }
+        .top.open .top-actions {
+          display: grid;
+          padding: 8px 4px 4px;
+          border-top: 1px solid var(--line-soft);
+        }
+        .facts {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+        .fact {
+          border-top-width: 1px;
+          border-color: var(--line);
+        }
+        .fact:first-child {
+          border-top: 2px solid var(--ink);
+        }
+        .tl {
+          grid-template-columns: 1fr 1fr;
+          gap: 36px 24px;
+        }
+        .tl::before {
+          display: none;
+        }
+        .quote {
+          grid-template-columns: 1fr 1fr;
+        }
+        .why-grid,
+        .tour,
+        .ledger,
+        .faq-grid,
+        .start {
+          grid-template-columns: 1fr;
+        }
+        .tablist,
+        .faq-grid .section-head {
+          position: static;
+        }
+        .tablist {
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+        .tab {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .tab span {
+          display: none;
+        }
+        .panel.on {
+          grid-template-columns: 1fr;
+        }
+        .phone-shot {
+          height: 420px;
+          max-width: 390px;
+        }
+      }
+      @media (max-width: 780px) {
+        :root {
+          --curve: 32px;
+        }
+        .wrap {
+          width: min(1120px, 100% - 32px);
+        }
+        .display {
+          font-size: clamp(2.2rem, 10vw, 3rem);
+        }
+        .quote {
+          grid-template-columns: 1fr;
+        }
+        .float {
+          display: none;
+        }
+        .phone {
+          width: min(292px, 100%);
+          transform: none;
+          animation-name: settleFlat;
+        }
+        @keyframes settleFlat {
+          from {
+            opacity: 0;
+            transform: translateY(24px);
+          }
+          to {
+            opacity: 1;
+            transform: none;
+          }
+        }
+        /* The timeline turns vertical: a line down the left, stops beside it. */
+        .tl {
+          grid-template-columns: 1fr;
+          gap: 28px;
+          padding-left: 0;
+        }
+        .tl::before {
+          display: block;
+          top: 8px;
+          bottom: 8px;
+          left: 28px;
+          right: auto;
+          width: 2px;
+          height: auto;
+          transform-origin: top center;
+          transform: scaleY(0);
+        }
+        .tl.in::before {
+          transform: scaleY(1);
+        }
+        .tl-step {
+          grid-template-columns: 58px 1fr;
+          gap: 4px 18px;
+          justify-items: start;
+          text-align: left;
+          padding: 0;
+        }
+        .tl-step .dot {
+          grid-row: 1 / span 2;
+        }
+        .tl-step h3 {
+          margin-top: 6px;
+        }
+        .tl-step p {
+          max-width: none;
+        }
+        footer .wrap {
+          grid-template-columns: 1fr;
+        }
+        footer nav {
+          text-align: left;
+        }
+        .start {
+          border-radius: 24px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+        html.js .reveal {
+          opacity: 1;
+          transform: none;
+        }
+        .hero-bg .pulse {
+          stroke-dashoffset: 0;
+        }
+        .tl::before {
+          transform: none;
+        }
+        .marquee {
+          margin: 0;
+          -webkit-mask-image: none;
+          mask-image: none;
+        }
+        .marquee .track {
+          width: auto;
+          animation: none;
+        }
+        .marquee ul {
+          flex-wrap: wrap;
+        }
+        .marquee ul[aria-hidden] {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <!-- Icon sprite. Plain strokes in the style of the app's lucide icons. -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12h4l3-8 4 16 3-8h4" />
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="m8.5 12 2.5 2.5 4.5-5" />
+        </symbol>
+        <symbol id="i-xcircle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="m9 9 6 6M15 9l-6 6" />
+        </symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 4.5 6v6c0 4.5 3.2 7.5 7.5 9 4.3-1.5 7.5-4.5 7.5-9V6L12 3Z" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19.5 12.6 12 20l-7.5-7.4A4.6 4.6 0 0 1 12 6.4a4.6 4.6 0 0 1 7.5 6.2Z" />
+          <path d="M3.5 12h3l1.5-2.5 2 5 1.5-2.5h3" />
+        </symbol>
+        <symbol id="i-watch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="6" />
+          <path d="M12 9v3l2 1M9 3.5 9.6 6M15 3.5 14.4 6M9 20.5 9.6 18M15 20.5 14.4 18" />
+        </symbol>
+        <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12Z" />
+          <path d="M8.5 11h7M8.5 14h4" />
+        </symbol>
+        <symbol id="i-people" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="8" r="3.5" />
+          <path d="M2.5 20a6.5 6.5 0 0 1 13 0" />
+          <path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6" />
+        </symbol>
+        <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="15" r="4.5" />
+          <path d="m11.2 11.8 8.3-8.3M16 6l2.5 2.5M13.5 8.5 16 11" />
+        </symbol>
+        <symbol id="i-hospital" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 21V5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5V21M2.5 21h19M10 21v-4h4v4" />
+          <path d="M12 8v5M9.5 10.5h5" />
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
+          <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5" />
+        </symbol>
+        <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3.5 11 8.5-7 8.5 7M6 9.5V20h12V9.5M10 20v-5h4v5" />
+        </symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20V4M4 20h16M8 15l3.5-4 3 2.5L19 8" />
+        </symbol>
+        <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5.5" r="2.5" />
+          <circle cx="6" cy="12" r="2.5" />
+          <circle cx="18" cy="18.5" r="2.5" />
+          <path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1" />
+        </symbol>
+        <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v18M5 21h14M12 6l6 1M12 6 6 7M3 14l3-7 3 7a3 3 0 0 1-6 0ZM15 14l3-7 3 7a3 3 0 0 1-6 0Z" />
+        </symbol>
+        <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v5M12 8h.01" />
+        </symbol>
+        <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3.5 2.5 20h19L12 3.5Z" />
+          <path d="M12 10v4M12 17h.01" />
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14" />
+        </symbol>
+        <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4M12 8.5 13.3 10.7 15.5 12l-2.2 1.3L12 15.5l-1.3-2.2L8.5 12l2.2-1.3Z" />
+        </symbol>
+        <symbol id="i-lungs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v9M9.5 9.5C8 8 5.5 8.5 4.5 11.5c-1 3-1 8 1.5 9 2.5 1 4.5-1 4.5-3.5v-7M14.5 9.5c1.5-1.5 4-1 5 2 1 3 1 8-1.5 9s-4.5-1-4.5-3.5v-7" />
+        </symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" />
+        </symbol>
+        <symbol id="i-baby" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M9 11h.01M15 11h.01M9 15c1.5 1.3 4.5 1.3 6 0M12 3.5c-1 1-1 2.5 0 3.5" />
+        </symbol>
+        <symbol id="i-bone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6.5 17.5 17.5 6.5M17.5 6.5a2.5 2.5 0 1 1 3-3 2.5 2.5 0 1 1-3 3ZM6.5 17.5a2.5 2.5 0 1 0-3 3 2.5 2.5 0 1 0 3-3Z" />
+        </symbol>
+        <symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v16M9.5 4A3 3 0 0 0 5 6.5a3 3 0 0 0-1 5.5 3 3 0 0 0 1.5 5.5A3 3 0 0 0 12 19M14.5 4A3 3 0 0 1 19 6.5a3 3 0 0 1 1 5.5 3 3 0 0 1-1.5 5.5A3 3 0 0 1 12 19" />
+        </symbol>
+        <symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z" />
+        </symbol>
+        <symbol id="i-thermo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 14.5V5a2 2 0 1 0-4 0v9.5a4 4 0 1 0 4 0Z" />
+        </symbol>
+        <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="3" width="6" height="11" rx="3" />
+          <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6" />
+        </symbol>
+        <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+          <path d="M3.5 10h17M8 3v4M16 3v4" />
+        </symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </symbol>
+        <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <header class="top" id="top">
+      <div class="wrap">
+        <a class="brand" href="#top" aria-label="Relay, back to top">
+          <span class="mark"><svg><use href="#i-activity" /></svg></span>
+          Relay
+        </a>
+        <div class="menu" id="menu">
+          <nav class="links" id="links" aria-label="Sections">
+            <a href="#what">What it is</a>
+            <a href="#how">How it works</a>
+            <a href="#app">Your app</a>
+            <a href="#faq">Questions</a>
+          </nav>
+          <div class="top-actions">
+            <a class="btn primary" href="/#/patient">
+              I have a discharge code
+              <svg class="icon arrow"><use href="#i-arrow" /></svg>
+            </a>
+          </div>
+        </div>
+        <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+          <svg class="burger"><use href="#i-menu" /></svg>
+          <svg class="close"><use href="#i-x" /></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- ============================ HERO ============================ -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-bg" aria-hidden="true">
+          <svg viewBox="0 0 1440 160" preserveAspectRatio="none">
+            <path
+              class="pulse"
+              d="M0 90 H300 l20 -8 20 8 H420 l14 -50 16 90 14 -60 12 20 H620 l20 -6 20 6 H860 l14 -40 16 70 14 -50 12 20 H1060 l20 -8 20 8 H1440"
+            />
+          </svg>
+        </div>
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow">For the thirty days after you leave hospital</span>
+            <h1 class="display" id="hero-title">
+              Going home is where recovery <em>really begins.</em>
+            </h1>
+            <p class="lead">
+              After discharge, the line to your care team usually goes quiet.
+              Relay keeps it open: a model watches your readings against your
+              own usual, and when something changes, an AI check-in talks it
+              through with you and hands your team one clear picture.
+            </p>
+            <div class="hero-actions">
+              <a class="btn primary tall" href="/#/patient">
+                Start with your discharge code
+                <svg class="icon arrow"><use href="#i-arrow" /></svg>
+              </a>
+              <a class="btn tall" href="#how">See how it works</a>
+            </div>
+            <div class="proof" aria-label="What to expect">
+              <span><svg class="icon"><use href="#i-check" /></svg> Compared with your own usual</span>
+              <span><svg class="icon"><use href="#i-shield" /></svg> You choose what is shared</span>
+              <span><svg class="icon"><use href="#i-people" /></svg> A person reviews, not a machine</span>
+            </div>
+          </div>
+
+          <div class="stage" aria-label="A preview of the patient app">
+            <div class="glow" aria-hidden="true"></div>
+            <div class="phone" role="img" aria-label="An illustration of a phone showing a Relay home screen: day 9 of 30 at home, nothing unusual in today's readings, and four readings compared with the patient's usual.">
+              <div class="screen" aria-hidden="true">
+                <div class="s-top">
+                  <span class="brand"><span class="mark"><svg><use href="#i-activity" /></svg></span>Relay</span>
+                  <span class="synced"><i></i>Watch synced 8 min ago</span>
+                </div>
+                <div class="s-greet">
+                  <h3>Good morning, Maya</h3>
+                  <p>Day 9 of 30 at home · after pneumonia</p>
+                  <div class="progress"><i></i></div>
+                </div>
+                <div class="s-banner">
+                  <svg class="icon"><use href="#i-check" /></svg>
+                  <div>
+                    <strong>Nothing unusual today</strong>
+                    <span>Next check-in tomorrow morning.</span>
+                  </div>
+                </div>
+                <span class="s-label">Your readings</span>
+                <div class="tiles">
+                  <div class="tile" style="--i: 0">
+                    <small>Resting heart rate</small>
+                    <strong>64<sub>bpm</sub></strong>
+                    <span class="chip">Usual · 62</span>
+                    <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+                      <rect class="band" x="0" y="14" width="100" height="10" rx="2" />
+                      <polyline points="0,6 7.7,9 15.4,12 23,15 30.8,18 38.5,20 46,22 53.8,22 61.5,20 69,22 77,24 84.6,22 92,20 100,18" />
+                    </svg>
+                  </div>
+                  <div class="tile" style="--i: 1">
+                    <small>Blood oxygen</small>
+                    <strong>97<sub>%</sub></strong>
+                    <span class="chip">Usual · 97</span>
+                    <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+                      <rect class="band" x="0" y="8" width="100" height="8" rx="2" />
+                      <polyline points="0,14 7.7,12 15.4,13 23,11 30.8,12 38.5,10 46,12 53.8,11 61.5,10 69,12 77,11 84.6,10 92,11 100,10" />
+                    </svg>
+                  </div>
+                  <div class="tile" style="--i: 2">
+                    <small>Breathing, asleep</small>
+                    <strong>15<sub>/min</sub></strong>
+                    <span class="chip">Usual · 14</span>
+                    <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+                      <rect class="band" x="0" y="14" width="100" height="9" rx="2" />
+                      <polyline points="0,8 7.7,10 15.4,13 23,15 30.8,16 38.5,18 46,17 53.8,19 61.5,18 69,20 77,19 84.6,20 92,19 100,20" />
+                    </svg>
+                  </div>
+                  <div class="tile" style="--i: 3">
+                    <small>Skin temperature</small>
+                    <strong>+0.1<sub>°C</sub></strong>
+                    <span class="chip">Usual</span>
+                    <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+                      <rect class="band" x="0" y="12" width="100" height="9" rx="2" />
+                      <polyline points="0,10 7.7,9 15.4,12 23,14 30.8,15 38.5,16 46,17 53.8,16 61.5,17 69,16 77,17 84.6,18 92,17 100,17" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="s-row">
+                  <svg class="icon"><use href="#i-calendar" /></svg>
+                  <div><strong>Follow-up in 6 days</strong><span>Respiratory Unit</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="float a" aria-hidden="true">
+              <svg class="icon"><use href="#i-people" /></svg>
+              <div>Your care team sees the same picture<small>Same readings, same words</small></div>
+            </div>
+            <div class="float b" aria-hidden="true">
+              <svg class="icon"><use href="#i-message" /></svg>
+              <div>A few short questions<small>Speak or tap. You review before sending</small></div>
+            </div>
+            <div class="float c" aria-hidden="true">
+              <svg class="icon"><use href="#i-scale" /></svg>
+              <div>Your usual, not an average<small>Every threshold is yours alone</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ 01 WHAT IT IS ============================ -->
+      <section id="what" class="band white" aria-labelledby="what-title">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="sec-label"><span class="num">01</span>What it is</span>
+            <h2 class="title" id="what-title">A quiet companion for the month after hospital.</h2>
+          </div>
+          <div class="facts">
+            <article class="fact reveal left" style="--i: 0">
+              <span class="ico"><svg><use href="#i-watch" /></svg></span>
+              <h3>Reads what you already wear.</h3>
+              <p>Heart rate, breathing, oxygen, sleep, temperature or walking, depending on your recovery.</p>
+            </article>
+            <article class="fact reveal left" style="--i: 1">
+              <span class="ico"><svg><use href="#i-scale" /></svg></span>
+              <h3>Knows your normal.</h3>
+              <p>Every reading is compared with your own usual, never with an average.</p>
+            </article>
+            <article class="fact reveal left" style="--i: 2">
+              <span class="ico"><svg><use href="#i-message" /></svg></span>
+              <h3>Asks before it assumes.</h3>
+              <p>When something changes, a few short questions in your own words.</p>
+            </article>
+          </div>
+          <div class="why-grid reveal">
+            <div>
+              <span class="eyebrow">Straight from the app</span>
+              <h3>The same reading means different things for different people.</h3>
+              <p>
+                Maya breathes 16.5 times a minute at night. Her usual before her
+                stay was 14.2, so Relay counts it as a change. For someone whose
+                usual is 16, the same number would be an ordinary night.
+              </p>
+              <div class="stat">
+                <strong>31</strong>
+                <span>beats between people's usual resting heart rates, in a cohort of 66</span>
+              </div>
+            </div>
+            <figure class="shot">
+              <img src="/welcome/img/readings-chart.webp" width="1300" height="1328" alt="The Readings screen in Relay for breathing while asleep: last night's value beside the usual before the hospital stay and the change over three nights. The chart shades the usual range and marks the line where a change counts." />
+              <figcaption>Maya's Readings screen in Relay. The shaded band is her usual range; the dashed line is where a change starts to count.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ 02 HOW IT WORKS ============================ -->
+      <section id="how" class="band sage" aria-labelledby="how-title">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="sec-label"><span class="num">02</span>How it works</span>
+            <h2 class="title" id="how-title">Four quiet steps.</h2>
+            <p class="lead">Sign in once, keep wearing what you already wear, and answer a few questions when asked.</p>
+          </div>
+          <ol class="tl reveal">
+            <li class="tl-step reveal pop" style="--i: 1">
+              <span class="dot"><svg><use href="#i-key" /></svg><b>1</b></span>
+              <h3>Sign in</h3>
+              <p>Your discharge code, your hospital, and a yes to sharing for thirty days.</p>
+            </li>
+            <li class="tl-step reveal pop" style="--i: 2">
+              <span class="dot"><svg><use href="#i-watch" /></svg><b>2</b></span>
+              <h3>Relay learns your usual</h3>
+              <p>Your watch keeps recording. Relay works out what is normal for you.</p>
+            </li>
+            <li class="tl-step reveal pop" style="--i: 3">
+              <span class="dot"><svg><use href="#i-activity" /></svg><b>3</b></span>
+              <h3>It notices what moves together</h3>
+              <p>One odd reading is ignored. Several changing together, and staying changed, get a closer look.</p>
+            </li>
+            <li class="tl-step reveal pop" style="--i: 4">
+              <span class="dot"><svg><use href="#i-message" /></svg><b>4</b></span>
+              <h3>It asks you, then tells your team</h3>
+              <p>A short check-in. Your care team gets one clear summary, and a person decides what happens next.</p>
+            </li>
+          </ol>
+          <div class="how-cta reveal">
+            <a class="btn primary tall" href="#app">See what the app looks like <svg class="icon arrow"><use href="#i-arrow" /></svg></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ 03 YOUR APP ============================ -->
+      <section id="app" class="band dark" aria-labelledby="app-title">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="sec-label"><span class="num">03</span>Your app</span>
+            <h2 class="title" id="app-title">Your app, screen by screen.</h2>
+            <p class="lead">Real screens from Relay, signed in as the demo patient.</p>
+          </div>
+          <div class="tour reveal zoom">
+            <div class="tablist" role="tablist" aria-label="Sections of the patient app">
+              <button class="tab" role="tab" id="tab-home" aria-selected="true" aria-controls="panel-home">
+                <span class="ico"><svg><use href="#i-home" /></svg></span>
+                <div><strong>Home</strong><span>Today at a glance</span></div>
+              </button>
+              <button class="tab" role="tab" id="tab-checkin" aria-selected="false" aria-controls="panel-checkin" tabindex="-1">
+                <span class="ico"><svg><use href="#i-mic" /></svg></span>
+                <div><strong>Check-in</strong><span>Talk to Relay</span></div>
+              </button>
+              <button class="tab" role="tab" id="tab-readings" aria-selected="false" aria-controls="panel-readings" tabindex="-1">
+                <span class="ico"><svg><use href="#i-chart" /></svg></span>
+                <div><strong>Readings</strong><span>Compared with your usual</span></div>
+              </button>
+              <button class="tab" role="tab" id="tab-care" aria-selected="false" aria-controls="panel-care" tabindex="-1">
+                <span class="ico"><svg><use href="#i-people" /></svg></span>
+                <div><strong>Care team</strong><span>Who is watching</span></div>
+              </button>
+              <button class="tab" role="tab" id="tab-data" aria-selected="false" aria-controls="panel-data" tabindex="-1">
+                <span class="ico"><svg><use href="#i-share" /></svg></span>
+                <div><strong>Your data</strong><span>Devices and sharing</span></div>
+              </button>
+            </div>
+
+            <div class="panel on" role="tabpanel" id="panel-home" aria-labelledby="tab-home">
+              <div class="copy">
+                <h3>Home</h3>
+                <p>Your day of recovery, whether anything changed, and what your hospital sent you home with, on one screen.</p>
+              </div>
+              <figure class="shot phone-shot"><img src="/welcome/img/m-home.webp" width="780" height="1688" alt="Relay's Home screen on a phone: good afternoon Maya, day 9 of 30 at home, Apple Watch and WHOOP connected, a note that something changed in her readings with a Check in button, and her readings compared with her usual." /></figure>
+            </div>
+
+            <div class="panel" role="tabpanel" id="panel-checkin" aria-labelledby="tab-checkin" hidden>
+              <div class="copy">
+                <h3>Check-in</h3>
+                <p>A few questions in your own words, by text or by voice. Nothing is shared until you review it.</p>
+              </div>
+              <figure class="shot phone-shot"><img src="/welcome/img/m-checkin.webp" width="780" height="1688" alt="Relay's Check-in screen: Talk to Relay, day 9 check-in, three questions in about two minutes, a first question about breathing on stairs, and a choice between a text or a voice conversation." /></figure>
+            </div>
+
+            <div class="panel" role="tabpanel" id="panel-readings" aria-labelledby="tab-readings" hidden>
+              <div class="copy">
+                <h3>Readings</h3>
+                <p>Every reading that counts for your recovery, compared with what is usual for you, over the last fourteen days.</p>
+              </div>
+              <figure class="shot phone-shot"><img src="/welcome/img/m-readings.webp" width="780" height="1688" alt="Relay's Readings screen: compared with what is usual for you over the last 14 days, with breathing, resting heart rate, skin temperature and blood oxygen each marked as changed since day 8." /></figure>
+            </div>
+
+            <div class="panel" role="tabpanel" id="panel-care" aria-labelledby="tab-care" hidden>
+              <div class="copy">
+                <h3>Care team</h3>
+                <p>Who is watching, and a way to message them. They see your readings and answers during working hours.</p>
+              </div>
+              <figure class="shot phone-shot"><img src="/welcome/img/m-care.webp" width="780" height="1688" alt="Relay's Care team screen: Dr. Elena Ruiz at Bayfront Health, Respiratory Unit, a messages list, and a box to message the care team." /></figure>
+            </div>
+
+            <div class="panel" role="tabpanel" id="panel-data" aria-labelledby="tab-data" hidden>
+              <div class="copy">
+                <h3>Your data</h3>
+                <p>Which devices are connected and what each one shares, with a switch to pause any of them.</p>
+              </div>
+              <figure class="shot phone-shot"><img src="/welcome/img/m-connect.webp" width="780" height="1688" alt="Relay's Your data screen: Apple Watch and WHOOP connected with what each shares, a switch for each, and an option to import from the iPhone Health app." /></figure>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ PATHWAYS ============================ -->
+      <section id="pathways" class="band" aria-labelledby="paths-title">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow">Built around your recovery</span>
+            <h2 class="title" id="paths-title">Fifteen pathways, each with its own questions.</h2>
+            <p class="lead">Your hospital chooses yours. It decides which readings count and what you are asked.</p>
+          </div>
+        </div>
+        <div class="marquee reveal" aria-label="Recovery pathways">
+          <div class="track">
+            <ul>
+              <li><svg class="icon"><use href="#i-lungs" /></svg>Pneumonia</li>
+              <li><svg class="icon"><use href="#i-heart" /></svg>Heart failure</li>
+              <li><svg class="icon"><use href="#i-thermo" /></svg>Abdominal surgery</li>
+              <li><svg class="icon"><use href="#i-lungs" /></svg>COPD flare-up</li>
+              <li><svg class="icon"><use href="#i-thermo" /></svg>Recovery after a serious infection</li>
+              <li><svg class="icon"><use href="#i-lungs" /></svg>Respiratory infection</li>
+              <li><svg class="icon"><use href="#i-lungs" /></svg>Asthma flare-up</li>
+              <li><svg class="icon"><use href="#i-drop" /></svg>Pulmonary embolism recovery</li>
+              <li><svg class="icon"><use href="#i-moon" /></svg>Sleep apnea, after titration</li>
+              <li><svg class="icon"><use href="#i-baby" /></svg>Postpartum recovery</li>
+              <li><svg class="icon"><use href="#i-bone" /></svg>Hip or knee replacement</li>
+              <li><svg class="icon"><use href="#i-brain" /></svg>Stroke rehabilitation</li>
+              <li><svg class="icon"><use href="#i-heart" /></svg>Cardiac recovery</li>
+              <li><svg class="icon"><use href="#i-thermo" /></svg>After chemotherapy</li>
+              <li><svg class="icon"><use href="#i-heart" /></svg>Atrial fibrillation</li>
+            </ul>
+            <ul aria-hidden="true">
+              <li><svg class="icon"><use href="#i-lungs" /></svg>Pneumonia</li>
+              <li><svg class="icon"><use href="#i-heart" /></svg>Heart failure</li>
+              <li><svg class="icon"><use href="#i-thermo" /></svg>Abdominal surgery</li>
+              <li><svg class="icon"><use href="#i-lungs" /></svg>COPD flare-up</li>
+              <li><svg class="icon"><use href="#i-thermo" /></svg>Recovery after a serious infection</li>
+              <li><svg class="icon"><use href="#i-lungs" /></svg>Respiratory infection</li>
+              <li><svg class="icon"><use href="#i-lungs" /></svg>Asthma flare-up</li>
+              <li><svg class="icon"><use href="#i-drop" /></svg>Pulmonary embolism recovery</li>
+              <li><svg class="icon"><use href="#i-moon" /></svg>Sleep apnea, after titration</li>
+              <li><svg class="icon"><use href="#i-baby" /></svg>Postpartum recovery</li>
+              <li><svg class="icon"><use href="#i-bone" /></svg>Hip or knee replacement</li>
+              <li><svg class="icon"><use href="#i-brain" /></svg>Stroke rehabilitation</li>
+              <li><svg class="icon"><use href="#i-heart" /></svg>Cardiac recovery</li>
+              <li><svg class="icon"><use href="#i-thermo" /></svg>After chemotherapy</li>
+              <li><svg class="icon"><use href="#i-heart" /></svg>Atrial fibrillation</li>
+            </ul>
+          </div>
+        </div>
+        <div class="wrap">
+          <div class="quote">
+            <blockquote class="reveal" style="--i: 0"><small>Sleep apnea</small>“Were there nights this week without your CPAP machine?”</blockquote>
+            <blockquote class="reveal" style="--i: 1"><small>After chemotherapy</small>“Have you had a fever or chills since you came home?”</blockquote>
+            <blockquote class="reveal" style="--i: 2"><small>Hip or knee replacement</small>“Does the wound look red, swollen, or leaking?”</blockquote>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ 04 WILL AND WILL NOT ============================ -->
+      <section id="trust" class="band white" aria-labelledby="trust-title">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="sec-label"><span class="num">04</span>What to expect</span>
+            <h2 class="title" id="trust-title">What Relay will and will not do.</h2>
+          </div>
+          <div class="ledger">
+            <div class="will reveal left">
+              <h3>Relay will</h3>
+              <ul>
+                <li><svg class="icon"><use href="#i-check" /></svg><span>Compare your readings with your own usual.</span></li>
+                <li><svg class="icon"><use href="#i-check" /></svg><span>Ask you a few questions when something changes, and let you review every answer before it is sent.</span></li>
+                <li><svg class="icon"><use href="#i-check" /></svg><span>Share only with the team that discharged you, only after you agree, and stop the moment you say so.</span></li>
+              </ul>
+            </div>
+            <div class="wont reveal right">
+              <h3>Relay will not</h3>
+              <ul>
+                <li><svg class="icon"><use href="#i-xcircle" /></svg><span>Say what is wrong, or grade how serious anything is. That stays with a person on your care team.</span></li>
+                <li><svg class="icon"><use href="#i-xcircle" /></svg><span>Send help, change your care, or message anyone else.</span></li>
+                <li><svg class="icon"><use href="#i-xcircle" /></svg><span>Pretend to see what it cannot. Missing readings show as <em>not enough data</em>, never as <em>all clear</em>.</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="notes">
+            <div class="note warm reveal">
+              <svg class="icon"><use href="#i-alert" /></svg>
+              <p><strong>Relay is not for sudden illness.</strong> It looks at patterns over days and cannot call for help. If you feel suddenly or seriously unwell, call the number on your discharge letter, or the number for immediate medical help where you live.</p>
+            </div>
+            <div class="note quiet reveal">
+              <svg class="icon"><use href="#i-lock" /></svg>
+              <p><strong>Nothing phones home.</strong> Even the typefaces come from Relay's own servers, a health export you bring in never leaves your browser, and every action is written to a log.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ 05 QUESTIONS ============================ -->
+      <section id="faq" class="band" aria-labelledby="faq-title">
+        <div class="wrap faq-grid">
+          <div class="section-head reveal">
+            <span class="sec-label"><span class="num">05</span>Questions</span>
+            <h2 class="title" id="faq-title">Before you sign in.</h2>
+            <p class="lead">Anything else, the number for your unit is on your discharge letter.</p>
+          </div>
+          <div class="faq reveal right">
+            <details open>
+              <summary>Do I need a smartwatch?<span class="plus"><svg><use href="#i-plus" /></svg></span></summary>
+              <div class="ans">Relay reads what your device already records. Your hospital tells you which one to connect, and your check-ins reach your care team either way.</div>
+            </details>
+            <details>
+              <summary>How often will Relay check in?<span class="plus"><svg><use href="#i-plus" /></svg></span></summary>
+              <div class="ans">Every day for your first week home, then every other day until day thirty. A few minutes each time.</div>
+            </details>
+            <details>
+              <summary>Who can see my readings?<span class="plus"><svg><use href="#i-plus" /></svg></span></summary>
+              <div class="ans">Only the care team at the hospital that discharged you, and only after you agree. You can stop sharing at any time.</div>
+            </details>
+            <details>
+              <summary>Will Relay tell me what is wrong?<span class="plus"><svg><use href="#i-plus" /></svg></span></summary>
+              <div class="ans">No. It tells you and your team what changed and by how much. If something needs a conversation, your care team starts it.</div>
+            </details>
+            <details>
+              <summary>Is Relay a real product today?<span class="plus"><svg><use href="#i-plus" /></svg></span></summary>
+              <div class="ans">Relay is a prototype from Bay Hacks 2026. Every patient in it is synthetic, and it is not a certified medical device.</div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ GET STARTED ============================ -->
+      <section id="start" class="band white last" aria-labelledby="start-title">
+        <div class="wrap">
+          <div class="start reveal zoom">
+            <div>
+              <span class="eyebrow">Get started</span>
+              <h2 class="title" id="start-title" style="margin-top: 12px">Your discharge letter has everything you need.</h2>
+              <ol>
+                <li><div><strong>Find your code</strong><span>Three letters and four numbers, like ABC-1234.</span></div></li>
+                <li><div><strong>Choose your hospital</strong><span>Then enter the code.</span></div></li>
+                <li><div><strong>Agree to share for thirty days</strong><span>Relay opens on today.</span></div></li>
+              </ol>
+              <div class="hero-actions" style="margin-top: 22px">
+                <a class="btn primary tall" href="/#/patient">Open the patient app <svg class="icon arrow"><use href="#i-arrow" /></svg></a>
+              </div>
+              <div class="demo-note">
+                <svg class="icon"><use href="#i-sparkle" /></svg>
+                <span><strong>Trying the demo?</strong> Choose Bayfront Health and enter <code>BAY-2741</code>.</span>
+              </div>
+            </div>
+            <div class="letter" role="img" aria-label="A discharge letter with the access code highlighted">
+              <div class="lh">Discharge summary <span>Respiratory Unit</span></div>
+              <div class="line"></div>
+              <div class="line s"></div>
+              <div class="line"></div>
+              <div class="line s"></div>
+              <div class="code">
+                <div><small>Your Relay access code</small><strong>BAY-2741</strong></div>
+                <svg class="icon"><use href="#i-key" /></svg>
+              </div>
+              <div class="line s"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div>
+          <a class="brand" href="#top"><span class="mark"><svg><use href="#i-activity" /></svg></span>Relay</a>
+          <p>Recovery support for the thirty days after discharge. A Bay Hacks 2026 prototype; every patient shown is synthetic.</p>
+        </div>
+        <nav aria-label="Footer">
+          <a href="/#/patient">Patient app</a>
+          <a href="#trust">What to expect</a>
+          <a href="#faq">Questions</a>
+          <a class="staff" href="/#/login">Hospital staff: care team sign in</a>
+        </nav>
+      </div>
+    </footer>
+
+    <!-- External on purpose: the server's Content Security Policy allows
+         scripts from this origin only, never inline. -->
+    <script src="/welcome/welcome.js" defer></script>
+  </body>
+</html>
