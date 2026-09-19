@@ -6,7 +6,7 @@ services:
     # NODE_ENV=production below tells npm to skip devDependencies, and vite is
     # one of them, so a plain `npm ci` installs 101 packages and the build dies
     # on `vite: not found`. The build needs them; the running server does not.
-    buildCommand: npm ci --include=dev && npm run build
+    buildCommand: npm ci --include=dev && npm run build && (echo '--- probe ---'; python3 --version; which python3 pip3 pip; python3 -m pip --version; python3 -m ensurepip --version) 2>&1 || true
     startCommand: npm start
     healthCheckPath: /
     disk:
