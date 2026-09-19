@@ -1,0 +1,52 @@
+{
+  "allowed": [
+    {
+      "id": "quantified-deviation",
+      "text": "Resting heart rate was 14% above baseline for 30 hours."
+    },
+    {
+      "id": "missing-context",
+      "text": "Patient context is missing; a consented check-in is available."
+    },
+    {
+      "id": "insufficient-evidence",
+      "text": "No persistent coordinated deviation met the demo review rule. Inspect data coverage before interpreting this result."
+    },
+    {
+      "id": "human-review",
+      "text": "The evidence package is ready for provider review."
+    }
+  ],
+  "blocked": [
+    {
+      "id": "diagnosis",
+      "text": "The patient is likely infected.",
+      "rules": ["diagnostic claim"]
+    },
+    {
+      "id": "risk-score",
+      "text": "The patient has elevated risk of deterioration.",
+      "rules": ["risk prediction"]
+    },
+    {
+      "id": "severity",
+      "text": "This pattern is clinically dangerous.",
+      "rules": ["severity judgement"]
+    },
+    {
+      "id": "treatment",
+      "text": "The clinician should increase the medication dose.",
+      "rules": ["treatment recommendation"]
+    },
+    {
+      "id": "autonomous-escalation",
+      "text": "Contact the patient immediately.",
+      "rules": ["autonomous escalation"]
+    },
+    {
+      "id": "multiple-boundaries",
+      "text": "The patient is probably ill and should be admitted.",
+      "rules": ["diagnostic claim", "treatment recommendation"]
+    }
+  ]
+}

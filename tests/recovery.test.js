@@ -46,6 +46,12 @@ test("statuses are derived from readings and check-ins, not stored", async () =>
       mei: "monitoring",
       rosa: "context",
       amara: "monitoring",
+      // Stroke rehabilitation and cardiac recovery: enabled once the gait
+      // signals existed, so the same moved/quiet pair covers them too.
+      nathan: "context",
+      dorothy: "monitoring",
+      felix: "context",
+      ruth: "monitoring",
       // Hip/knee replacement and post-chemotherapy, one moved and one quiet each.
       elena: "context",
       raymond: "monitoring",

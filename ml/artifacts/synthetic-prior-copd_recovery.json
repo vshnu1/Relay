@@ -1,0 +1,33 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "program": "copd_recovery",
+  "training_data": "synthetic",
+  "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+  "n_patients": 40,
+  "core_metrics": [
+    "spo2",
+    "respiratory",
+    "rhr",
+    "sleep"
+  ],
+  "patients_train_val_test": [
+    24,
+    8,
+    8
+  ],
+  "rows_train_val_test": [
+    1879,
+    632,
+    617
+  ],
+  "feature_dim_in": 10,
+  "feature_dim_model": 16,
+  "threshold_raw": 0.0434,
+  "score_scale_raw": 0.0563,
+  "val_exceed_rate": 0.03,
+  "test_exceed_rate": 0.052,
+  "quantile": 0.95,
+  "n_estimators": 200,
+  "seed": 0,
+  "train_seconds": 0.64
+}

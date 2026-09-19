@@ -98,14 +98,23 @@ CADENCE = {
     "walking_asymmetry": (1, 0.95, 0.2),
     "double_support": (1, 0.97, 0.05),
     "walking_steadiness": (1 / 7, 1.0, 0.04),
+    # Hand-recorded once a day, and not every day: a patient who is asked to
+    # weigh themselves each morning misses some mornings.
+    "temperature": (1, 0.8, 0.004),
+    "weight": (1, 0.75, 0.003),
 }
 SOURCE_OF = {
     "rhr": "wearable", "hrv": "wearable", "respiratory": "wearable", "spo2": "wearable", "sleep": "wearable", "heart_rate": "wearable",
     "steps": "phone", "walking_speed": "phone", "step_length": "phone", "walking_asymmetry": "phone", "double_support": "phone",
     "walking_steadiness": "phone",
+    "temperature": "manual", "weight": "manual",
 }
 POSTOP_LEVELS = {"rhr": 66, "hrv": 42, "respiratory": 15, "spo2": 97.5, "sleep": 7.2, "steps": 900, "heart_rate": 74}
 GAIT_LEVELS = {"walking_speed": 1.05, "step_length": 62, "walking_asymmetry": 4.0, "double_support": 30, "walking_steadiness": 72, "steps": 1200}
+# Programs whose core includes a hand-recorded signal. A watch cannot take a
+# temperature or a weight, but the patient records them, and five programs
+# count them, so a prior for those programs has to be trained with them.
+CLINICAL_LEVELS = {**POSTOP_LEVELS, "temperature": 36.8, "weight": 78.0}
 
 SCENARIO_PROGRAM = {
     "ambiguous": "post_abdominal_surgery",

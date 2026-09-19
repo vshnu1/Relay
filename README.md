@@ -112,8 +112,18 @@ Every claim in the pitch has a test or a measurement behind it.
 | The rules and views | `npm test` — JS unit suite, plus `node tests/api.integration.js` against a live server |
 | The Python model | `PYTHONPATH=ml pytest ml/tests` — 53 tests across contracts, features, scoring, scenarios |
 | The clinical boundary | `analysis/language_guard.py` and its Node port `server/languageGuard.js`, checked for pattern-for-pattern parity; every model sentence passes it before leaving the server |
-| The false-alarm rate | measured on 71 real LifeSnaps subjects, 4,453 subject-days: 3.35% at the shipped threshold (`fixtures/calibration.json`) |
+| The false-alarm rate | 3.35% of subject-days at the shipped 1.75 sd, over the 66 of 71 LifeSnaps subjects with usable baselines (4,420 of 4,453 subject-days). Reproduce with `python3 analysis/calibrate.py fixtures/lifesnaps_daily.csv --sweep`; the grid is `fixtures/calibration.json` |
 | The model against the rule | 5.77% of judged subjects on the same cohort (`fixtures/ml_calibration.json`); the two use different denominators and are never compared as if they were one |
+| The model's cold start | every one of the 14 programs has a synthetic-only prior in `ml/artifacts`, trained by `ml/vesper_ml/train.py` on populations drawn from that program's own core metrics, so a patient with days of history is scored rather than refused |
 | Real data | 99 days of one team member's wearable physiology, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`) |
 
 Thresholds are demo settings and are labelled so in the interface. None of this is clinical validation, and the documents say that where it matters.
+
+One limit is worth stating plainly, because it is the first thing a clinician
+asks. Every number above measures how often the system speaks when it should
+stay quiet. None of them measures how often it stays quiet when it should
+speak. Nobody in the reference cohort deteriorated after a discharge, so there
+is no positive class to measure against, and sensitivity is therefore unknown
+rather than good or bad. Establishing it needs a monitored post-discharge
+cohort with recorded outcomes, which is the next piece of work, not a setting
+we can tune.

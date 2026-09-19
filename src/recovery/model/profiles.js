@@ -505,6 +505,20 @@ export const QUESTION_SIGNAL_MAP = {
     medicine: [],
     activity: ["steps", "walkingSpeed"],
   },
+  strokeRehabilitation: {
+    falls: ["doubleSupport", "asymmetry", "steadiness"],
+    dizziness: ["walkingSpeed", "steadiness"],
+    fatigue: ["steps", "walkingSpeed"],
+    medicine: [],
+    activity: ["steps", "walkingSpeed"],
+  },
+  cardiacRecovery: {
+    chest: ["restingHr", "avgHr"],
+    breathing: ["breathing", "restingHr"],
+    dizziness: ["restingHr", "hrv"],
+    fatigue: ["sleep", "hrv", "steps"],
+    medicine: [],
+  },
   postChemotherapy: {
     fever: ["temperature", "restingHr"],
     mouthSores: ["temperature"],
@@ -750,6 +764,46 @@ export const PROFILES = {
     recorded: ["asymmetry", "steadiness", "restingHr", "sleep", "pain"],
     questions: ["pain", "swelling", "falls", "wound", "medicine", "activity"],
   },
+  strokeRehabilitation: {
+    name: "Stroke rehabilitation",
+    after: "a stroke",
+    ml: "stroke_rehabilitation",
+    adherence: "antiplatelet_adherence",
+    minMoved: 2,
+    // Functional recovery only. These signals describe how walking is going;
+    // none of them detects or rules out a new stroke, and the model card and
+    // the Python program both say so where a clinician will read it.
+    counted: [
+      counted("walkingSpeed"),
+      counted("stepLength"),
+      counted("asymmetry"),
+      counted("doubleSupport"),
+      counted("steps"),
+    ],
+    recorded: ["steadiness", "restingHr", "sleep"],
+    questions: ["falls", "dizziness", "fatigue", "medicine", "activity"],
+    caution:
+      "Tracks how walking is recovering. It does not detect or rule out a new stroke; new symptoms follow the discharge letter's instructions.",
+  },
+  cardiacRecovery: {
+    name: "Cardiac recovery",
+    // Short enough to read inside "counted for ..." and "recovering after ...";
+    // the caution below carries the exact list of what that covers.
+    after: "a cardiac event",
+    ml: "cardiac_recovery",
+    adherence: "medication_adherence",
+    minMoved: 2,
+    counted: [
+      counted("restingHr"),
+      counted("hrv"),
+      counted("sleep"),
+      counted("steps"),
+    ],
+    recorded: ["avgHr", "breathing", "weight"],
+    questions: ["chest", "breathing", "dizziness", "fatigue", "medicine"],
+    caution:
+      "Follows recovery after a heart attack, a stent, or bypass surgery. Chest symptoms follow the discharge letter's instructions, not this page.",
+  },
   postChemotherapy: {
     name: "After chemotherapy",
     after: "a course of chemotherapy",
@@ -784,41 +838,12 @@ export const PROFILES = {
   },
 };
 
-// Model program ideas that are not enabled in the simulated patient feed yet.
-// Keeping them separate from PROFILES prevents these cards from implying that
-// the current frontend is scoring their metrics or that the programs are validated.
-export const PROGRAM_PREVIEWS = [
-  {
-    id: "strokeRehabilitation",
-    name: "Stroke rehabilitation",
-    status: "Limited synthetic example",
-    summary:
-      "Tracks functional recovery trends after discharge. It does not detect or rule out a new stroke.",
-    measures: [
-      "Walking speed and step length",
-      "Walking asymmetry and double-support time",
-      "Daily steps and walking steadiness",
-    ],
-    context: ["Falls", "Dizziness", "Therapy adherence"],
-    coverage:
-      "A synthetic gait-decline scenario is available. The reference wearable cohort has no gait metrics, so this profile has not been validated on that cohort.",
-  },
-  {
-    id: "cardiacRecovery",
-    name: "Cardiac recovery",
-    status: "Program draft",
-    summary:
-      "A planned follow-up profile for recovery after a heart attack, stent procedure, or bypass surgery.",
-    measures: [
-      "Resting and daily heart rate",
-      "Heart rate variability and sleep",
-      "Steps, with blood pressure and weight when connected",
-    ],
-    context: ["Chest symptoms", "Dizziness", "Breathlessness"],
-    coverage:
-      "The model program is defined, but this prototype has no dedicated patient scenario or connected blood-pressure and weight feed.",
-  },
-];
+// Model programs defined in ml/vesper_ml but not yet enabled in the patient
+// feed. Keeping them separate from PROFILES stops a card implying the frontend
+// is scoring its metrics. Stroke rehabilitation and cardiac recovery were both
+// listed here until the gait signals landed and gave them something to run on;
+// they are real profiles now, so the list is empty rather than deleted.
+export const PROGRAM_PREVIEWS = [];
 
 export const thresholdOf = (thr, usual) =>
   thr.abs !== undefined ? thr.abs : (Math.abs(usual) * thr.pct) / 100;

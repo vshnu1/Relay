@@ -20,9 +20,12 @@ import statistics
 from collections import defaultdict
 
 from baseline import MIN_OBSERVATIONS
-from detect import SIGNALS
+from detect import SIGNALS, THRESHOLD_SD
 
-DEFAULT_SD = 1.5
+# Taken from detect.py rather than restated, so this tool always measures the
+# setting the product actually ships. They were allowed to drift apart once:
+# the rule moved to 1.75 and the measurement kept reporting 1.5.
+DEFAULT_SD = THRESHOLD_SD
 DEFAULT_MIN_SIGNALS = 2
 
 
@@ -125,7 +128,11 @@ def main():
     if args.sweep:
         print(f"\nfire rate on a non-deteriorating cohort (every trigger is a false alarm)")
         print(f"  {'sd':>5}{'signals':>9}{'subjects':>10}{'days':>8}{'fired':>8}{'rate':>8}")
-        for sd in (1.0, 1.5, 2.0, 2.5, 3.0):
+        # The grid has to contain the setting the product actually ships, or
+        # the number quoted in the README cannot be reproduced from this file.
+        # 1.7 and 1.8 bracket it: 1.8 is where the one real coordinated event
+        # in our own data stops being caught.
+        for sd in (1.0, 1.5, 1.7, DEFAULT_SD, 1.8, 2.0, 2.5, 3.0):
             for ms in (2, 3):
                 r = run(subjects, sd, ms)
                 results.append(r)

@@ -90,6 +90,7 @@ const COHORT = [
       breathing: "1123",
       walkingHr: "112",
       sleep: "11",
+      weight: "11223",
     },
     checkins: [
       {
@@ -184,7 +185,12 @@ const COHORT = [
     clinician: "Dr. Marcus Bell",
     day: 27,
     stay: 7,
-    stories: { restingHr: "a00000000a", hrv: "a0000000", sleep: "a00000a" },
+    stories: {
+      restingHr: "a00000000a",
+      hrv: "a0000000",
+      sleep: "a00000a",
+      weight: "0",
+    },
     checkins: [],
   },
   {
@@ -433,6 +439,84 @@ const COHORT = [
     checkins: [],
   },
   {
+    id: "nathan",
+    name: "Nathan Boateng",
+    age: 71,
+    code: "TGH-5164",
+    profile: "strokeRehabilitation",
+    hospital: "Tampa General — Neurology",
+    clinician: "Dr. Priya Raman",
+    day: 12,
+    stay: 7,
+    // Walking slows and shortens while asymmetry and double support rise
+    // together: the gait pattern physiotherapy would want to look at. It says
+    // nothing about a new stroke, and the program note says so too.
+    stories: {
+      walkingSpeed: "000000011223",
+      stepLength: "00000001122",
+      asymmetry: "0000000112",
+      doubleSupport: "000000011223",
+      steps: "00000001122",
+      steadiness: "000000011",
+      restingHr: "0",
+    },
+    checkins: [],
+  },
+  {
+    id: "dorothy",
+    name: "Dorothy Kimani",
+    age: 66,
+    code: "TGH-8390",
+    profile: "strokeRehabilitation",
+    hospital: "Tampa General — Neurology",
+    clinician: "Dr. Priya Raman",
+    day: 19,
+    stay: 5,
+    stories: {
+      walkingSpeed: "0",
+      stepLength: "0",
+      asymmetry: "0",
+      doubleSupport: "0",
+      steps: "0",
+      steadiness: "0",
+    },
+    checkins: [],
+  },
+  {
+    id: "felix",
+    name: "Felix Moreno",
+    age: 63,
+    code: "SVH-7742",
+    profile: "cardiacRecovery",
+    hospital: "St. Vincent's — Cardiology",
+    clinician: "Dr. Hannah Weiss",
+    day: 9,
+    stay: 4,
+    // Resting heart rate up while variability, sleep and steps fall away: the
+    // shape a cardiac rehab nurse asks about after a stent.
+    stories: {
+      restingHr: "000011223",
+      hrv: "00001122",
+      sleep: "0000112",
+      steps: "000011223",
+      weight: "0",
+    },
+    checkins: [],
+  },
+  {
+    id: "ruth",
+    name: "Ruth Delacroix",
+    age: 58,
+    code: "SVH-2915",
+    profile: "cardiacRecovery",
+    hospital: "St. Vincent's — Cardiology",
+    clinician: "Dr. Hannah Weiss",
+    day: 22,
+    stay: 6,
+    stories: { restingHr: "0", hrv: "0", sleep: "0", steps: "0", weight: "0" },
+    checkins: [],
+  },
+  {
     id: "grace",
     name: "Grace Adebayo",
     age: 56,
@@ -515,10 +599,17 @@ function build(def, now, index) {
   const dischargedAt = now - (def.day * DAY + 15 * HOUR);
   const admittedAt = dischargedAt - def.stay * DAY;
   const profile = PROFILES[def.profile];
+  // A watch cannot take a weight or a temperature: those exist only because the
+  // patient wrote them down. So a manual signal is simulated for a patient the
+  // scenario says records it, and for nobody else. It is built into the history
+  // but never streamed on the tick below, because a morning weight arrives once
+  // a day, not every few seconds.
   const signals = [
     ...profile.counted.map((c) => c.signal),
     ...profile.recorded,
-  ].filter((signal) => SIGNALS[signal].device !== "manual");
+  ].filter(
+    (signal) => SIGNALS[signal].device !== "manual" || def.stories[signal],
+  );
   const readings = {};
   signals.forEach((signal, k) => {
     const [usual, sd] = TYPICAL[signal];

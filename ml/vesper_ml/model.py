@@ -174,7 +174,10 @@ def save_prior(pipe, meta, program_key, out_dir=None):
     out_dir = out_dir or ARTIFACT_DIR
     os.makedirs(out_dir, exist_ok=True)
     base = os.path.join(out_dir, f"synthetic-prior-{program_key}")
-    joblib.dump(pipe, base + ".joblib")
+    # Compressed: fourteen uncompressed forests are 32 MB of binary in a repo
+    # four people clone all day. joblib.load reads either form, so the one
+    # artifact saved before this stays readable.
+    joblib.dump(pipe, base + ".joblib", compress=3)
     with open(base + ".json", "w") as fh:
         json.dump(meta, fh, indent=2)
     return base + ".joblib", base + ".json"

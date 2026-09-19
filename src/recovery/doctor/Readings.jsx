@@ -61,6 +61,10 @@ export function SignalChart({ signal: s, homeFrom, width, compact = false }) {
   const [hover, setHover] = useState(null);
   const M = compact ? { top: 20, right: 86, bottom: 36, left: 36 } : MARGIN;
   const inner = width - M.left - M.right;
+  // A container mid-layout can report a width narrower than the axes it has to
+  // hold. Drawing then gives every rect a negative width, which the browser
+  // rejects outright, so wait for a measurement there is room to draw in.
+  if (inner < 40) return null;
   const homeDays = s.home.slice(homeFrom);
   const cols = dayColumns(inner, s.before.length, homeDays.length);
   const before = s.before.map((d, i) => ({ ...d, x: M.left + cols[i].mid }));

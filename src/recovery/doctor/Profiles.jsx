@@ -16,8 +16,8 @@ export default function Profiles() {
           <span className="rx-home-kicker">Monitoring setup</span>
           <h1>Watch profiles</h1>
           <p>
-            Choose a recovery pathway to explore its signals and check-in topics.
-            Demo settings are illustrative, not clinically validated.
+            Choose a recovery pathway to explore its signals and check-in
+            topics. Demo settings are illustrative, not clinically validated.
           </p>
         </div>
       </header>
@@ -37,25 +37,25 @@ export default function Profiles() {
                 At least {numberWord(profile.minMoved)} signals past their
                 thresholds for 24 hours over the same period.
               </p>
-            <ul>
-              {profile.counted.map((c) => (
-                <li key={c.signal}>
-                  <span className="rx-dir" aria-hidden="true">
-                    <ArrowUp
-                      size={14}
-                      strokeWidth={2.6}
-                      style={{
-                        transform: c.dir < 0 ? "rotate(180deg)" : undefined,
-                      }}
-                    />
-                  </span>
-                  <div>
-                    <strong>{SIGNALS[c.signal].name}</strong>
-                    <small>{ruleText(c, SIGNALS[c.signal].unit)}</small>
-                  </div>
-                </li>
-              ))}
-            </ul>
+              <ul>
+                {profile.counted.map((c) => (
+                  <li key={c.signal}>
+                    <span className="rx-dir" aria-hidden="true">
+                      <ArrowUp
+                        size={14}
+                        strokeWidth={2.6}
+                        style={{
+                          transform: c.dir < 0 ? "rotate(180deg)" : undefined,
+                        }}
+                      />
+                    </span>
+                    <div>
+                      <strong>{SIGNALS[c.signal].name}</strong>
+                      <small>{ruleText(c, SIGNALS[c.signal].unit)}</small>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </details>
             <dl>
               <div>
@@ -73,39 +73,51 @@ export default function Profiles() {
                 </dd>
               </div>
             </dl>
+            {profile.caution && (
+              <p className="rx-profile-caution">{profile.caution}</p>
+            )}
           </section>
         ))}
       </div>
-      <section className="rx-profile-roadmap" aria-label="Additional recovery programs">
-        <div className="rx-profile-roadmap-head">
-          <span className="rx-home-kicker">Program development</span>
-          <h2>More recovery pathways</h2>
-          <p>
-            Additional programs need connected signals and condition-specific
-            validation before they can be enabled here.
-          </p>
-        </div>
-        <div className="rx-profile-preview-grid">
-          {PROGRAM_PREVIEWS.map((program) => (
-            <article className="rx-card rx-profile-preview" key={program.id}>
-              <span className="rx-profile-preview-status">{program.status}</span>
-              <h3>{program.name}</h3>
-              <p className="rx-profile-preview-summary">{program.summary}</p>
-              <dl>
-                <div>
-                  <dt>Potential signals</dt>
-                  <dd>{list(program.measures)}</dd>
-                </div>
-                <div>
-                  <dt>Check-in context</dt>
-                  <dd>{list(program.context)}</dd>
-                </div>
-              </dl>
-              <p className="rx-profile-coverage">{program.coverage}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {/* Every program that was listed here has since been enabled, so the
+          section hides itself rather than showing an empty promise. */}
+      {PROGRAM_PREVIEWS.length > 0 && (
+        <section
+          className="rx-profile-roadmap"
+          aria-label="Additional recovery programs"
+        >
+          <div className="rx-profile-roadmap-head">
+            <span className="rx-home-kicker">Program development</span>
+            <h2>More recovery pathways</h2>
+            <p>
+              Additional programs need connected signals and condition-specific
+              validation before they can be enabled here.
+            </p>
+          </div>
+          <div className="rx-profile-preview-grid">
+            {PROGRAM_PREVIEWS.map((program) => (
+              <article className="rx-card rx-profile-preview" key={program.id}>
+                <span className="rx-profile-preview-status">
+                  {program.status}
+                </span>
+                <h3>{program.name}</h3>
+                <p className="rx-profile-preview-summary">{program.summary}</p>
+                <dl>
+                  <div>
+                    <dt>Potential signals</dt>
+                    <dd>{list(program.measures)}</dd>
+                  </div>
+                  <div>
+                    <dt>Check-in context</dt>
+                    <dd>{list(program.context)}</dd>
+                  </div>
+                </dl>
+                <p className="rx-profile-coverage">{program.coverage}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
