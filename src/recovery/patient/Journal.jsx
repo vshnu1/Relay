@@ -20,8 +20,8 @@ export default function Journal({ patient: p }) {
   const entries = [...p.journal].reverse();
   return (
     <>
-      <a className="rx-p-back" href="#/patient">
-        <ChevronLeft size={20} /> Home
+      <a className="rx-p-back" href="#/patient/readings">
+        <ChevronLeft size={18} /> Readings
       </a>
       <h1 className="rx-p-title">Record something</h1>
       <p className="rx-p-lead">

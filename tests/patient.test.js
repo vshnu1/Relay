@@ -16,8 +16,14 @@ const { createSimulatedSource } =
 const { derive } = await import("../src/recovery/model/derive.js");
 const { PROFILES, QUESTIONS, isScheduledDay, toModelContext } =
   await import("../src/recovery/model/profiles.js");
-const { checkinDue, insight, notifications, buildReport } =
-  await import("../src/recovery/model/schedule.js");
+const {
+  checkinDue,
+  checkinWhy,
+  checkinTriggerKey,
+  insight,
+  notifications,
+  buildReport,
+} = await import("../src/recovery/model/schedule.js");
 const { importHealthFile, createScanner } =
   await import("../src/recovery/model/healthImport.js");
 const { readLog, clearLog } = await import("../src/recovery/model/persist.js");
@@ -85,13 +91,51 @@ test("check-ins are daily for the first week, then every other day", () => {
   ]);
 });
 
+test("readings that stay away from usual make a check-in due off-schedule, and the opening says why", async () => {
+  const { view } = await cohort();
+  const aisha = view("aisha");
+  const quiet = {
+    ...aisha,
+    checkins: [],
+    pending: false,
+    pattern: false,
+    analysis: null,
+    dayHome: 12,
+  };
+  assert.equal(isScheduledDay(12), false);
+  assert.deepEqual(checkinDue(quiet), { due: false, reason: "not-scheduled" });
+  const drifted = { ...quiet, pattern: true, hours: 30 };
+  assert.deepEqual(checkinDue(drifted), { due: true, reason: "readings" });
+  assert.match(checkinWhy(drifted), /away from your usual|unusual pattern/);
+  const flagged = { ...quiet, analysis: { is_anomalous: true } };
+  assert.equal(checkinDue(flagged).reason, "readings");
+  const alerts = notifications(drifted).map((n) => n.id);
+  assert.ok(alerts.includes("checkin"), "the dashboard alerts the patient");
+  const routine = { ...quiet, dayHome: 3 };
+  assert.equal(checkinDue(routine).reason, "scheduled");
+  assert.match(checkinWhy(routine), /first week home we check in every day/);
+  assert.match(checkinWhy({ ...quiet, dayHome: 9 }), /every other day/);
+});
+
 test("due, insight and notifications follow the readings and the answers", async () => {
   const { store, view } = await cohort();
   const maya = view("maya");
   assert.equal(
     checkinDue(maya).reason,
+    "readings",
+    "a model finding can open a focused check-in even after the daily one",
+  );
+  const answeredForThisFinding = {
+    ...maya,
+    checkins: [
+      ...maya.checkins,
+      { answeredAt: Date.now(), triggerKey: checkinTriggerKey(maya) },
+    ],
+  };
+  assert.equal(
+    checkinDue(answeredForThisFinding).reason,
     "answered",
-    "answered today, so not due again",
+    "the same model finding does not reopen after the focused check-in",
   );
   const i = insight(maya);
   assert.equal(i.level, "send");

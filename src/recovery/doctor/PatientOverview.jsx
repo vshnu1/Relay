@@ -6,6 +6,8 @@ import ModelCard from "./ModelCard.jsx";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";
 import CareTeamPanel from "./CareTeamPanel.jsx";
+import PatientActivity from "./PatientActivity.jsx";
+import ClinicianVoiceSummary from "./ClinicianVoiceSummary.jsx";
 
 export const STATUS = {
   review: "Review recommended",
@@ -116,6 +118,8 @@ export default function PatientOverview({ id }) {
         </div>
       </div>
 
+      <ClinicianVoiceSummary patient={p} />
+
       <div className="rx-overview">
         <section className="rx-card rx-shows" aria-label="What the data shows">
           <div>
@@ -212,14 +216,13 @@ export default function PatientOverview({ id }) {
                   ))}
                 </dl>
                 {p.answered.note && (
-                  <blockquote>
-                    “{p.answered.note}”
-                  </blockquote>
+                  <blockquote>“{p.answered.note}”</blockquote>
                 )}
               </div>
             )}
           </section>
           <ModelCard patient={p} />
+          <PatientActivity patient={p} />
           <details className="rx-followup-details">
             <summary>Contact patient or record follow-up</summary>
             <CareTeamPanel patient={p} embedded />
@@ -232,7 +235,11 @@ export default function PatientOverview({ id }) {
               >
                 {p.acknowledged ? "Review acknowledged" : "Acknowledge review"}
               </button>
-              <button type="button" className="rx-btn" onClick={() => exportHandoff(p)}>
+              <button
+                type="button"
+                className="rx-btn"
+                onClick={() => exportHandoff(p)}
+              >
                 Export handoff
               </button>
               <button

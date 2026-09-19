@@ -1,0 +1,134 @@
+// The shared recovery log. Everything either view enters (a check-in, a report, a
+// journal entry, the model's result; a message, discharge notes, an appointment,
+// a check-in request) is one event. The store applies it locally at once, then
+// this module sends it to the API and polls for everyone else's, so a patient on
+// their phone and a clinician on the ward laptop see the same record within a few
+// seconds. Events carry a client id (`eid`), so a retried post is idempotent and an
+// event coming back from the server is never applied twice.
+//
+// Without a server (a static build, or the API down) the store still works from
+// this browser's own log; `status` says which. Nothing here interprets events.
+
+const POLL_MS = 3000;
+const BATCH = 50;
+
+export const newId = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
+function authHeaders() {
+  const headers = { "content-type": "application/json" };
+  try {
+    const code = sessionStorage.getItem("rx-code");
+    if (code) headers.authorization = `Bearer ${code}`;
+  } catch {
+    // no session storage
+  }
+  return headers;
+}
+
+// The signed-in patient, if any. The server filters the patient role to one
+// record, so the poll has to say whose.
+function currentScope() {
+  try {
+    return sessionStorage.getItem("rx-patient-session") || null;
+  } catch {
+    return null;
+  }
+}
+
+export function createSync({
+  fetchFn = typeof fetch === "function" ? fetch.bind(globalThis) : null,
+  intervalMs = POLL_MS,
+  scope = currentScope,
+  path = "/api/recovery/events",
+} = {}) {
+  let seq = 0;
+  let scopeSeen = undefined;
+  let queue = [];
+  let flushing = false;
+  let timer = null;
+  let onEvents = null;
+  let onStatus = null;
+  let status = "off";
+  const setStatus = (next) => {
+    if (next === status) return;
+    status = next;
+    onStatus?.(status);
+  };
+
+  async function flush() {
+    if (flushing || !queue.length || !fetchFn) return;
+    flushing = true;
+    try {
+      while (queue.length) {
+        const batch = queue.slice(0, BATCH);
+        const res = await fetchFn(path, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ events: batch }),
+        });
+        if (!res.ok) throw new Error(`push ${res.status}`);
+        queue = queue.slice(batch.length);
+        setStatus("live");
+      }
+    } catch {
+      setStatus("offline"); // kept in the queue; the next tick retries
+    } finally {
+      flushing = false;
+    }
+  }
+
+  async function poll() {
+    if (!fetchFn) return;
+    const who = scope();
+    if (who !== scopeSeen) {
+      // A different patient signed in on this browser: read their record from
+      // the start. Duplicates are filtered by eid in the store.
+      scopeSeen = who;
+      seq = 0;
+    }
+    try {
+      const url = `${path}?after=${seq}${who ? `&patientId=${encodeURIComponent(who)}` : ""}`;
+      const res = await fetchFn(url, { headers: authHeaders() });
+      if (!res.ok) throw new Error(`poll ${res.status}`);
+      const body = await res.json();
+      const events = Array.isArray(body.events) ? body.events : [];
+      if (events.length) onEvents?.(events);
+      if (typeof body.seq === "number") seq = Math.max(seq, body.seq);
+      setStatus("live");
+    } catch {
+      setStatus("offline");
+    }
+  }
+
+  async function tick() {
+    await flush();
+    await poll();
+  }
+
+  return {
+    get status() {
+      return status;
+    },
+    push(event) {
+      queue.push(event);
+      flush();
+    },
+    start(handlers) {
+      onEvents = handlers.events;
+      onStatus = handlers.status;
+      if (!fetchFn) return () => {};
+      tick();
+      timer = setInterval(tick, intervalMs);
+      return () => this.stop();
+    },
+    stop() {
+      if (timer) clearInterval(timer);
+      timer = null;
+    },
+    // Test seam: run one cycle now.
+    tick,
+  };
+}

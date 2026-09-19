@@ -17,8 +17,8 @@ export default function Watching({ patient: p }) {
   const started = Math.max(0, ...changed.map((s) => s.towardDays));
   return (
     <>
-      <a className="rx-p-back" href="#/patient">
-        <ChevronLeft size={20} /> Home
+      <a className="rx-p-back" href="#/patient/readings">
+        <ChevronLeft size={18} /> Readings
       </a>
       <span className="rx-p-eyebrow">Your recovery picture</span>
       <h1 className="rx-p-title">What your care team is watching</h1>

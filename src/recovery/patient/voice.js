@@ -7,6 +7,7 @@
 // docs/voice-agent.md forbids it and the tools give it nothing to diagnose with.
 import { QUESTIONS } from "../model/profiles.js";
 import { describeAnalysis } from "../model/mlClient.js";
+import { checkinWhy } from "../model/schedule.js";
 
 export async function voiceAvailable(fetchFn = fetch) {
   try {
@@ -31,8 +32,12 @@ function authHeaders() {
 }
 
 // What the agent may know. Plain values only, no free text from the record.
-export function recoveryStatus(p, questions) {
-  const a = p.analysis;
+export function recoveryStatus(
+  p,
+  questions,
+  { analysis = p.analysis, contextPrompt, checkinMode, focusSummary } = {},
+) {
+  const a = analysis;
   return {
     patient_first_name: p.first,
     program: p.profile.name,
@@ -77,6 +82,11 @@ export function recoveryStatus(p, questions) {
       options: QUESTIONS[id].options,
     })),
     last_answers: p.answered ? p.answered.answers : null,
+    checkin_mode: checkinMode || "routine",
+    priority_summary: focusSummary || "",
+    context_prompt:
+      contextPrompt ||
+      "Ask whether the patient has any other context to share.",
   };
 }
 
@@ -91,14 +101,34 @@ function pickOption(value, options) {
   );
 }
 
+export function openingMessage(
+  patient,
+  questions,
+  priority,
+  mode,
+  findingSummary,
+) {
+  const first = QUESTIONS[questions[0]];
+  const introduction = priority
+    ? `I noticed some readings have been different from your usual: ${findingSummary || "a few wearable readings have changed"}. I cannot tell what caused that.`
+    : mode === "insufficient"
+      ? "There are not enough recent readings to compare yet, so I will ask about how you are doing."
+      : `I am checking in about your recovery after ${patient.profile.after}.`;
+  return `Hi ${patient.first}, this is Relay. ${introduction} I have ${questions.length} brief questions, then one optional question for any other context. You can stop at any time. First: ${first.text} You can answer ${first.options.join(", ")}.`;
+}
+
 export async function startPatientVoiceSession({
   patient: p,
+  analysis,
   questions,
+  contextPrompt,
+  checkinMode,
+  priority,
+  findingSummary,
   consent,
   onStatus,
   onAgentSaid,
   onAnswers,
-  onRecommendation,
   onError,
   onDisconnect,
   fetchFn = fetch,
@@ -112,15 +142,13 @@ export async function startPatientVoiceSession({
   if (!res.ok || !body.signed_url)
     throw new Error(body.error || "Voice is not available right now.");
   const { Conversation } = await import("@elevenlabs/client");
-  const status = recoveryStatus(p, questions);
-  const moved = p.counted
-    .filter((s) => s.moved)
-    .map((s) => s.plain.toLowerCase());
-  const firstMessage = `Hi ${p.first}. This is Relay, checking in on day ${p.dayHome} of your recovery after ${p.profile.after}. ${
-    moved.length
-      ? `Your ${moved.join(", ")} ${moved.length === 1 ? "has" : "have"} moved away from your usual, so I have ${questions.length} short questions for your care team.`
-      : `Your readings look like your usual. I have ${questions.length} short questions for your care team.`
-  } Nothing I say is a diagnosis. Is it okay to start?`;
+  const status = recoveryStatus(p, questions, {
+    analysis,
+    contextPrompt,
+    checkinMode,
+    focusSummary: findingSummary,
+  });
+  const why = checkinWhy({ ...p, analysis });
   return Conversation.startSession({
     signedUrl: body.signed_url,
     connectionType: "websocket",
@@ -128,6 +156,7 @@ export async function startPatientVoiceSession({
       patient_name: p.first,
       program: p.profile.name,
       day_at_home: String(p.dayHome),
+      checkin_reason: why,
       model_state: status.model.state,
       model_summary: status.model.summary,
       readings_summary: status.readings
@@ -139,23 +168,40 @@ export async function startPatientVoiceSession({
       question_list: status.questions
         .map((q) => `${q.id}: ${q.text} [${q.options.join(" / ")}]`)
         .join(" | "),
+      checkin_mode: status.checkin_mode,
+      priority_checkin: priority ? "yes" : "no",
+      priority_summary: status.priority_summary,
+      context_prompt: status.context_prompt,
+      question_count: String(questions.length),
+      opening_message: openingMessage(
+        p,
+        questions,
+        priority,
+        checkinMode,
+        findingSummary,
+      ),
     },
-    overrides: { agent: { firstMessage } },
     onConnect: () => onStatus?.("connected"),
-    onDisconnect: () => onDisconnect?.(),
+    onDisconnect: (details) => onDisconnect?.(details),
     onStatusChange: ({ status: st }) => onStatus?.(st),
     onMessage: (m) => {
       if (m?.source === "ai" && m?.message) onAgentSaid?.(m.message);
     },
     onError: (e) => onError?.(e),
     clientTools: {
-      get_recovery_status: async () => JSON.stringify(status),
       record_checkin_response: async (params) => {
         const answers = {};
-        const raw =
+        const rawObject =
           params?.answers && typeof params.answers === "object"
             ? params.answers
-            : params || {};
+            : null;
+        // ElevenLabs client tools accept flat, fixed parameters. Map those
+        // ordered slots back to this session's dynamic question ids.
+        const raw =
+          rawObject ||
+          Object.fromEntries(
+            questions.map((id, index) => [id, params?.[`answer_${index + 1}`]]),
+          );
         for (const id of questions) {
           const picked = pickOption(raw[id], QUESTIONS[id].options);
           if (picked) answers[id] = picked;
@@ -163,28 +209,13 @@ export async function startPatientVoiceSession({
         const note =
           typeof params?.note === "string" &&
           params.note.trim().toLowerCase() !== "none"
-            ? params.note.trim()
+            ? params.note.trim().slice(0, 500)
             : null;
         onAnswers?.(answers, note);
         const missing = questions.filter((id) => !answers[id]);
         return missing.length
           ? `Recorded ${Object.keys(answers).length} answers. Still needed: ${missing.map((id) => QUESTIONS[id].text).join(" ")}`
           : "All answers recorded. Tell the patient what the app will do next and say goodbye.";
-      },
-      recommend_action: async (params) => {
-        const action = ["send_report", "message_care_team", "none"].includes(
-          params?.action,
-        )
-          ? params.action
-          : "none";
-        onRecommendation?.({
-          action,
-          reason:
-            typeof params?.reason === "string"
-              ? params.reason.slice(0, 400)
-              : "",
-        });
-        return `Recommendation noted: ${action}. The patient decides whether to send anything.`;
       },
     },
   });

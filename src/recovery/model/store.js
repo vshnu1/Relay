@@ -2,18 +2,22 @@
 // in the doctor view at once. It holds raw facts only; derive.js computes the rest.
 import { SIGNALS } from "./profiles.js";
 import { appendLog, readLog } from "./persist.js";
+import { newId } from "./sync.js";
 
 const MAX_PER_SIGNAL = 96;
 const MAX_IMPORTED = 120; // days kept per signal from a Health import
 const RECENT_MS = 12 * 3600000;
 
-export function createStore(source) {
+// `sync` is the shared log client (sync.js). Without one the store is this
+// browser only, which is how the tests and a static build run.
+export function createStore(source, { sync = null } = {}) {
   let state = {
     patients: {},
     order: [],
     now: Date.now(),
     sourceLabel: source.label,
     capabilities: source.capabilities,
+    sync: sync ? "connecting" : "off",
   };
   const listeners = new Set();
   let queued = false;
@@ -126,10 +130,54 @@ export function createStore(source) {
             to: e.to,
             subject: e.subject,
             method: e.method,
+            body: e.body || null,
+            reason: e.reason || null,
           },
         ],
       })),
-    checkin: (e) => answerCheckin(e.patientId, e.answers, e.at),
+    // The model's result travels too, so the clinician sees what the patient
+    // was shown. Only a newer result replaces an older one.
+    analysis: (e) =>
+      patch(e.patientId, (p) =>
+        p.analysis?.at && e.at && p.analysis.at > e.at
+          ? p
+          : { ...p, analysis: { ...e.analysis, at: e.at } },
+      ),
+    // Clinician-entered, replayable like everything else so the patient's app
+    // shows a requested check-in wherever it was requested from.
+    request: (e) =>
+      patch(e.patientId, (p) =>
+        p.checkins.some((c) => !c.answeredAt)
+          ? p
+          : {
+              ...p,
+              acknowledgedAt: null,
+              checkins: [
+                ...p.checkins,
+                {
+                  requestedAt: e.at ?? Date.now(),
+                  answeredAt: null,
+                  answers: {},
+                  note: null,
+                },
+              ],
+            },
+      ),
+    acknowledge: (e) =>
+      patch(e.patientId, (p) => ({ ...p, acknowledgedAt: e.at ?? Date.now() })),
+    sharing: (e) =>
+      patch(e.patientId, (p) => ({
+        ...p,
+        devices: Object.fromEntries(
+          Object.entries(p.devices).map(([k, d]) => [
+            k,
+            e.deviceId === "*" || e.deviceId === k
+              ? { ...d, sharing: e.sharing }
+              : d,
+          ]),
+        ),
+      })),
+    checkin: (e) => answerCheckin(e.patientId, e.answers, e.at, e),
     note: (e) => attachNote(e.patientId, e.note),
     read: (e) =>
       patch(e.patientId, (p) => ({
@@ -165,12 +213,26 @@ export function createStore(source) {
       })),
   };
   const replayable = apply;
+  // Every event has a client id. Replaying (from this browser's log or from
+  // the server) skips ids already applied, so the same fact lands once.
+  const seen = new Set();
+  const replay = (e) => {
+    if (e.eid) {
+      if (seen.has(e.eid)) return;
+      seen.add(e.eid);
+    }
+    const fn = replayable[e.type];
+    if (fn) fn(e);
+  };
   const logged = (type, event) => {
-    apply[type](event);
-    appendLog({ type, ...event });
+    const e = { type, eid: newId(), ...event };
+    seen.add(e.eid);
+    apply[type](e);
+    appendLog(e);
+    sync?.push(e);
   };
 
-  function answerCheckin(id, answers, at = Date.now()) {
+  function answerCheckin(id, answers, at = Date.now(), details = {}) {
     patch(id, (p) => {
       const open = p.checkins.findIndex((c) => !c.answeredAt);
       const done = {
@@ -179,6 +241,8 @@ export function createStore(source) {
         answeredAt: at,
         answers,
         note: null,
+        ...(details.triggerKey ? { triggerKey: details.triggerKey } : {}),
+        ...(details.kind ? { kind: details.kind } : {}),
       };
       return {
         ...p,
@@ -199,6 +263,8 @@ export function createStore(source) {
     }));
   }
 
+  let syncStarted = false;
+  let stopSync = () => {};
   const disconnect = source.connect({
     snapshot: (list) => {
       change((s) => ({
@@ -207,10 +273,18 @@ export function createStore(source) {
         order: list.map((p) => p.id),
         patients: Object.fromEntries(list.map((p) => [p.id, p])),
       }));
-      // Replay what the patient entered before the reload, in order, without logging again.
-      for (const e of readLog()) {
-        const fn = replayable[e.type];
-        if (fn) fn(e);
+      // Replay what this browser entered before the reload, then start the
+      // shared log: the server sends everything else, in order, and keeps
+      // sending as the other side enters more.
+      for (const e of readLog()) replay(e);
+      if (sync && !syncStarted) {
+        syncStarted = true;
+        stopSync = sync.start({
+          events: (list) => {
+            for (const e of list) replay(e);
+          },
+          status: (st) => change((s) => ({ ...s, sync: st })),
+        });
       }
     },
     readings: (batch) =>
@@ -276,15 +350,25 @@ export function createStore(source) {
       logged("connect", { patientId: id, deviceId, connected, at: Date.now() });
       send({ type: "connect", patientId: id, deviceId, connected });
     },
-    recordReport(id, { to, subject, method }) {
-      logged("report", { patientId: id, to, subject, method, at: Date.now() });
+    // The report the patient chose to send. Its text travels with it, so the
+    // care team reads it in Relay; an email draft is an extra, not the channel.
+    recordReport(id, { to, subject, method, body = null, reason = null }) {
+      logged("report", {
+        patientId: id,
+        to,
+        subject,
+        method,
+        body,
+        reason,
+        at: Date.now(),
+      });
       send({ type: "report", patientId: id, to, subject, method });
     },
     markRead(id, t) {
       logged("read", { patientId: id, t, at: Date.now() });
     },
     setAnalysis(id, analysis) {
-      patch(id, (p) => ({ ...p, analysis }));
+      logged("analysis", { patientId: id, analysis, at: Date.now() });
     },
     setDischarge(id, { notes, medications }) {
       logged("discharge", {
@@ -310,58 +394,33 @@ export function createStore(source) {
       });
       send({ type: "appointment", patientId: id, t, with: who, where });
     },
-    submitCheckin(id, answers) {
-      logged("checkin", { patientId: id, answers, at: Date.now() });
-      send({ type: "checkin", patientId: id, answers });
+    submitCheckin(id, answers, details = {}) {
+      logged("checkin", { patientId: id, answers, ...details, at: Date.now() });
+      send({ type: "checkin", patientId: id, answers, ...details });
     },
     sendNote(id, note) {
       logged("note", { patientId: id, note, at: Date.now() });
       send({ type: "note", patientId: id, note });
     },
     requestCheckin(id) {
-      patch(id, (p) =>
-        p.checkins.some((c) => !c.answeredAt)
-          ? p
-          : {
-              ...p,
-              acknowledgedAt: null,
-              checkins: [
-                ...p.checkins,
-                {
-                  requestedAt: Date.now(),
-                  answeredAt: null,
-                  answers: {},
-                  note: null,
-                },
-              ],
-            },
-      );
+      logged("request", { patientId: id, at: Date.now() });
       send({ type: "request-checkin", patientId: id });
     },
     acknowledge(id) {
-      patch(id, (p) => ({ ...p, acknowledgedAt: Date.now() }));
+      logged("acknowledge", { patientId: id, at: Date.now() });
       send({ type: "acknowledge", patientId: id });
     },
     setSharing(id, deviceId, sharing) {
-      patch(id, (p) => ({
-        ...p,
-        devices: {
-          ...p.devices,
-          [deviceId]: { ...p.devices[deviceId], sharing },
-        },
-      }));
+      logged("sharing", { patientId: id, deviceId, sharing, at: Date.now() });
       send({ type: "sharing", patientId: id, deviceId, sharing });
     },
     pauseAll(id) {
-      patch(id, (p) => ({
-        ...p,
-        devices: Object.fromEntries(
-          Object.entries(p.devices).map(([k, d]) => [
-            k,
-            { ...d, sharing: false },
-          ]),
-        ),
-      }));
+      logged("sharing", {
+        patientId: id,
+        deviceId: "*",
+        sharing: false,
+        at: Date.now(),
+      });
       send({ type: "sharing", patientId: id, deviceId: "*", sharing: false });
     },
   };
@@ -373,6 +432,9 @@ export function createStore(source) {
       return () => listeners.delete(listener);
     },
     actions,
-    destroy: disconnect,
+    destroy: () => {
+      stopSync();
+      disconnect();
+    },
   };
 }

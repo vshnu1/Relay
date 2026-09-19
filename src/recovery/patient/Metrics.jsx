@@ -163,6 +163,16 @@ export default function Metrics({ patient: p }) {
         <small className="rx-p-fine">{s.what}</small>
         {s.device === "manual" && <ManualEntry patient={p} signal={s} />}
       </section>
+      <div className="rx-p-card list">
+        <a className="rx-p-rowlink" href="#/patient/journal">
+          Record something your readings do not show
+          <ChevronRight size={16} aria-hidden="true" />
+        </a>
+        <a className="rx-p-rowlink" href="#/patient/watching">
+          What your care team watches, and how a change is judged
+          <ChevronRight size={16} aria-hidden="true" />
+        </a>
+      </div>
       <p className="rx-p-fine">
         Hover or tap a day to see its reading. A change is not a diagnosis; it
         is a reason for your care team to look.
