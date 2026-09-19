@@ -86,8 +86,15 @@ being kept. The shift is consistent per subject rather than per row because
 the detector reasons about persistence across consecutive days; independently
 jittered dates would destroy that.
 
-Set `DEID_SECRET` in the environment for any run whose output leaves a laptop.
-The default is a development placeholder and the tool warns when it is used.
+`DEID_SECRET` keys both the pseudonym and the shift, and it is not in the
+repository. That is the whole scheme: the fixtures were once generated with the
+placeholder secret that ships in `pipeline/deidentify.py`, which made both a
+one-line function of public inputs — anyone holding this repository could
+recompute the pseudonym, recover the +89-day shift and read back the real
+calendar dates. They have been regenerated under a real secret, every
+measurement and `study_day` unchanged, and `deidentify.py` now refuses to
+write with the placeholder rather than warning about it. Note the shift space
+is only 365 wide, so the secret is what does the work here, not the shift.
 
 ## Reproducing
 
@@ -135,13 +142,13 @@ healthy people. For a product whose premise is *fewer* alerts, that is the
 number a clinical judge pushes on.
 
 2.0 sd looks better still, but it deletes the only real coordinated deviation
-we have: on 2026-10-15 HRV sits at -1.98 sd and drops out, taking the day
+we have: on 2027-04-11 HRV sits at -1.98 sd and drops out, taking the day
 from two signals to one. That event is the demo, and it is also the window an
 unsupervised model ranks most anomalous — see the corroboration below.
 
 **1.75 sd is the tightest setting that halves the false-alarm rate and still
 catches it.** `analysis/detect.py` now uses it. The surfaced events drop from
-6 to 5; 2026-11-06 is the one lost.
+6 to 5; 2027-05-03 is the one lost.
 
 `MIN_SIGNALS` stays at 2. Requiring 3 scores better on false alarms and
 repeats the mistake in [INTEROP.md](INTEROP.md): only about 40 of 71 subjects
@@ -338,12 +345,12 @@ isolation_forest.py` fits an Isolation Forest on the same windows — no
 thresholds, no rules, no notion of a baseline — and asks only which rows sit
 furthest from the rest.
 
-It ranks **2026-10-15 first of 45**, score -0.675, ahead of the next window
+It ranks **2027-04-11 first of 45**, score -0.675, ahead of the next window
 at -0.597:
 
 ```
  rank         date    score   restingHR  hr_night  hrv    resp   spo2
-    1   2026-10-15   -0.675       78.00     96.96  23.68  17.14  98.04
+    1   2027-04-11   -0.675       78.00     96.96  23.68  17.14  98.04
     2   2026-11-23   -0.597       57.00    120.10  48.51  16.02  98.90
     3   2026-11-04   -0.588       62.00     64.48  47.31  16.84  97.30
 ```

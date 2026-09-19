@@ -293,7 +293,7 @@ said.
 ### Resolved: the Isolation Forest claim now has a source
 
 `analysis/isolation_forest.py` reproduces it. On the same windows, with no
-thresholds and no rules, it ranks 2026-10-15 **first of 45** at -0.675,
+thresholds and no rules, it ranks 2027-04-11 **first of 45** at -0.675,
 ahead of the next window at -0.597. Seed fixed, figures in
 [DATA.md](DATA.md) come out the same.
 

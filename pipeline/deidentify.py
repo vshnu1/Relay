@@ -59,7 +59,20 @@ def main():
     parser.add_argument("outfile")
     parser.add_argument("--subject", default="subject-001")
     parser.add_argument("--secret", default=os.environ.get("DEID_SECRET", "dev-only-not-a-real-secret"))
+    parser.add_argument("--allow-placeholder-secret", action="store_true",
+                        help="write with the placeholder anyway; for throwaway output only")
     args = parser.parse_args()
+
+    # A warning was not enough. Both the pseudonym and the shift are HMACs of
+    # this secret, so committing output made with the placeholder publishes a
+    # one-line inversion back to the real person's dates: the shift space is
+    # only 365 wide and the key was in the repo. Refuse instead of warn.
+    if args.secret.startswith("dev-only") and not args.allow_placeholder_secret:
+        raise SystemExit(
+            "refusing to write with the placeholder secret: anything produced with it "
+            "can be reversed by anyone holding this repository. Set DEID_SECRET, or "
+            "pass --allow-placeholder-secret for output you will not commit."
+        )
 
     with open(args.infile, encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
@@ -75,8 +88,6 @@ def main():
         writer.writeheader()
         writer.writerows(out)
     print(f"{args.outfile}: {len(out)} rows as patient {out[0]['patient_id']}, dates shifted")
-    if args.secret.startswith("dev-only"):
-        print("  warning: using the default dev secret. Set DEID_SECRET for anything real.")
 
 
 if __name__ == "__main__":

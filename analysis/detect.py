@@ -31,7 +31,7 @@ from language_guard import enforce
 #   2.0  sd   1.97%                   0.28
 #
 # 2.0 halves the rate again but loses the one real coordinated deviation we
-# have: on 2026-10-15 HRV sits at -1.98 sd and drops out, taking the day from
+# have: on 2027-04-11 HRV sits at -1.98 sd and drops out, taking the day from
 # two signals to one. 1.75 is the tightest setting that still catches it.
 #
 # MIN_SIGNALS stays at 2. Requiring 3 looks better on false alarms but repeats

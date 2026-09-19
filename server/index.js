@@ -1,5 +1,6 @@
 import express from "express";
 import { randomUUID, timingSafeEqual } from "node:crypto";
+import { AsyncLocalStorage } from "node:async_hooks";
 import {
   readFileSync,
   mkdirSync,
@@ -55,13 +56,21 @@ function save() {
   writeFileSync(temp, JSON.stringify(patients), { mode: 0o600 });
   renameSync(temp, stateFile);
 }
+// Who is acting, carried through the awaits in the scoring path. A module
+// variable would be overwritten by the next request while the Python model is
+// still running, and would then attribute one caller's action to another.
+const requestContext = new AsyncLocalStorage();
+
 function audit(action, patientId = null, detail = "") {
   appendFileSync(
     resolve(dataDir, "audit.jsonl"),
     JSON.stringify({
       id: randomUUID(),
       at: new Date().toISOString(),
-      actor: "demo-provider",
+      // The role that made the request, not an assumption about it. An audit
+      // line that positively asserts a provider did what a patient did is
+      // worse than one that admits it does not know.
+      actor: requestContext.getStore()?.role ?? "system",
       action,
       patientId,
       detail,
@@ -123,6 +132,15 @@ app.use("/api", (req, res, next) => {
   } else {
     req.role = "clinician"; // local demo, no codes configured
   }
+  // What a patient code may reach, listed rather than excluded. A deny-list
+  // means every clinician route added later has to remember to guard itself,
+  // and the cost of forgetting once is a patient reading the whole ward:
+  // /api/patients was guarded, but asking for /api/patients/<id> directly was
+  // not, and neither was the audit log that lists the ids.
+  if (req.role === "patient" && !PATIENT_ROUTES.has(req.path))
+    return res
+      .status(403)
+      .json({ error: "The patient view cannot reach this record." });
   if (
     req.method !== "GET" &&
     req.headers.origin &&
@@ -131,8 +149,18 @@ app.use("/api", (req, res, next) => {
     return res
       .status(403)
       .json({ error: "Cross-origin writes are not allowed." });
-  next();
+  requestContext.run({ role: req.role }, next);
 });
+// Everything the patient view calls, and nothing else. Kept beside the gate
+// that uses it so the two cannot drift apart.
+const PATIENT_ROUTES = new Set([
+  "/session",
+  "/status",
+  "/ml/score",
+  "/voice/session",
+  "/recovery/events",
+]);
+
 // Exchange an access code for a role. The client keeps the code and sends it
 // as a Bearer token; there is no session store, which is the honest limit of a
 // shared-code scheme.
@@ -502,11 +530,9 @@ app.post("/api/voice/clinician-summary", async (req, res) => {
     process.env.NODE_ENV === "production" &&
     process.env.ELEVENLABS_DEMO_SUMMARY_ENABLED !== "true"
   )
-    return res
-      .status(503)
-      .json({
-        error: "Clinician voice summaries are disabled for this deployment.",
-      });
+    return res.status(503).json({
+      error: "Clinician voice summaries are disabled for this deployment.",
+    });
   if (req.body?.demoSynthetic !== true)
     return res
       .status(403)
