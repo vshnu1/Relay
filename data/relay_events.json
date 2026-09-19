@@ -1,0 +1,2431 @@
+[
+  {
+    "metric": "sleep",
+    "value": 6.39,
+    "unit": "h",
+    "timestamp": "2026-09-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 97.73,
+    "unit": "%",
+    "timestamp": "2026-09-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.41,
+    "unit": "/min",
+    "timestamp": "2026-09-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 62.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.64,
+    "unit": "h",
+    "timestamp": "2026-09-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.53,
+    "unit": "%",
+    "timestamp": "2026-09-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 18.51,
+    "unit": "/min",
+    "timestamp": "2026-09-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 73.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.5,
+    "unit": "h",
+    "timestamp": "2026-09-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.1,
+    "unit": "%",
+    "timestamp": "2026-09-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.35,
+    "unit": "/min",
+    "timestamp": "2026-09-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.37,
+    "unit": "h",
+    "timestamp": "2026-09-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.54,
+    "unit": "%",
+    "timestamp": "2026-09-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 59.47,
+    "unit": "ms",
+    "timestamp": "2026-09-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.55,
+    "unit": "/min",
+    "timestamp": "2026-09-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 9.37,
+    "unit": "h",
+    "timestamp": "2026-09-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.73,
+    "unit": "%",
+    "timestamp": "2026-09-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 43.8,
+    "unit": "ms",
+    "timestamp": "2026-09-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.25,
+    "unit": "/min",
+    "timestamp": "2026-09-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 80.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.4,
+    "unit": "%",
+    "timestamp": "2026-09-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 45.82,
+    "unit": "ms",
+    "timestamp": "2026-09-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.39,
+    "unit": "/min",
+    "timestamp": "2026-09-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 8.04,
+    "unit": "h",
+    "timestamp": "2026-09-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.42,
+    "unit": "%",
+    "timestamp": "2026-09-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 52.53,
+    "unit": "ms",
+    "timestamp": "2026-09-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.49,
+    "unit": "/min",
+    "timestamp": "2026-09-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 60.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 8.11,
+    "unit": "h",
+    "timestamp": "2026-09-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.62,
+    "unit": "%",
+    "timestamp": "2026-09-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 72.55,
+    "unit": "ms",
+    "timestamp": "2026-09-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 18.01,
+    "unit": "/min",
+    "timestamp": "2026-09-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 55.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.09,
+    "unit": "h",
+    "timestamp": "2026-09-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.78,
+    "unit": "%",
+    "timestamp": "2026-09-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 78.69,
+    "unit": "ms",
+    "timestamp": "2026-09-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.25,
+    "unit": "/min",
+    "timestamp": "2026-09-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.46,
+    "unit": "h",
+    "timestamp": "2026-09-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.59,
+    "unit": "%",
+    "timestamp": "2026-09-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 50.93,
+    "unit": "ms",
+    "timestamp": "2026-09-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.15,
+    "unit": "/min",
+    "timestamp": "2026-09-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 53.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.29,
+    "unit": "h",
+    "timestamp": "2026-09-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.86,
+    "unit": "%",
+    "timestamp": "2026-09-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 49.15,
+    "unit": "ms",
+    "timestamp": "2026-09-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.56,
+    "unit": "/min",
+    "timestamp": "2026-09-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 59.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.31,
+    "unit": "h",
+    "timestamp": "2026-09-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.93,
+    "unit": "%",
+    "timestamp": "2026-09-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 57.69,
+    "unit": "ms",
+    "timestamp": "2026-09-24T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.96,
+    "unit": "/min",
+    "timestamp": "2026-09-24T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.84,
+    "unit": "h",
+    "timestamp": "2026-09-24T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.6,
+    "unit": "%",
+    "timestamp": "2026-09-24T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 59.44,
+    "unit": "ms",
+    "timestamp": "2026-09-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.9,
+    "unit": "/min",
+    "timestamp": "2026-09-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.29,
+    "unit": "h",
+    "timestamp": "2026-09-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.76,
+    "unit": "%",
+    "timestamp": "2026-09-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 46.89,
+    "unit": "ms",
+    "timestamp": "2026-09-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.45,
+    "unit": "/min",
+    "timestamp": "2026-09-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.21,
+    "unit": "h",
+    "timestamp": "2026-09-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.56,
+    "unit": "%",
+    "timestamp": "2026-09-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 51.82,
+    "unit": "ms",
+    "timestamp": "2026-09-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.0,
+    "unit": "/min",
+    "timestamp": "2026-09-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 61.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.66,
+    "unit": "%",
+    "timestamp": "2026-09-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.14,
+    "unit": "h",
+    "timestamp": "2026-09-28T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.33,
+    "unit": "%",
+    "timestamp": "2026-09-28T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 54.96,
+    "unit": "ms",
+    "timestamp": "2026-09-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.19,
+    "unit": "/min",
+    "timestamp": "2026-09-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 62.0,
+    "unit": "bpm",
+    "timestamp": "2026-09-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.31,
+    "unit": "h",
+    "timestamp": "2026-09-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.39,
+    "unit": "%",
+    "timestamp": "2026-09-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 53.11,
+    "unit": "ms",
+    "timestamp": "2026-09-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.9,
+    "unit": "/min",
+    "timestamp": "2026-09-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.77,
+    "unit": "h",
+    "timestamp": "2026-09-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.68,
+    "unit": "%",
+    "timestamp": "2026-09-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 78.79,
+    "unit": "ms",
+    "timestamp": "2026-10-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.15,
+    "unit": "/min",
+    "timestamp": "2026-10-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 63.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.03,
+    "unit": "%",
+    "timestamp": "2026-10-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.92,
+    "unit": "%",
+    "timestamp": "2026-10-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.0,
+    "unit": "%",
+    "timestamp": "2026-10-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 97.86,
+    "unit": "%",
+    "timestamp": "2026-10-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.17,
+    "unit": "/min",
+    "timestamp": "2026-10-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.88,
+    "unit": "h",
+    "timestamp": "2026-10-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 96.95,
+    "unit": "%",
+    "timestamp": "2026-10-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 51.33,
+    "unit": "ms",
+    "timestamp": "2026-10-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.3,
+    "unit": "/min",
+    "timestamp": "2026-10-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 62.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.55,
+    "unit": "h",
+    "timestamp": "2026-10-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.67,
+    "unit": "%",
+    "timestamp": "2026-10-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 28.43,
+    "unit": "ms",
+    "timestamp": "2026-10-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 18.05,
+    "unit": "/min",
+    "timestamp": "2026-10-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.08,
+    "unit": "h",
+    "timestamp": "2026-10-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.14,
+    "unit": "%",
+    "timestamp": "2026-10-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 52.77,
+    "unit": "ms",
+    "timestamp": "2026-10-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.0,
+    "unit": "/min",
+    "timestamp": "2026-10-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.14,
+    "unit": "h",
+    "timestamp": "2026-10-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.62,
+    "unit": "%",
+    "timestamp": "2026-10-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 52.61,
+    "unit": "ms",
+    "timestamp": "2026-10-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.04,
+    "unit": "/min",
+    "timestamp": "2026-10-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 60.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 3.1,
+    "unit": "h",
+    "timestamp": "2026-10-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.58,
+    "unit": "%",
+    "timestamp": "2026-10-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 63.29,
+    "unit": "ms",
+    "timestamp": "2026-10-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.68,
+    "unit": "/min",
+    "timestamp": "2026-10-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 63.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.52,
+    "unit": "%",
+    "timestamp": "2026-10-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.56,
+    "unit": "%",
+    "timestamp": "2026-10-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 18.2,
+    "unit": "/min",
+    "timestamp": "2026-10-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.04,
+    "unit": "h",
+    "timestamp": "2026-10-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.22,
+    "unit": "%",
+    "timestamp": "2026-10-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 51.04,
+    "unit": "ms",
+    "timestamp": "2026-10-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.89,
+    "unit": "/min",
+    "timestamp": "2026-10-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 62.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.06,
+    "unit": "h",
+    "timestamp": "2026-10-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.74,
+    "unit": "%",
+    "timestamp": "2026-10-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 38.58,
+    "unit": "ms",
+    "timestamp": "2026-10-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.35,
+    "unit": "/min",
+    "timestamp": "2026-10-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 78.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.87,
+    "unit": "h",
+    "timestamp": "2026-10-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.36,
+    "unit": "%",
+    "timestamp": "2026-10-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 64.67,
+    "unit": "ms",
+    "timestamp": "2026-10-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.89,
+    "unit": "/min",
+    "timestamp": "2026-10-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 62.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.61,
+    "unit": "%",
+    "timestamp": "2026-10-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 18.31,
+    "unit": "/min",
+    "timestamp": "2026-10-17T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.02,
+    "unit": "%",
+    "timestamp": "2026-10-17T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.94,
+    "unit": "h",
+    "timestamp": "2026-10-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.07,
+    "unit": "%",
+    "timestamp": "2026-10-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 71.92,
+    "unit": "ms",
+    "timestamp": "2026-10-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.33,
+    "unit": "/min",
+    "timestamp": "2026-10-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 3.68,
+    "unit": "h",
+    "timestamp": "2026-10-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.48,
+    "unit": "%",
+    "timestamp": "2026-10-19T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 53.91,
+    "unit": "ms",
+    "timestamp": "2026-10-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.07,
+    "unit": "/min",
+    "timestamp": "2026-10-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.26,
+    "unit": "h",
+    "timestamp": "2026-10-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.57,
+    "unit": "%",
+    "timestamp": "2026-10-20T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 59.95,
+    "unit": "ms",
+    "timestamp": "2026-10-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 15.99,
+    "unit": "/min",
+    "timestamp": "2026-10-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.09,
+    "unit": "h",
+    "timestamp": "2026-10-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.67,
+    "unit": "%",
+    "timestamp": "2026-10-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 61.61,
+    "unit": "ms",
+    "timestamp": "2026-10-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 15.9,
+    "unit": "/min",
+    "timestamp": "2026-10-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 8.66,
+    "unit": "h",
+    "timestamp": "2026-10-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.49,
+    "unit": "%",
+    "timestamp": "2026-10-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 43.98,
+    "unit": "ms",
+    "timestamp": "2026-10-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 18.03,
+    "unit": "/min",
+    "timestamp": "2026-10-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 65.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 0.2,
+    "unit": "h",
+    "timestamp": "2026-10-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.67,
+    "unit": "%",
+    "timestamp": "2026-10-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.45,
+    "unit": "%",
+    "timestamp": "2026-10-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.13,
+    "unit": "h",
+    "timestamp": "2026-10-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 95.5,
+    "unit": "%",
+    "timestamp": "2026-10-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 62.15,
+    "unit": "ms",
+    "timestamp": "2026-10-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.36,
+    "unit": "/min",
+    "timestamp": "2026-10-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.61,
+    "unit": "%",
+    "timestamp": "2026-10-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.69,
+    "unit": "%",
+    "timestamp": "2026-10-28T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.44,
+    "unit": "h",
+    "timestamp": "2026-10-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.07,
+    "unit": "%",
+    "timestamp": "2026-10-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 55.45,
+    "unit": "ms",
+    "timestamp": "2026-10-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.72,
+    "unit": "/min",
+    "timestamp": "2026-10-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.07,
+    "unit": "h",
+    "timestamp": "2026-10-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.72,
+    "unit": "%",
+    "timestamp": "2026-10-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 55.4,
+    "unit": "ms",
+    "timestamp": "2026-10-31T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.5,
+    "unit": "/min",
+    "timestamp": "2026-10-31T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-10-31T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.28,
+    "unit": "h",
+    "timestamp": "2026-10-31T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.79,
+    "unit": "%",
+    "timestamp": "2026-10-31T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 51.89,
+    "unit": "ms",
+    "timestamp": "2026-11-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 15.64,
+    "unit": "/min",
+    "timestamp": "2026-11-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 55.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.33,
+    "unit": "h",
+    "timestamp": "2026-11-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.72,
+    "unit": "%",
+    "timestamp": "2026-11-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 54.8,
+    "unit": "ms",
+    "timestamp": "2026-11-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 15.74,
+    "unit": "/min",
+    "timestamp": "2026-11-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.43,
+    "unit": "h",
+    "timestamp": "2026-11-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.5,
+    "unit": "%",
+    "timestamp": "2026-11-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 44.46,
+    "unit": "ms",
+    "timestamp": "2026-11-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.28,
+    "unit": "/min",
+    "timestamp": "2026-11-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.24,
+    "unit": "h",
+    "timestamp": "2026-11-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.72,
+    "unit": "%",
+    "timestamp": "2026-11-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 47.31,
+    "unit": "ms",
+    "timestamp": "2026-11-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.84,
+    "unit": "/min",
+    "timestamp": "2026-11-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 62.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.16,
+    "unit": "h",
+    "timestamp": "2026-11-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 97.78,
+    "unit": "%",
+    "timestamp": "2026-11-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 59.79,
+    "unit": "ms",
+    "timestamp": "2026-11-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.12,
+    "unit": "/min",
+    "timestamp": "2026-11-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.04,
+    "unit": "h",
+    "timestamp": "2026-11-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.71,
+    "unit": "%",
+    "timestamp": "2026-11-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 38.88,
+    "unit": "ms",
+    "timestamp": "2026-11-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.73,
+    "unit": "/min",
+    "timestamp": "2026-11-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 62.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.04,
+    "unit": "h",
+    "timestamp": "2026-11-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.53,
+    "unit": "%",
+    "timestamp": "2026-11-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 60.72,
+    "unit": "ms",
+    "timestamp": "2026-11-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.56,
+    "unit": "/min",
+    "timestamp": "2026-11-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 53.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.79,
+    "unit": "%",
+    "timestamp": "2026-11-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.96,
+    "unit": "h",
+    "timestamp": "2026-11-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.78,
+    "unit": "%",
+    "timestamp": "2026-11-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 62.65,
+    "unit": "ms",
+    "timestamp": "2026-11-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.69,
+    "unit": "/min",
+    "timestamp": "2026-11-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.85,
+    "unit": "%",
+    "timestamp": "2026-11-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.53,
+    "unit": "h",
+    "timestamp": "2026-11-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 97.56,
+    "unit": "%",
+    "timestamp": "2026-11-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 44.12,
+    "unit": "ms",
+    "timestamp": "2026-11-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.74,
+    "unit": "/min",
+    "timestamp": "2026-11-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 63.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.46,
+    "unit": "h",
+    "timestamp": "2026-11-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.88,
+    "unit": "%",
+    "timestamp": "2026-11-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 55.94,
+    "unit": "ms",
+    "timestamp": "2026-11-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.25,
+    "unit": "/min",
+    "timestamp": "2026-11-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.23,
+    "unit": "h",
+    "timestamp": "2026-11-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.82,
+    "unit": "%",
+    "timestamp": "2026-11-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 47.84,
+    "unit": "ms",
+    "timestamp": "2026-11-17T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.78,
+    "unit": "/min",
+    "timestamp": "2026-11-17T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-17T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.11,
+    "unit": "h",
+    "timestamp": "2026-11-17T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.86,
+    "unit": "%",
+    "timestamp": "2026-11-17T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 68.93,
+    "unit": "ms",
+    "timestamp": "2026-11-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.88,
+    "unit": "/min",
+    "timestamp": "2026-11-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.72,
+    "unit": "%",
+    "timestamp": "2026-11-18T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 65.59,
+    "unit": "ms",
+    "timestamp": "2026-11-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 8.56,
+    "unit": "h",
+    "timestamp": "2026-11-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.85,
+    "unit": "%",
+    "timestamp": "2026-11-21T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 67.0,
+    "unit": "ms",
+    "timestamp": "2026-11-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.3,
+    "unit": "/min",
+    "timestamp": "2026-11-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.16,
+    "unit": "h",
+    "timestamp": "2026-11-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.46,
+    "unit": "%",
+    "timestamp": "2026-11-22T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 51.51,
+    "unit": "ms",
+    "timestamp": "2026-11-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 15.94,
+    "unit": "/min",
+    "timestamp": "2026-11-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.78,
+    "unit": "%",
+    "timestamp": "2026-11-23T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.57,
+    "unit": "%",
+    "timestamp": "2026-11-24T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.46,
+    "unit": "/min",
+    "timestamp": "2026-11-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.98,
+    "unit": "h",
+    "timestamp": "2026-11-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.25,
+    "unit": "%",
+    "timestamp": "2026-11-25T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 61.53,
+    "unit": "ms",
+    "timestamp": "2026-11-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.23,
+    "unit": "/min",
+    "timestamp": "2026-11-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 53.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.94,
+    "unit": "h",
+    "timestamp": "2026-11-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.66,
+    "unit": "%",
+    "timestamp": "2026-11-26T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 61.84,
+    "unit": "ms",
+    "timestamp": "2026-11-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.57,
+    "unit": "/min",
+    "timestamp": "2026-11-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.49,
+    "unit": "h",
+    "timestamp": "2026-11-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.82,
+    "unit": "%",
+    "timestamp": "2026-11-27T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 61.81,
+    "unit": "ms",
+    "timestamp": "2026-11-28T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.47,
+    "unit": "/min",
+    "timestamp": "2026-11-28T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.96,
+    "unit": "h",
+    "timestamp": "2026-11-28T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.75,
+    "unit": "%",
+    "timestamp": "2026-11-28T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 56.61,
+    "unit": "ms",
+    "timestamp": "2026-11-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.64,
+    "unit": "/min",
+    "timestamp": "2026-11-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 56.0,
+    "unit": "bpm",
+    "timestamp": "2026-11-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.8,
+    "unit": "%",
+    "timestamp": "2026-11-29T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.28,
+    "unit": "h",
+    "timestamp": "2026-11-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 97.33,
+    "unit": "%",
+    "timestamp": "2026-11-30T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 50.92,
+    "unit": "ms",
+    "timestamp": "2026-12-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.8,
+    "unit": "/min",
+    "timestamp": "2026-12-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 53.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 8.57,
+    "unit": "h",
+    "timestamp": "2026-12-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.9,
+    "unit": "%",
+    "timestamp": "2026-12-01T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 49.52,
+    "unit": "ms",
+    "timestamp": "2026-12-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.25,
+    "unit": "/min",
+    "timestamp": "2026-12-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.2,
+    "unit": "h",
+    "timestamp": "2026-12-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.95,
+    "unit": "%",
+    "timestamp": "2026-12-02T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 59.42,
+    "unit": "ms",
+    "timestamp": "2026-12-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.43,
+    "unit": "/min",
+    "timestamp": "2026-12-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.5,
+    "unit": "%",
+    "timestamp": "2026-12-03T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 55.41,
+    "unit": "ms",
+    "timestamp": "2026-12-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 17.22,
+    "unit": "/min",
+    "timestamp": "2026-12-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.26,
+    "unit": "h",
+    "timestamp": "2026-12-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.64,
+    "unit": "%",
+    "timestamp": "2026-12-04T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 61.17,
+    "unit": "ms",
+    "timestamp": "2026-12-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.65,
+    "unit": "/min",
+    "timestamp": "2026-12-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.8,
+    "unit": "h",
+    "timestamp": "2026-12-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.26,
+    "unit": "%",
+    "timestamp": "2026-12-05T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 51.77,
+    "unit": "ms",
+    "timestamp": "2026-12-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.52,
+    "unit": "/min",
+    "timestamp": "2026-12-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 56.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.36,
+    "unit": "h",
+    "timestamp": "2026-12-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.8,
+    "unit": "%",
+    "timestamp": "2026-12-06T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 77.57,
+    "unit": "ms",
+    "timestamp": "2026-12-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.38,
+    "unit": "/min",
+    "timestamp": "2026-12-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.65,
+    "unit": "h",
+    "timestamp": "2026-12-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.9,
+    "unit": "%",
+    "timestamp": "2026-12-07T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 64.3,
+    "unit": "ms",
+    "timestamp": "2026-12-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.38,
+    "unit": "/min",
+    "timestamp": "2026-12-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.49,
+    "unit": "h",
+    "timestamp": "2026-12-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.78,
+    "unit": "%",
+    "timestamp": "2026-12-08T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 56.92,
+    "unit": "ms",
+    "timestamp": "2026-12-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.25,
+    "unit": "/min",
+    "timestamp": "2026-12-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 55.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 3.76,
+    "unit": "h",
+    "timestamp": "2026-12-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.34,
+    "unit": "%",
+    "timestamp": "2026-12-09T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 55.27,
+    "unit": "ms",
+    "timestamp": "2026-12-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.64,
+    "unit": "/min",
+    "timestamp": "2026-12-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 60.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 5.19,
+    "unit": "h",
+    "timestamp": "2026-12-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.63,
+    "unit": "%",
+    "timestamp": "2026-12-10T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 61.27,
+    "unit": "ms",
+    "timestamp": "2026-12-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.89,
+    "unit": "/min",
+    "timestamp": "2026-12-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 6.51,
+    "unit": "h",
+    "timestamp": "2026-12-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.82,
+    "unit": "%",
+    "timestamp": "2026-12-11T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 58.83,
+    "unit": "ms",
+    "timestamp": "2026-12-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.71,
+    "unit": "/min",
+    "timestamp": "2026-12-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 53.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.76,
+    "unit": "h",
+    "timestamp": "2026-12-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.61,
+    "unit": "%",
+    "timestamp": "2026-12-12T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 64.84,
+    "unit": "ms",
+    "timestamp": "2026-12-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.72,
+    "unit": "/min",
+    "timestamp": "2026-12-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 55.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 4.65,
+    "unit": "h",
+    "timestamp": "2026-12-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.77,
+    "unit": "%",
+    "timestamp": "2026-12-13T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 51.94,
+    "unit": "ms",
+    "timestamp": "2026-12-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.48,
+    "unit": "/min",
+    "timestamp": "2026-12-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 8.82,
+    "unit": "h",
+    "timestamp": "2026-12-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.69,
+    "unit": "%",
+    "timestamp": "2026-12-14T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 51.44,
+    "unit": "ms",
+    "timestamp": "2026-12-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.5,
+    "unit": "/min",
+    "timestamp": "2026-12-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 58.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "sleep",
+    "value": 7.16,
+    "unit": "h",
+    "timestamp": "2026-12-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.93,
+    "unit": "%",
+    "timestamp": "2026-12-15T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "hrv",
+    "value": 54.88,
+    "unit": "ms",
+    "timestamp": "2026-12-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "respiratory",
+    "value": 16.8,
+    "unit": "/min",
+    "timestamp": "2026-12-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "rhr",
+    "value": 57.0,
+    "unit": "bpm",
+    "timestamp": "2026-12-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  },
+  {
+    "metric": "spo2",
+    "value": 98.67,
+    "unit": "%",
+    "timestamp": "2026-12-16T12:00:00Z",
+    "source": "Wearable daily aggregate"
+  }
+]
