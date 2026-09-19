@@ -109,7 +109,26 @@ export function createSync({
     }
   }
 
+  // Nothing to send or collect until somebody has signed in. Without this the
+  // sign-in screen polls every three seconds and takes a 401 each time: a
+  // growing wall of red in the console before anyone has touched anything, and
+  // a request every three seconds per open tab for no result. A runtime with no
+  // sessionStorage at all (Node, the tests) is not a signed-out browser, so it
+  // carries on as before.
+  function signedOut() {
+    try {
+      if (typeof sessionStorage === "undefined") return false;
+      return !sessionStorage.getItem("rx-code");
+    } catch {
+      return false;
+    }
+  }
+
   async function tick() {
+    if (signedOut()) {
+      setStatus("off");
+      return;
+    }
     await flush();
     await poll();
   }

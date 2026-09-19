@@ -226,7 +226,7 @@ const COHORT = [
       oxygen: "0",
       sleep: "1101",
     },
-    checkins: [],
+    checkins: [{ requested: 5 }],
   },
   {
     id: "nadia",
@@ -258,7 +258,7 @@ const COHORT = [
       restingHr: "0122",
       oxygen: "0011",
     },
-    checkins: [],
+    checkins: [{ requested: 3 }],
   },
   {
     id: "ingrid",
@@ -292,7 +292,7 @@ const COHORT = [
       sleep: "0112",
       walkingHr: "0011",
     },
-    checkins: [],
+    checkins: [{ requested: 9 }],
   },
   {
     id: "beatrice",
@@ -323,7 +323,7 @@ const COHORT = [
       walkingHr: "0122",
       oxygen: "0011",
     },
-    checkins: [],
+    checkins: [{ requested: 2 }],
   },
   {
     id: "clara",
@@ -354,7 +354,7 @@ const COHORT = [
       sleep: "0011",
       restingHr: "0011",
     },
-    checkins: [],
+    checkins: [{ requested: 14 }],
   },
   {
     id: "mei",
@@ -385,7 +385,7 @@ const COHORT = [
       breathing: "0112",
       sleep: "1122",
     },
-    checkins: [],
+    checkins: [{ requested: 6 }],
   },
   {
     id: "amara",
@@ -418,7 +418,7 @@ const COHORT = [
       asymmetry: "00000011",
       restingHr: "0",
     },
-    checkins: [],
+    checkins: [{ requested: 11 }],
   },
   {
     id: "raymond",
@@ -460,7 +460,7 @@ const COHORT = [
       steadiness: "000000011",
       restingHr: "0",
     },
-    checkins: [],
+    checkins: [{ requested: 4 }],
   },
   {
     id: "dorothy",
@@ -501,7 +501,7 @@ const COHORT = [
       steps: "000011223",
       weight: "0",
     },
-    checkins: [],
+    checkins: [{ requested: 20 }],
   },
   {
     id: "ruth",
@@ -536,7 +536,7 @@ const COHORT = [
       breathing: "0000122",
       oxygen: "0",
     },
-    checkins: [],
+    checkins: [{ requested: 8 }],
   },
   {
     id: "victor",
@@ -722,7 +722,13 @@ const DISCHARGE = {
 
 function build(def, now, index) {
   const rand = seeded(index * 7919 + 17);
-  const dischargedAt = now - (def.day * DAY + 15 * HOUR);
+  // Every patient was discharged at exactly the same time of day, so every
+  // patient's change had persisted for exactly 38 hours, and the watchlist
+  // printed "for 38 hours" fourteen times in a column. Spreading the discharge
+  // hour is the whole fix: the readings still land once a day, the run lengths
+  // still come from the story, but two patients no longer agree to the hour.
+  const dischargeHour = 12 + (index % 8);
+  const dischargedAt = now - (def.day * DAY + dischargeHour * HOUR);
   const admittedAt = dischargedAt - def.stay * DAY;
   const profile = PROFILES[def.profile];
   const discharge = DISCHARGE[def.profile] || null;
