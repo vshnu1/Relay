@@ -18,6 +18,37 @@
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
 
+  // The pulse line behind the hero is placed by CSS as a share of the hero's
+  // height, which meets the main button only at some window widths. In the
+  // two-column layout, pin its flat run to the centre of that button, and keep
+  // it there when the copy reflows (a font arriving, the window changing size).
+  // offsetTop rather than a bounding box, so a transform never skews it.
+  var hero = document.querySelector(".hero");
+  var pulse = document.querySelector(".hero-bg svg");
+  var heroBtn = document.querySelector(".hero-actions .btn.primary");
+  var twoColumn = window.matchMedia("(min-width: 1041px)");
+  var FLAT_RUN = 90 / 160; // where the flat run sits in the drawing's viewBox
+  var alignPulse = function () {
+    if (!hero || !pulse || !heroBtn) return;
+    if (!twoColumn.matches) {
+      pulse.style.top = "";
+      return;
+    }
+    var y = heroBtn.offsetHeight / 2;
+    for (var el = heroBtn; el && el !== hero; el = el.offsetParent)
+      y += el.offsetTop;
+    if (!el) return;
+    var height = pulse.getBoundingClientRect().height;
+    pulse.style.top = Math.round(y - height * FLAT_RUN) + "px";
+  };
+  alignPulse();
+  window.addEventListener("load", alignPulse);
+  window.addEventListener("resize", alignPulse);
+  if ("ResizeObserver" in window)
+    new ResizeObserver(alignPulse).observe(
+      document.querySelector(".hero-copy") || hero,
+    );
+
   // Menu on narrow screens.
   var closeMenu = function () {
     top.classList.remove("open");

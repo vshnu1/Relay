@@ -419,6 +419,13 @@
         height: 160px;
         opacity: 0.35;
       }
+      /* Beside the phone, the flat run of the line passes through the main
+         button. welcome.js pins it exactly; this is where it sits without. */
+      @media (min-width: 1041px) {
+        .hero-bg svg {
+          top: calc(58% - 24px);
+        }
+      }
       .hero-bg .pulse {
         fill: none;
         stroke: var(--pine);
