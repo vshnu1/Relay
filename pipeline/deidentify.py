@@ -14,7 +14,7 @@ Interval-preserving shift matters: the deviation engine reasons about
 persistence across consecutive days, so we cannot jitter dates independently.
 
 Usage:
-    python3 pipeline/deidentify.py data/daily.csv data/daily_deid.csv [--secret KEY]
+    python3 pipeline/deidentify.py data/daily.csv fixtures/daily_deid.csv [--secret KEY]
 """
 import argparse
 import csv

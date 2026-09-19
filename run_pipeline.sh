@@ -14,14 +14,17 @@ if [[ ! -f "$XML" ]]; then
   exit 1
 fi
 
-echo "[1/4] parsing export"
+echo "[1/5] parsing export"
 python3 pipeline/parse_export.py "$XML" data/events.csv
 
-echo "[2/4] aggregating to patient-days"
+echo "[2/5] aggregating to patient-days"
 python3 pipeline/aggregate.py data/events.csv data/daily.csv
 
-echo "[3/4] de-identifying"
-python3 pipeline/deidentify.py data/daily.csv data/daily_deid.csv
+echo "[3/5] de-identifying"
+python3 pipeline/deidentify.py data/daily.csv fixtures/daily_deid.csv
 
-echo "[4/4] detecting coordinated deviations"
-python3 analysis/detect.py data/daily_deid.csv data/evidence.json
+echo "[4/5] exporting the shared-engine event contract"
+python3 pipeline/to_relay_events.py fixtures/daily_deid.csv fixtures/relay_events.json
+
+echo "[5/5] detecting coordinated deviations"
+python3 analysis/detect.py fixtures/daily_deid.csv fixtures/evidence.json

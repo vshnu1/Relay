@@ -14,7 +14,7 @@ Every emitted object carries the numbers behind it, so any statement made
 downstream can be traced back to the measurement that produced it.
 
 Usage:
-    python3 analysis/detect.py data/daily_deid.csv data/evidence.json
+    python3 analysis/detect.py fixtures/daily_deid.csv fixtures/evidence.json
 """
 import json
 import sys
@@ -160,8 +160,8 @@ def detect(rows):
 
 
 def main():
-    infile = sys.argv[1] if len(sys.argv) > 1 else "data/daily_deid.csv"
-    outfile = sys.argv[2] if len(sys.argv) > 2 else "data/evidence.json"
+    infile = sys.argv[1] if len(sys.argv) > 1 else "fixtures/daily_deid.csv"
+    outfile = sys.argv[2] if len(sys.argv) > 2 else "fixtures/evidence.json"
     rows = load(infile)
     events = detect(rows)
 

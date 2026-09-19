@@ -11,7 +11,7 @@ Anything else we measure (nocturnal heart rate, step count) has no home in the
 contract and is dropped here rather than silently renamed.
 
 Usage:
-    python3 pipeline/to_relay_events.py data/daily_deid.csv data/relay_events.json
+    python3 pipeline/to_relay_events.py fixtures/daily_deid.csv fixtures/relay_events.json
 """
 import csv
 import json
@@ -64,8 +64,8 @@ def convert(rows, hour="12:00:00"):
 
 
 def main():
-    infile = sys.argv[1] if len(sys.argv) > 1 else "data/daily_deid.csv"
-    outfile = sys.argv[2] if len(sys.argv) > 2 else "data/relay_events.json"
+    infile = sys.argv[1] if len(sys.argv) > 1 else "fixtures/daily_deid.csv"
+    outfile = sys.argv[2] if len(sys.argv) > 2 else "fixtures/relay_events.json"
     with open(infile, encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
 

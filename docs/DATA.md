@@ -46,7 +46,7 @@ lab dependency.
 
 Running `analysis/detect.py` over the de-identified aggregates surfaces 6 days
 where 2+ signals exceed 1.5 sd of the subject's own trailing baseline. Dates
-below are the shifted de-identified dates as they appear in `data/evidence.json`.
+below are the shifted de-identified dates as they appear in `fixtures/evidence.json`.
 
 **Study day 1413 — coordinated deviation, all signals present.**
 Resting HR 78 bpm against a personal baseline of 58.9 (+4.19 sd, +32.5%).
@@ -97,5 +97,5 @@ The default is a development placeholder and the tool warns when it is used.
 ```
 
 Roughly 90 seconds end to end on the 284MB export. Intermediates
-(`data/events.csv`, `data/daily.csv`) are gitignored; `data/daily_deid.csv`
-and `data/evidence.json` are the committed outputs.
+(`data/events.csv`, `data/daily.csv`) are gitignored; `fixtures/daily_deid.csv`
+and `fixtures/evidence.json` are the committed outputs.

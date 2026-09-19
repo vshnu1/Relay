@@ -1,22 +1,17 @@
-# Raw health exports contain identifiable patient data. Never commit.
-data/raw/
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+data/
+.DS_Store
+*.log
+
+__pycache__/
+*.pyc
 *.zip
 export.xml
 export_cda.xml
 apple_health_export/
-
-# Derived intermediates (regenerate with run_pipeline.sh)
-data/events.csv
-data/daily.csv
-
-# Python
-__pycache__/
-*.py[cod]
 .venv/
 venv/
-.env
-
-# OS / editor
-.DS_Store
-.idea/
-.vscode/

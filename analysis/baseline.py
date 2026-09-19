@@ -8,7 +8,7 @@ Baselines are computed on a trailing window that excludes the day under test,
 so a large deviation cannot inflate the baseline it is being measured against.
 
 Usage:
-    python3 analysis/baseline.py data/daily_deid.csv
+    python3 analysis/baseline.py fixtures/daily_deid.csv
 """
 import csv
 import statistics
@@ -68,7 +68,7 @@ def baselines(rows, signals=SIGNALS, exclude_index=None, window=None):
 
 
 def main():
-    rows = load(sys.argv[1] if len(sys.argv) > 1 else "data/daily_deid.csv")
+    rows = load(sys.argv[1] if len(sys.argv) > 1 else "fixtures/daily_deid.csv")
     print(f"{len(rows)} patient-days\n")
     print(f"{'signal':<22}{'mean':>9}{'sd':>8}{'n':>6}")
     for signal, stats in baselines(rows).items():
