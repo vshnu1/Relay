@@ -1,0 +1,168 @@
+/* Native shell styling for the Relay patient app.
+ *
+ * Injected into the page by RelayViewController (ios/App/App/AppDelegate.swift)
+ * as a WKUserScript, NOT imported by the web app. That is deliberate: the web
+ * frontend belongs to another owner, and a native-only concern (a tab bar over
+ * the home indicator, padding under the notch) should not land in recovery.css
+ * where it would also affect every desktop browser.
+ *
+ * Everything is scoped to html.relay-native, a class only this shell sets, so
+ * the same server can serve the plain web app to everyone else unchanged.
+ */
+
+html.relay-native,
+html.relay-native body {
+  background: #f5f6f3;
+  overscroll-behavior: none;
+}
+
+/* Content clears the notch. The bar itself is drawn at the bottom. */
+html.relay-native .rx {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Demo scaffolding is a judge-facing control on a laptop. On a phone the app
+ * is one patient signed in with their own discharge code, so the role switcher
+ * and patient picker would be a lie about what this app is. */
+html.relay-native .rx-demobar {
+  display: none !important;
+}
+
+/* A phone is a touch target, not a pointer. */
+html.relay-native .rx {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+html.relay-native input,
+html.relay-native textarea,
+html.relay-native select,
+html.relay-native [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+  /* iOS zooms the viewport for any field under 16px. Nothing else prevents it,
+   * and disabling pinch zoom instead would take zoom away from the people who
+   * most need it. */
+  font-size: 16px;
+}
+
+/* ---- Bottom tab bar ------------------------------------------------------
+ * The web app already collapses the sidebar into a horizontal scrolling strip
+ * under 860px. On iOS that strip reads as a web page. These rules move it to
+ * the bottom, stack icon over label, and sit it above the home indicator.
+ */
+html.relay-native .rx-pweb {
+  flex-direction: column;
+}
+html.relay-native .rx-pweb .rx-side {
+  /* Stated explicitly: the responsive layout switches this to display:grid at
+   * phone widths, which makes every flex property below inert and drops the
+   * sign-out button into a second grid row under the tabs. */
+  display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  z-index: 40;
+  width: auto;
+  height: auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow: visible;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 2px;
+  padding: 6px 6px calc(env(safe-area-inset-bottom) + 4px);
+  /* Opaque rather than a blur on purpose. backdrop-filter would make this bar
+   * a containing block for any position:fixed descendant, which is a trap for
+   * whoever styles it next: such a child silently positions against the bar
+   * instead of the screen. */
+  background: #fcfcfa;
+  border-top: 1px solid var(--line);
+  border-right: 0;
+  border-bottom: 0;
+}
+html.relay-native .rx-pweb .rx-brand,
+html.relay-native .rx-pweb .rx-side-heading {
+  display: none !important;
+}
+html.relay-native .rx-pweb .rx-navlink {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
+  padding: 5px 2px 3px;
+  border-radius: 12px;
+  transition: none;
+}
+html.relay-native .rx-pweb .rx-navlink-label {
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-align: center;
+  white-space: nowrap;
+}
+html.relay-native .rx-pweb .rx-navlink[aria-current] {
+  background: var(--sage);
+}
+html.relay-native .rx-pweb .rx-navlink[aria-current] svg {
+  stroke-width: 2.4;
+}
+/* The "check-in waiting" badge, moved off the row and onto the icon. */
+html.relay-native .rx-pweb .rx-count {
+  position: absolute;
+  top: 2px;
+  right: calc(50% - 20px);
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  font-size: 9.5px;
+  line-height: 15px;
+  text-align: center;
+  border-radius: 999px;
+}
+
+/* Nothing should end up underneath the bar. */
+html.relay-native .rx-pweb .rx-main {
+  padding-bottom: calc(66px + env(safe-area-inset-bottom));
+}
+
+/* Sign out, which the web layout hides entirely under 860px: on a phone that
+ * would leave the patient no way out of their own session. It rides at the end
+ * of the bar rather than floating over the screen, where it would sooner or
+ * later cover a reading. */
+html.relay-native .rx-pweb .rx-side-foot {
+  display: flex !important;
+  position: static;
+  flex: 0 0 auto;
+  /* The responsive layout gives this width:100% as a sidebar footer; left in
+   * place it takes the whole bar and pushes the tabs onto a second row. */
+  width: auto;
+  align-items: center;
+  margin: 0;
+  padding: 0 2px;
+  border: 0;
+}
+html.relay-native .rx-pweb .rx-side-foot button {
+  max-width: 56px;
+  padding: 6px 6px;
+  border-radius: 10px;
+  font-size: 10.5px;
+  line-height: 1.1;
+  text-align: center;
+  white-space: normal;
+  color: var(--muted);
+}
+
+/* The sign-in screen has no tab bar, so it only needs the notch cleared. */
+html.relay-native .rx-p-auth {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+}

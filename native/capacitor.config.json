@@ -3,7 +3,7 @@
   "appName": "Relay",
   "webDir": "www",
   "server": {
-    "url": "http://localhost:3001",
+    "url": "http://localhost:3001/#/patient",
     "cleartext": true,
     "errorPath": "index.html"
   },

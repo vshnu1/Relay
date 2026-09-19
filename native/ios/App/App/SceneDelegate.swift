@@ -8,7 +8,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = CAPBridgeViewController()
+        // RelayViewController, not CAPBridgeViewController: it is the same
+        // bridge with the native shell (tab bar, safe areas, patient route)
+        // injected into the page. This line, not Main.storyboard, is what
+        // decides the root view controller in Capacitor 8.
+        window?.rootViewController = RelayViewController()
         window?.makeKeyAndVisible()
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)

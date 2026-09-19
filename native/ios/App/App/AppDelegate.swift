@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 import Capacitor
 
 @UIApplicationMain
@@ -40,5 +41,60 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                           sessionRole: connectingSceneSession.role)
         config.delegateClass = SceneDelegate.self
         return config
+    }
+}
+
+
+// MARK: - Relay native shell
+
+/// The Capacitor view controller with the native-only chrome layered on top.
+///
+/// The web app is served by the Relay API server and is owned by the frontend
+/// author; nothing here edits it. Instead `www/chrome.css` and `www/chrome.js`
+/// are bundled with this app and injected as `WKUserScript`s before the page
+/// runs, which is what turns a responsive web layout into something that reads
+/// as an iPhone app: a tab bar over the home indicator, content clear of the
+/// notch, and a launch that always lands on the patient's own record.
+///
+/// Registered as the storyboard's view controller class in Base.lproj/Main.storyboard.
+class RelayViewController: CAPBridgeViewController {
+
+    /// Called after Capacitor has installed its own content controller, which is
+    /// why the scripts are added here and not in `webViewConfiguration(for:)`:
+    /// that one's controller is replaced before the web view is built.
+    override func webView(with frame: CGRect, configuration: WKWebViewConfiguration) -> WKWebView {
+        let script = shellScript()
+        NSLog("[relay-native] webView(with:configuration:) called, script=%@ chars", script.map { String($0.count) } ?? "nil")
+        if let script {
+            configuration.userContentController.addUserScript(
+                WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+            NSLog("[relay-native] user script added; total=%d", configuration.userContentController.userScripts.count)
+        }
+        return super.webView(with: frame, configuration: configuration)
+    }
+
+    /// `chrome.js` with the stylesheet bound to `RELAY_CSS_B64` in its scope.
+    ///
+    /// One script rather than two so the stylesheet cannot be added before the
+    /// script that guards on `<html>` existing. The CSS travels base64-encoded
+    /// so that braces, quotes and percent signs in it cannot terminate the
+    /// JavaScript string literal carrying it.
+    private func shellScript() -> String? {
+        guard let js = shellResource(named: "chrome", ext: "js"),
+              let css = shellResource(named: "chrome", ext: "css")
+        else { return nil }
+        return "var RELAY_CSS_B64 = '\(Data(css.utf8).base64EncodedString())';\n" + js
+    }
+
+    /// Dark glyphs: every Relay screen is on a light paper background.
+    override var preferredStatusBarStyle: UIStatusBarStyle { .darkContent }
+
+    private func shellResource(named name: String, ext: String) -> String? {
+        guard let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "public")
+        else {
+            assertionFailure("Missing native shell resource \(name).\(ext); run `npm run sync` in native/")
+            return nil
+        }
+        return try? String(contentsOf: url, encoding: .utf8)
     }
 }

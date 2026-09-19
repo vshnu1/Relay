@@ -5,9 +5,12 @@
   "description": "Relay patient app as a native iOS shell. Separate from the root package.json on purpose: adding Capacitor there would touch a hot file every teammate also edits.",
   "type": "module",
   "scripts": {
-    "prepare:web": "node scripts/prepare-web.mjs",
-    "sync": "node scripts/prepare-web.mjs && cap sync ios",
-    "open:ios": "cap open ios"
+    "ios": "cap copy ios && node scripts/build-ios.mjs",
+    "copy": "cap copy ios",
+    "sync": "cap sync ios",
+    "open": "cap open ios",
+    "host": "node scripts/set-host.mjs",
+    "icons": "python3 scripts/make-icons.py"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.2"
