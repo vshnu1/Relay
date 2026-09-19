@@ -313,13 +313,19 @@ export function derive(p, now) {
       ? `${others.map((s) => `${sentence(s.short, false)} is ${s.fmt(s.today)} ${s.unit} against a usual ${s.fmt(s.usual)}`).join(". ")}. Not counted for ${profile.after}.`
       : "The other recorded signals are close to the usual range.",
   });
-  const deviceNotes = Object.values(p.devices).map((d) =>
-    !d.sharing
-      ? `${d.name} sharing is paused by the patient.`
-      : d.live
-        ? `${d.name} is live.`
-        : `${d.name} synced ${ago(now - d.lastSync)}.`,
-  );
+  const deviceNotes = Object.entries(p.devices)
+    .filter(([id]) => id !== "manual")
+    .map(([, d]) =>
+      d.connected === false
+        ? `${d.name} is not connected.`
+        : !d.sharing
+          ? `${d.name} sharing is paused by the patient.`
+          : d.live
+            ? `${d.name} is live.`
+            : d.lastSync
+              ? `${d.name} synced ${ago(now - d.lastSync)}.`
+              : `${d.name} has not synced yet.`,
+    );
   findings.push({
     label: "Data coverage",
     text: `${missingNights === 0 ? "No missing nights since coming home." : `${numberWord(missingNights, true)} of ${numberWord(dayHome + 1)} nights ${missingNights === 1 ? "has" : "have"} no readings.`} ${deviceNotes.join(" ")}`,
@@ -351,6 +357,14 @@ export function derive(p, now) {
     pending,
     answered,
     checkins: p.checkins,
+    code: p.code,
+    careEmail: p.careEmail,
+    notes: p.notes,
+    medications: p.medications || [],
+    appointments: p.appointments || [],
+    messages: p.messages || [],
+    journal: p.journal || [],
+    reports: p.reports || [],
     headline,
     line,
     findings,
