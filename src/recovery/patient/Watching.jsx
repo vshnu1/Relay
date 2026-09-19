@@ -58,7 +58,7 @@ export default function Watching({ patient: p }) {
             <div>
               <strong>{s.plain}</strong>
               <span className={`rx-p-chip ${s.towardDays ? "changed" : ""}`}>
-                {s.towardDays ? "Changed" : "Usual"}
+                {s.towardDays ? "Unusual" : "Usual"}
               </span>
             </div>
             <p>{phrase(s)}</p>

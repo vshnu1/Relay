@@ -97,12 +97,12 @@ function status(s) {
   const word = s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase();
   if (s.moved)
     return {
-      text: `Changed · ${word} since day ${s.runStart + 1}`,
+      text: `Unusual · ${word} since day ${s.runStart + 1}`,
       changed: true,
     };
   if (s.towardDays > 0)
     return {
-      text: `Changed · ${word} for ${s.towardDays === 1 ? "one day" : `${numberWord(s.towardDays)} ${s.span}`}`,
+      text: `Unusual · ${word} for ${s.towardDays === 1 ? "one day" : `${numberWord(s.towardDays)} ${s.span}`}`,
       changed: true,
     };
   return { text: "About your usual", changed: false };
@@ -215,9 +215,9 @@ export default function Metrics({ patient: p }) {
               {s.today === null
                 ? "No reading"
                 : s.moved
-                  ? `Changed since day ${s.runStart + 1}`
+                  ? `Unusual since day ${s.runStart + 1}`
                   : st.changed
-                    ? "Changed"
+                    ? "Unusual"
                     : "Usual"}
             </span>
           </header>

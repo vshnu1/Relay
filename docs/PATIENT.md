@@ -56,7 +56,7 @@ chooses to send.
    when the readings or the model call for an off-schedule check-in (or the care
    team asked, or a report is recommended); a calm card for a routine check-in;
    a quiet line when nothing is needed. Below it, two lanes: **Your readings**
-   (one tile per counted signal with today's value, the usual, a Changed/Usual chip
+   (one tile per counted signal with today's value, the usual, an Unusual/Usual chip
    and a 14-day sparkline, then the model's line with a score button) and **From
    your hospital** (discharge date and clinician, the doctor's notes, prescriptions,
    the next follow-up, and a link to messages). The model scores the patient's own

@@ -34,7 +34,7 @@ export default function HomeReadings({ patient: p }) {
         <span className={`rx-ph-count ${changed ? "changed" : ""}`}>
           <i aria-hidden="true" />
           {changed
-            ? `${changed} changed`
+            ? `${changed} unusual`
             : p.counted.some((s) => s.today !== null)
               ? "All usual"
               : "No readings yet"}
@@ -55,7 +55,7 @@ export default function HomeReadings({ patient: p }) {
                   {s.today === null
                     ? "No reading"
                     : attention
-                      ? "Changed"
+                      ? "Unusual"
                       : "Usual"}
                 </span>
               </div>
