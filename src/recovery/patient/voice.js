@@ -9,14 +9,28 @@ import { QUESTIONS } from "../model/profiles.js";
 import { describeAnalysis } from "../model/mlClient.js";
 import { checkinWhy } from "../model/schedule.js";
 
-export async function voiceAvailable(fetchFn = fetch) {
+export async function voiceStatus(fetchFn = fetch) {
   try {
     const res = await fetchFn("/api/status", { headers: authHeaders() });
-    if (!res.ok) return false;
+    if (!res.ok)
+      return {
+        available: false,
+        reason: `Relay’s server is not responding right now (${res.status}). Try text or retry voice in a moment.`,
+      };
     const body = await res.json();
-    return !!body.voice;
+    return body.voice
+      ? { available: true, reason: "" }
+      : {
+          available: false,
+          reason:
+            "ElevenLabs is not configured on this server. You can still finish this check-in by text.",
+        };
   } catch {
-    return false;
+    return {
+      available: false,
+      reason:
+        "Relay’s server could not be reached. You can still check in by text.",
+    };
   }
 }
 

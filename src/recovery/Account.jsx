@@ -24,7 +24,7 @@ const post = async (path, body) => {
   return payload;
 };
 
-export default function Account({ onSignedIn, wanted = "clinician" }) {
+export default function Account({ onSignedIn, audience = "clinician" }) {
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,7 +63,7 @@ export default function Account({ onSignedIn, wanted = "clinician" }) {
     setBusy(true);
     setError("");
     try {
-      done(await post("/api/auth/demo", { role: wanted }));
+      done(await post("/api/auth/demo", { role: audience }));
     } catch (problem) {
       setError(problem.message);
     } finally {
@@ -81,7 +81,7 @@ export default function Account({ onSignedIn, wanted = "clinician" }) {
               <span className="rx-brand-word">Relay</span>
             </span>
             <span className="rx-home-kicker">
-              {wanted === "patient" ? "Patient access" : "Clinician access"}
+              {audience === "patient" ? "Patient access" : "Clinician access"}
             </span>
             <h1>Sign in as yourself.</h1>
             <p className="rx-auth-lede">
@@ -218,7 +218,7 @@ export default function Account({ onSignedIn, wanted = "clinician" }) {
               disabled={busy}
               onClick={demo}
             >
-              Look around as a demo {wanted}
+              Look around as a demo {audience}
             </button>
             <p className="rx-auth-legal">
               A demo identity is issued to this browser alone and named in the

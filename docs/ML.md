@@ -132,8 +132,13 @@ an anomaly or coordinated rule, or an illustrative protocol rule.
    patient's history windows with a chronological 60/20/20 split. Threshold at
    the 95th percentile of validation scores (floored by the train quantile).
    Recent windows are scored; `is_anomalous` needs the last three windows above
-   threshold. Fewer than 16 usable history windows falls back to a
-   synthetic-only prior labelled as such.
+   threshold and at least one contributor (a present metric at or beyond one
+   robust unit). Missingness may amplify a flag but never originate one: each
+   recent window is also scored as a counterfactual in which absent sensors
+   are neutral, and unless at least two present core signals exceed the
+   deviation threshold, the lower of the two scores decides. Fewer than 16
+   usable history windows falls back to a synthetic-only prior labelled as
+   such.
 6. **Deterministic rule** (engine-compatible): a signal is flagged when its
    deviation has held >= 3 consecutive windows with >= 2 supporting
    observations for >= 24 h (48 h for gait). Three flagged signals with
@@ -215,6 +220,24 @@ stays quiet on ordinary days and reports `insufficient_data` when it cannot
 see, and it exposed and fixed a device-era flaw in the training split. It is
 not clinical validation and says nothing about sensitivity to real
 complications.
+
+## Cohort evaluation (LifeSnaps, de-identified, no clinical labels)
+
+`python -m relay_ml cohort-eval` scores every subject in Anson's committed
+`fixtures/lifesnaps_daily.csv` at their latest day and writes an
+aggregate-only report to `ml/reports/`. Nobody in the cohort is
+post-surgical, so a context request there is a presumed false positive, not
+a confirmed clinical false alarm; the dataset has no outcome labels and can
+say nothing about sensitivity.
+
+Before the missingness rule: 71 subjects, 52 evaluable, 19 insufficient_data,
+1 context_needed (a further 1 to 2 under alternative timestamp or column
+choices). The firm case had four of five core sensors stale for a week, no
+present deviation above one robust unit, and its score disappeared once the
+missing sensors were neutralized: the forest was flagging sensor dropout.
+After the rule: 52 monitoring, 0 context_needed, stable across model seeds
+0 to 2; 7 subjects' latest windows are recorded as explained by missingness.
+The synthetic drift and gait scenarios still detect at the same rates.
 
 ## Integration for the workflow owner
 

@@ -1,0 +1,35 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "program": "post_abdominal_surgery",
+  "note": "Aggregate only. LifeSnaps has no clinical labels; context requests are presumed, not confirmed, false positives.",
+  "subjects_total": 71,
+  "subjects_skipped_min_days": 0,
+  "subjects_scored": 71,
+  "evaluable": 52,
+  "application_states": {
+    "monitoring": 52,
+    "insufficient_data": 19
+  },
+  "data_quality_status": {
+    "sufficient": 34,
+    "insufficient": 19,
+    "partial": 18
+  },
+  "model_status": {
+    "fitted": 66,
+    "prior": 5
+  },
+  "context_needed_rate_over_evaluable": 0.0,
+  "subjects_with_any_flagged_signal": 12,
+  "context_needed_contributor_counts": [],
+  "subjects_latest_window_explained_by_missingness": 7,
+  "subjects_persistent_flag_without_contributors": 0,
+  "anomaly_score_quantiles": {
+    "0.5": 0.127,
+    "0.9": 0.436,
+    "0.95": 0.575,
+    "0.99": 0.717
+  },
+  "seed": 0,
+  "elapsed_seconds": 7.8
+}

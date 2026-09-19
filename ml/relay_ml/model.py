@@ -98,12 +98,34 @@ def calibrate(raw_train, raw_val, quantile):
     return threshold, scale
 
 
+def neutralize_missingness(pipe, X, dev_columns, coverage_columns):
+    """Counterfactual rows in which absent sensors are simply absent.
+
+    Missing deviation columns are filled with the imputer's own training
+    median (so no missingness indicator fires) and the coverage columns are
+    set to their training median. A window that is only anomalous because
+    sensors stopped reporting scores as ordinary here; a window whose present
+    measurements are unusual keeps its score."""
+    if X is None or not len(X) or (not dev_columns and not coverage_columns):
+        return X
+    stats = pipe.named_steps["impute"].statistics_
+    Xn = np.array(X, dtype=float, copy=True)
+    for j in dev_columns or []:
+        if j < len(stats) and not np.isnan(stats[j]):
+            col = Xn[:, j]
+            col[np.isnan(col)] = stats[j]
+    for j in coverage_columns or []:
+        if j < len(stats) and not np.isnan(stats[j]):
+            Xn[:, j] = stats[j]
+    return Xn
+
+
 def to_scores(raw, threshold, scale):
     z = (np.asarray(raw, dtype=float) - threshold) / scale
     return 1.0 / (1.0 + np.exp(-np.clip(z, -30, 30)))
 
 
-def fit_and_score(X_hist, X_recent, core_columns, quantile=0.95, seed=0, prior=None):
+def fit_and_score(X_hist, X_recent, core_columns, quantile=0.95, seed=0, prior=None, dev_columns=None, coverage_columns=None, n_deviating_column=None):
     keep = usable_rows(X_hist, core_columns)
     Xh = X_hist[keep]
     diag = {"history_rows": int(len(X_hist)), "usable_history_rows": int(len(Xh)), "feature_dim_in": int(X_hist.shape[1])}
@@ -111,7 +133,7 @@ def fit_and_score(X_hist, X_recent, core_columns, quantile=0.95, seed=0, prior=N
         diag["history_rows_without_core_signals"] = int(len(X_hist) - len(Xh))
     if len(Xh) < MIN_HISTORY_ROWS:
         if prior is not None:
-            return _score_with_prior(prior, X_recent, diag)
+            return _score_with_prior(prior, X_recent, diag, dev_columns, coverage_columns, n_deviating_column)
         diag["reason"] = f"fewer than {MIN_HISTORY_ROWS} usable history windows and no synthetic prior"
         return ModelResult("unavailable", diagnostics=diag)
     tr, va, te = chronological_split(len(Xh))
@@ -122,6 +144,8 @@ def fit_and_score(X_hist, X_recent, core_columns, quantile=0.95, seed=0, prior=N
     raw_tr, raw_va, raw_te = _raw(pipe, Xh[tr]), _raw(pipe, Xh[va]), (_raw(pipe, Xh[te]) if len(te) else np.array([]))
     threshold, scale = calibrate(raw_tr, raw_va, quantile)
     raw_recent = _raw(pipe, X_recent) if len(X_recent) else np.array([])
+    raw_recent, neutral_diag = _net_of_missingness(pipe, X_recent, raw_recent, threshold, dev_columns, coverage_columns, n_deviating_column)
+    diag.update(neutral_diag)
     diag.update(
         {
             "n_train": int(len(tr)),
@@ -139,7 +163,42 @@ def fit_and_score(X_hist, X_recent, core_columns, quantile=0.95, seed=0, prior=N
     return ModelResult("fitted", threshold, scale, raw_recent, to_scores(raw_recent, threshold, scale), raw_recent > threshold, diag)
 
 
-def _score_with_prior(prior, X_recent, diag):
+MIN_DEVIATING_FOR_MISSING = 2  # present core signals beyond threshold needed before missingness may add to a flag
+
+
+def _net_of_missingness(pipe, X_recent, raw_recent, threshold, dev_columns, coverage_columns, n_deviating_column=None):
+    """Missingness may amplify a flag but never originate one.
+
+    Each recent window is also scored as a counterfactual in which absent
+    sensors are neutral (their deviation at the training median, coverage at
+    its training median). When fewer than MIN_DEVIATING_FOR_MISSING present
+    core signals exceed the deviation threshold, the decisive score is
+    min(raw, counterfactual): the window must be unusual on what was actually
+    measured. When at least that many present signals deviate, the full score
+    stands, because sensors that stopped reporting are not what made the
+    window unusual. Windows whose flag disappears under the counterfactual
+    are counted as explained by missingness."""
+    if not len(X_recent) or (not dev_columns and not coverage_columns):
+        return raw_recent, {"missingness_neutralized_windows": 0}
+    Xn = neutralize_missingness(pipe, X_recent, dev_columns, coverage_columns)
+    raw_neutral = _raw(pipe, Xn)
+    net = np.minimum(raw_recent, raw_neutral)
+    if n_deviating_column is not None:
+        enough = np.nan_to_num(X_recent[:, n_deviating_column]) >= MIN_DEVIATING_FOR_MISSING
+        decisive = np.where(enough, raw_recent, net)
+    else:
+        decisive = net
+    explained = (raw_recent > threshold) & (decisive <= threshold)
+    return decisive, {
+        "missingness_neutralized_windows": int(explained.sum()),
+        "latest_explained_by_missingness": bool(explained[-1]),
+        "latest_raw_with_missingness": round(float(raw_recent[-1]), 4),
+        "latest_raw_net_of_missingness": round(float(net[-1]), 4),
+        "latest_raw_decisive": round(float(decisive[-1]), 4),
+    }
+
+
+def _score_with_prior(prior, X_recent, diag, dev_columns=None, coverage_columns=None, n_deviating_column=None):
     pipe, meta = prior
     if X_recent.shape[1] != meta["feature_dim_in"]:
         diag["reason"] = "synthetic prior feature dimension does not match this program"
@@ -152,6 +211,8 @@ def _score_with_prior(prior, X_recent, diag):
         diag["reason"] = f"synthetic prior could not be applied with the installed scikit-learn ({type(exc).__name__})"
         return ModelResult("unavailable", diagnostics=diag)
     thr, scale = meta["threshold_raw"], meta["score_scale_raw"]
+    raw, neutral_diag = _net_of_missingness(pipe, X_recent, raw, thr, dev_columns, coverage_columns, n_deviating_column)
+    diag.update(neutral_diag)
     diag.update({"prior": meta.get("artifact"), "threshold_raw": thr, "score_scale_raw": scale, "training_data": "synthetic"})
     return ModelResult("prior", thr, scale, raw, to_scores(raw, thr, scale), raw > thr, diag)
 

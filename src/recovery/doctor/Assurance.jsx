@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Check, Minus, X } from "lucide-react";
+import {
+  Activity,
+  Check,
+  ClipboardCheck,
+  LockKeyhole,
+  Minus,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 
 // What is true about this system's handling of health data, on screen rather
 // than in a markdown file nobody opens. docs/COMPLIANCE.md and docs/FDA.md are
@@ -253,6 +261,53 @@ export default function Assurance() {
         </div>
       </header>
 
+      {/* Four plain sentences before the citations, so a clinician who is not
+          a compliance officer gets the shape of it and can stop there. The
+          table below is for the reader who does not want to take it on
+          trust. */}
+      <section className="rx-assurance-points" aria-label="In short">
+        <article className="rx-assurance-point">
+          <span>
+            <LockKeyhole size={18} aria-hidden="true" />
+          </span>
+          <h3>You sign in as you</h3>
+          <p>
+            Named accounts, not a shared code, so the record of who opened what
+            names a person.
+          </p>
+        </article>
+        <article className="rx-assurance-point">
+          <span>
+            <Activity size={18} aria-hidden="true" />
+          </span>
+          <h3>Sessions end by themselves</h3>
+          <p>
+            Fifteen minutes idle, warned first, and ended on the server rather
+            than in your browser.
+          </p>
+        </article>
+        <article className="rx-assurance-point">
+          <span>
+            <ClipboardCheck size={18} aria-hidden="true" />
+          </span>
+          <h3>The log cannot be edited quietly</h3>
+          <p>
+            Each entry commits to the one before it, so a changed or missing
+            line is detectable and locatable.
+          </p>
+        </article>
+        <article className="rx-assurance-point">
+          <span>
+            <ShieldCheck size={18} aria-hidden="true" />
+          </span>
+          <h3>Nothing third-party is in the way</h3>
+          <p>
+            Encrypted at rest, TLS in transit, and no outside script on the page
+            that opens a record.
+          </p>
+        </article>
+      </section>
+
       <section className="rx-card" aria-label="Technical safeguards">
         <h2>
           HIPAA Security Rule, technical safeguards{" "}
@@ -454,6 +509,32 @@ export default function Assurance() {
             </dd>
           </div>
         </dl>
+      </section>
+      <section className="rx-assurance-deploy" aria-label="Before clinical use">
+        <h2>Before clinical use</h2>
+        <p>
+          Individual accounts, emergency access and encryption at rest were on
+          this list until today and are now above it. What is left is not
+          engineering.
+        </p>
+        <ul>
+          <li>
+            A second factor, and someone checking that an account belongs to the
+            clinician it names
+          </li>
+          <li>
+            Managed storage with verified backups, under a business associate
+            agreement the hosting plan does not currently include
+          </li>
+          <li>
+            A security and privacy review, a risk analysis, and workforce
+            training, performed by an organisation and repeated
+          </li>
+          <li>
+            Clinical evaluation with the intended care teams and patients, and
+            the regulatory determination below
+          </li>
+        </ul>
       </section>
     </div>
   );

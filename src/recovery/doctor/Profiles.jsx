@@ -69,7 +69,7 @@ export default function Profiles() {
             </details>
             <dl>
               <div>
-                <dt>Recorded, not counted</dt>
+                <dt>Key metrics</dt>
                 <dd>{list(profile.recorded.map((s) => SIGNALS[s].short))}</dd>
               </div>
               <div>

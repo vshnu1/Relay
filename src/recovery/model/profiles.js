@@ -775,10 +775,10 @@ export const PROFILES = {
     questions: ["breathing", "pain", "medicine", "activity"],
   },
   sleepApnoea: {
-    name: "Sleep apnoea, after titration",
+    name: "Sleep apnea, post-titration",
     ml: "sleep_apnoea_titration",
     adherence: "device_adherence",
-    after: "a sleep apnoea titration",
+    after: "sleep apnea treatment",
     minMoved: 2,
     counted: [
       counted("oxygen"),

@@ -682,7 +682,7 @@ const DISCHARGE = {
   },
   sleepApnoea: {
     notes:
-      "Obstructive sleep apnoea confirmed; CPAP fitted and settings adjusted. Use it every night for the whole night. Contact the sleep service if the mask leaks, you wake unrefreshed, or daytime sleepiness returns.",
+      "Obstructive sleep apnea confirmed; CPAP fitted and settings adjusted. Use it every night for the whole night. Contact the sleep service if the mask leaks, you wake unrefreshed, or daytime sleepiness returns.",
     medications: [],
     followUpDay: 28,
     where: "Sleep service",

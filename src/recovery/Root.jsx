@@ -39,6 +39,7 @@ function endServerSession() {
   }
 }
 const SIGNED_ROLE_KEY = "rx-signed-role";
+const OPEN_DEMO_KEY = "rx-open-demo";
 const TIMED_OUT_KEY = "rx-timed-out";
 
 export default function Root() {
@@ -94,8 +95,13 @@ export default function Root() {
           }
         }
         if (!live) return;
+        // No codes configured means an open local demo: the shared record
+        // syncs without a code and the patient's sign-in survives a reload.
+        // Only a real gate with no valid code clears the sessions.
+        if (required) sessionStorage.removeItem(OPEN_DEMO_KEY);
+        else sessionStorage.setItem(OPEN_DEMO_KEY, "1");
         if (role) sessionStorage.setItem(SIGNED_ROLE_KEY, role);
-        else {
+        else if (required) {
           sessionStorage.removeItem(SIGNED_ROLE_KEY);
           sessionStorage.removeItem(CODE_KEY);
           signOut();
@@ -155,7 +161,7 @@ export default function Root() {
           </p>
         )}
         <AccessScreen
-          wanted={section === "patient" ? "patient" : "clinician"}
+          audience={section === "patient" ? "patient" : "clinician"}
           onSignedIn={(role, code) => {
             sessionStorage.setItem(SIGNED_ROLE_KEY, role);
             sessionStorage.setItem(CODE_KEY, code);

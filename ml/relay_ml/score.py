@@ -86,7 +86,11 @@ def score_request(request, seed=None, artifact_dir=None):
     recent = grid.recent_mask()
     hist = ~recent
     prior = load_prior(program.key, artifact_dir)
-    model = fit_and_score(fs.X[hist], fs.X[recent], fs.core_columns, quantile=program.validation_quantile, seed=seed, prior=prior)
+    model = fit_and_score(
+        fs.X[hist], fs.X[recent], fs.core_columns, quantile=program.validation_quantile, seed=seed, prior=prior,
+        dev_columns=fs.dev_columns, coverage_columns=fs.coverage_columns,
+        n_deviating_column=fs.columns.index("n_deviating_core"),
+    )
 
     signals = build_signals(grid, fs, program)
     attach_sources(signals, events)
@@ -97,9 +101,14 @@ def score_request(request, seed=None, artifact_dir=None):
     contributors = build_contributors(grid, fs, program, signals)
 
     run_len = 0
+    anomaly_without_contributors = False
     if model.status in ("fitted", "prior") and len(model.flags_recent):
         run_len, run_start = terminal_run(model.flags_recent)
-        is_anomalous = run_len >= program.min_persistence_windows and dq["status"] != "insufficient"
+        persistent = run_len >= program.min_persistence_windows and dq["status"] != "insufficient"
+        # A model flag must be attributable to at least one present measurement
+        # that actually deviates; otherwise nothing could be explained to a clinician.
+        anomaly_without_contributors = bool(persistent and not contributors)
+        is_anomalous = persistent and bool(contributors)
         anomaly_score = float(model.scores_recent[-1])
         recent_idx = np.flatnonzero(recent)
         change_point = to_iso(from_epoch_ms(int(grid.ends_ms[recent_idx[run_start]] - WINDOW_MS))) if run_start is not None else None
@@ -153,6 +162,7 @@ def score_request(request, seed=None, artifact_dir=None):
         "model": {
             "status": model.status,
             "window_scores": window_scores,
+            "anomaly_without_contributors": anomaly_without_contributors,
             "feature_columns": fs.columns,
             **model.diagnostics,
             "seed": seed,

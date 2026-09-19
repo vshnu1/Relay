@@ -5,6 +5,7 @@
     python -m relay_ml validate-export [--export PATH]   (reads HEALTH_EXPORT_XML)
     python -m relay_ml train-synthetic
     python -m relay_ml fixtures
+    python -m relay_ml cohort-eval [--program X]      (aggregate-only, de-identified public cohort)
 
 `score` reads one JSON document on stdin and writes one on stdout. It never
 touches the filesystem, so a workflow task can shell out to it safely.
@@ -64,6 +65,12 @@ def cmd_fixtures(args):
     return 0
 
 
+def cmd_cohort_eval(args):
+    from .cohort_eval import run
+
+    return run(program=args.program, fixture=args.fixture, report=args.report, seed=args.seed)
+
+
 def cmd_train_synthetic(args):
     from .train import train_synthetic_prior
 
@@ -97,6 +104,13 @@ def build_parser():
     s = sub.add_parser("fixtures", help="write every synthetic scenario request and its expected outcome under ml/fixtures/synthetic")
     s.add_argument("--out-dir", default=None)
     s.set_defaults(func=cmd_fixtures)
+
+    s = sub.add_parser("cohort-eval", help="aggregate-only evaluation on the de-identified LifeSnaps fixture")
+    s.add_argument("--program", default="post_abdominal_surgery", choices=sorted(PROGRAMS))
+    s.add_argument("--fixture", default=None)
+    s.add_argument("--report", default=None)
+    s.add_argument("--seed", type=int, default=0)
+    s.set_defaults(func=cmd_cohort_eval)
 
     s = sub.add_parser("train-synthetic", help="train and save the synthetic-only prior model")
     s.add_argument("--out-dir", default=None)
