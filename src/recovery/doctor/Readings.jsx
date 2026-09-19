@@ -13,7 +13,7 @@ import { dayColumns, domain, labelEvery, ticks } from "./chartScale.js";
 const HOME_DAYS = 14;
 const CHART_H = 172;
 const COMPACT_H = 150;
-const M = { top: 20, right: 112, bottom: 38, left: 44 };
+const MARGIN = { top: 20, right: 112, bottom: 38, left: 44 };
 const FILL = {
   "-3": "#3d7ab8",
   "-2": "#8fb3d9",
@@ -59,6 +59,7 @@ const segments = (points) =>
 
 export function SignalChart({ signal: s, homeFrom, width, compact = false }) {
   const [hover, setHover] = useState(null);
+  const M = compact ? { top: 20, right: 86, bottom: 36, left: 36 } : MARGIN;
   const inner = width - M.left - M.right;
   const homeDays = s.home.slice(homeFrom);
   const cols = dayColumns(inner, s.before.length, homeDays.length);

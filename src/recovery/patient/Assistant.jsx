@@ -74,7 +74,9 @@ export default function Assistant({ patient: p }) {
   const [listening, setListening] = useState(false);
   const endRef = useRef(null);
   const recRef = useRef(null);
-  useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [log]);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "end" });
+  }, [log]);
   useEffect(() => () => canSpeak() && speechSynthesis.cancel(), []);
   const say = (entry) => {
     setLog((l) => [...l, entry]);

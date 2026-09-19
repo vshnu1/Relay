@@ -405,7 +405,8 @@ function build(def, now, index) {
     notes: def.notes,
     medications: def.medications || [],
     appointments: (def.appointments || []).map((a) => ({
-      t: now + a.inDays * DAY + 10 * HOUR - (now % DAY),
+      // 10:00 local time, `inDays` days from now
+      t: new Date(now + a.inDays * DAY).setHours(10, 0, 0, 0),
       with: a.with,
       where: a.where,
     })),
