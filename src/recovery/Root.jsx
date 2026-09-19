@@ -5,24 +5,30 @@ import {
   useRoster,
   useSourceLabel,
   useRoute,
-  go,
 } from "./useRecovery.js";
 import DoctorApp from "./doctor/DoctorApp.jsx";
 import PatientApp from "./patient/PatientApp.jsx";
-import Landing, { ROLE_KEY } from "./Landing.jsx";
+import Landing from "./Landing.jsx";
+import Login from "./Login.jsx";
 import "./recovery.css";
 
 export default function Root() {
   const route = useRoute();
   const section = route[0];
-  // Empty hash is the entry point. A returning visitor goes straight to the role they
-  // already picked, so a mid-demo reload never bounces them back to the landing page.
-  const savedRole = section ? null : sessionStorage.getItem(ROLE_KEY);
-  const returning = savedRole === "patient" || savedRole === "doctor";
-  useEffect(() => {
-    if (returning) go(`/${savedRole}`);
-  }, [returning, savedRole]);
-  if (!section) return returning ? null : <Landing />;
+  // The root is always the public welcome screen. Explicit role routes are the
+  // handoff into the demo workspace, so a refresh never skips the introduction.
+  if (!section || section === "welcome")
+    return (
+      <div className="rx">
+        <Landing />
+      </div>
+    );
+  if (section === "login")
+    return (
+      <div className="rx">
+        <Login />
+      </div>
+    );
   return section === "patient" ? (
     <PatientRoot route={route} />
   ) : (

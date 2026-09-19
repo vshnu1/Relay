@@ -53,14 +53,12 @@ export default function Landing() {
         <div className="rx-landing-links">
           <a href="#rx-how">How it works</a>
           <a href="#rx-care">For care teams</a>
-          <a href="#rx-patient">For patients</a>
+          <a href="#/patient" onClick={() => choose("patient")}>
+            For patients
+          </a>
         </div>
-        <a
-          className="rx-btn primary"
-          href="#/doctor"
-          onClick={() => choose("doctor")}
-        >
-          Open demo <ArrowRight size={16} />
+        <a className="rx-btn primary" href="#/login">
+          Sign in <ArrowRight size={16} />
         </a>
       </nav>
 
@@ -81,10 +79,9 @@ export default function Landing() {
           <div className="rx-landing-actions">
             <a
               className="rx-btn primary tall"
-              href="#/doctor"
-              onClick={() => choose("doctor")}
+              href="#/login"
             >
-              Start the care team demo <ArrowRight size={17} />
+              Enter the care team workspace <ArrowRight size={17} />
             </a>
             <a
               className="rx-btn tall"

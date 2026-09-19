@@ -2044,110 +2044,6 @@ p.rx-row-summary {
   }
 }
 
-/* Landing page: the entry point at the root URL (see Landing.jsx, Root.jsx). */
-.rx-landing {
-  align-items: center;
-  justify-content: center;
-  padding: 32px 20px;
-}
-.rx-landing-inner {
-  width: 100%;
-  max-width: 640px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-.rx-landing-brand {
-  font-size: 22px;
-}
-.rx-landing-title {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 27px;
-  line-height: 1.32;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
-.rx-landing-choices {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.rx-landing-btn {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-  padding: 18px 18px 20px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  transition:
-    border-color 0.12s ease,
-    box-shadow 0.12s ease;
-}
-.rx-landing-btn:hover {
-  border-color: var(--pine);
-  box-shadow: 0 2px 10px rgba(36, 73, 61, 0.08);
-}
-.rx-landing-btn strong {
-  font-size: 17px;
-  color: var(--pine);
-}
-.rx-landing-btn span {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.45;
-}
-/* The honest strip is deliberately as prominent as the buttons, not a footer. */
-.rx-landing-honest {
-  border: 1px solid var(--amber-ink);
-  border-radius: 12px;
-  background: var(--amber-tint);
-  padding: 18px 20px;
-}
-.rx-landing-honest h2 {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--amber-ink);
-  margin-bottom: 10px;
-}
-.rx-landing-honest ul {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.rx-landing-honest li {
-  position: relative;
-  padding-left: 18px;
-  font-size: 14.5px;
-  color: var(--ink-2);
-  line-height: 1.5;
-}
-.rx-landing-honest li::before {
-  content: "";
-  position: absolute;
-  left: 2px;
-  top: 8px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--amber);
-}
-.rx-landing-honest strong {
-  color: var(--amber-ink);
-}
-@media (max-width: 480px) {
-  .rx-landing-title {
-    font-size: 23px;
-  }
-  .rx-landing-choices {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* Patient context header — clinician side (PatientOverview.jsx). Denser than the
    patient view: a labelled grid of the discharge and monitoring context. */
 .rx-context {
@@ -2197,4 +2093,233 @@ p.rx-row-summary {
   font-size: 16px;
   color: var(--ink-2);
   line-height: 1.45;
+}
+
+/* Authentication shell. This is a demo sign-in surface, not an identity provider. */
+.rx-auth-page {
+  min-height: 100vh;
+  padding: 34px 28px 56px;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(215, 231, 215, 0.72), transparent 28rem),
+    var(--paper);
+}
+.rx-auth-shell {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+}
+.rx-auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+.rx-auth-back:hover {
+  color: var(--pine);
+}
+.rx-auth-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+  gap: clamp(44px, 9vw, 120px);
+  align-items: center;
+  min-height: calc(100vh - 110px);
+  padding: 40px 4vw 30px;
+}
+.rx-auth-intro {
+  max-width: 540px;
+}
+.rx-auth-brand {
+  display: inline-flex;
+  margin-bottom: 70px;
+  font-size: 23px;
+}
+.rx-auth-intro .rx-eyebrow {
+  display: flex;
+  margin-bottom: 20px;
+}
+.rx-auth-intro h1 {
+  max-width: 520px;
+  font-size: clamp(42px, 5vw, 68px);
+  font-weight: 600;
+  letter-spacing: -0.065em;
+  line-height: 0.99;
+}
+.rx-auth-intro > p {
+  max-width: 475px;
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.6;
+}
+.rx-auth-promise {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  max-width: 440px;
+  margin-top: 36px;
+  padding: 16px 17px;
+  border: 1px solid #d3e2d1;
+  border-radius: 13px;
+  background: rgba(237, 246, 235, 0.72);
+  color: #3f7251;
+}
+.rx-auth-promise > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.rx-auth-promise strong,
+.rx-auth-promise small {
+  display: block;
+}
+.rx-auth-promise strong {
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.rx-auth-promise small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.rx-auth-card {
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 70px rgba(31, 47, 42, 0.1);
+}
+.rx-auth-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.rx-auth-card-head > svg {
+  color: var(--pine);
+}
+.rx-auth-kicker {
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.rx-auth-card h2 {
+  margin-top: 4px;
+  font-size: 30px;
+  letter-spacing: -0.04em;
+}
+.rx-auth-demo-note {
+  margin-top: 15px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.rx-auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 22px;
+}
+.rx-auth-label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.rx-auth-label input {
+  width: 100%;
+  height: 45px;
+  padding: 0 12px;
+  border: 1px solid var(--control);
+  border-radius: 9px;
+  background: #fff;
+  font-size: 15px;
+}
+.rx-auth-label input:focus {
+  border-color: var(--pine);
+  outline: 2px solid rgba(36, 73, 61, 0.16);
+  outline-offset: 1px;
+}
+.rx-auth-role {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.rx-auth-role legend {
+  width: 100%;
+  margin-bottom: 8px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.rx-auth-role label,
+.rx-auth-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+.rx-auth-role input,
+.rx-auth-remember input {
+  accent-color: var(--pine);
+}
+.rx-auth-remember {
+  margin-top: -3px;
+}
+.rx-auth-error {
+  margin-top: -3px;
+  color: #8b3f37;
+  font-size: 13px;
+}
+.rx-auth-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--pine);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+.rx-auth-submit:hover {
+  background: #1d3d33;
+}
+.rx-auth-legal {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--faint);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+@media (max-width: 780px) {
+  .rx-auth-page {
+    padding: 24px 18px 40px;
+  }
+  .rx-auth-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    min-height: auto;
+    padding: 44px 0 0;
+  }
+  .rx-auth-brand {
+    margin-bottom: 40px;
+  }
+  .rx-auth-intro h1 {
+    font-size: clamp(40px, 12vw, 58px);
+  }
+  .rx-auth-card {
+    max-width: 520px;
+  }
 }
