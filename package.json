@@ -12,7 +12,7 @@
     "format": "prettier --write src server shared workflows tests/*.js README.md docs/*.md vite.config.js package.json render.yaml"
   },
   "dependencies": {
-    "@elevenlabs/client": "latest",
+    "@elevenlabs/client": "1.25.0",
     "@renderinc/sdk": "^1.0.0",
     "express": "^5.1.0",
     "lucide-react": "^0.468.0",
