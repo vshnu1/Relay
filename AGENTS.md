@@ -50,11 +50,13 @@ Two apps share `src/main.jsx` and are never loaded together, so their global sty
 
 The doctor and patient views for the post-discharge mission. `Root.jsx` holds the demo bar that switches roles.
 
-- `data/contract.js` is the seam to the backend and hardware. Read it before connecting a feed. A source delivers a roster, raw readings, and device state; nothing else.
-- `data/simulatedSource.js` is today's source. To go live, write another source to the same contract and change the one `createStore(...)` line in `useRecovery.js`. No view changes.
-- `data/derive.js` turns raw readings into every status, number, sentence, and chart point. It is pure and covered by `tests/recovery.test.js`. **The UI stores no computed values**, so late or out-of-order readings are safe.
-- `data/profiles.js` is the illness table: which signals count, in which direction, past what threshold, and which questions are asked. Illustrative until a clinician signs it off.
+- `model/contract.js` is the seam to the backend and hardware. Read it before connecting a feed. A source delivers a roster, raw readings, and device state; nothing else.
+- `model/simulatedSource.js` is today's source. To go live, write another source to the same contract and change the one `createStore(...)` line in `useRecovery.js`. No view changes.
+- `model/derive.js` turns raw readings into every status, number, sentence, and chart point. It is pure and covered by `tests/recovery.test.js`. **The UI stores no computed values**, so late or out-of-order readings are safe.
+- `model/profiles.js` is the illness table: which signals count, in which direction, past what threshold, and which questions are asked. Illustrative until a clinician signs it off.
 - `doctor/`, `patient/` are the screens. They read derived state and call `actions`; they never fetch.
+
+Never name a source folder `data`. `.gitignore` ignores `data/` at every depth to keep real health data out of git, so such a folder is silently left out of commits. That is why this one is called `model/`.
 
 ### Classic workspace: everything else in `src/` (at `#/classic`)
 

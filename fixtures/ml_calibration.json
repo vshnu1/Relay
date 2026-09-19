@@ -1,0 +1,34 @@
+{
+  "program": "post_abdominal_surgery",
+  "subjects_scored": 64,
+  "states": {
+    "monitoring": 49,
+    "context_needed": 3,
+    "insufficient_data": 12
+  },
+  "judged": 52,
+  "false_alarms": 3,
+  "false_positive_rate_pct": 5.77,
+  "escalations": [
+    {
+      "subject": "621e2f9167b776a240011ccb",
+      "state": "context_needed",
+      "anomaly_score": 0.756,
+      "flagged": [
+        "rhr"
+      ]
+    },
+    {
+      "subject": "621e312a67b776a240164d59",
+      "state": "context_needed",
+      "anomaly_score": 0.51,
+      "flagged": []
+    },
+    {
+      "subject": "621e375b67b776a240290cdc",
+      "state": "context_needed",
+      "anomaly_score": 0.585,
+      "flagged": []
+    }
+  ]
+}

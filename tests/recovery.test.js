@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createStore } from "../src/recovery/data/store.js";
-import { createSimulatedSource } from "../src/recovery/data/simulatedSource.js";
-import { derive } from "../src/recovery/data/derive.js";
+import { createStore } from "../src/recovery/model/store.js";
+import { createSimulatedSource } from "../src/recovery/model/simulatedSource.js";
+import { derive } from "../src/recovery/model/derive.js";
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 async function cohort() {

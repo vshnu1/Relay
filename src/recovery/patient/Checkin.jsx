@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CheckCircle2, ChevronLeft, Mic } from "lucide-react";
 import { actions, useRecovery } from "../useRecovery.js";
-import { QUESTIONS } from "../data/profiles.js";
+import { QUESTIONS } from "../model/profiles.js";
 
 // question -> review -> more -> done. The required answers are sent at "review",
 // so skipping the free-text step never loses them.
