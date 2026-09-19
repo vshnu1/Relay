@@ -5,7 +5,6 @@ import { ago, clock, dateLong } from "../format.js";
 import ModelCard from "./ModelCard.jsx";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";
-import CareTeamPanel from "./CareTeamPanel.jsx";
 import PatientActivity from "./PatientActivity.jsx";
 import ClinicianVoiceSummary from "./ClinicianVoiceSummary.jsx";
 import { STATUS } from "./watchStatus.js";
@@ -50,7 +49,7 @@ export default function PatientOverview({ id }) {
             <h1>{p.name}</h1>
             <p>
               {p.age} years old. Discharged after {p.profile.after}, day{" "}
-              {p.dayHome} of {p.windowDays} at home.
+              {p.dayHome + 1} of {p.windowDays} at home.
             </p>
           </div>
           <span
@@ -81,7 +80,7 @@ export default function PatientOverview({ id }) {
           <div>
             <dt>Recovery period</dt>
             <dd>
-              Day {p.dayHome} of {p.windowDays} · {p.windowDays}-day window
+              Day {p.dayHome + 1} of {p.windowDays} · {p.windowDays}-day window
             </dd>
           </div>
           <div>
@@ -228,35 +227,34 @@ export default function PatientOverview({ id }) {
           </section>
           <ModelCard patient={p} />
           <PatientActivity patient={p} />
-          <details className="rx-followup-details">
-            <summary>Contact patient or record follow-up</summary>
-            <CareTeamPanel patient={p} embedded />
-            <div className="rx-actions rx-review-actions">
-              <button
-                type="button"
-                className="rx-btn primary"
-                disabled={p.status !== "review" || p.acknowledged}
-                onClick={() => actions.acknowledge(p.id)}
-              >
-                {p.acknowledged ? "Review acknowledged" : "Acknowledge review"}
-              </button>
-              <button
-                type="button"
-                className="rx-btn"
-                onClick={() => exportHandoff(p)}
-              >
-                Export handoff
-              </button>
-              <button
-                type="button"
-                className="rx-btn"
-                disabled={!!p.pending}
-                onClick={() => actions.requestCheckin(p.id)}
-              >
-                {p.pending ? "Check-in sent" : "Request new check-in"}
-              </button>
-            </div>
-          </details>
+          <div className="rx-actions rx-review-actions">
+            <button
+              type="button"
+              className="rx-btn primary"
+              disabled={p.status !== "review" || p.acknowledged}
+              onClick={() => actions.acknowledge(p.id)}
+            >
+              {p.acknowledged ? "Review acknowledged" : "Acknowledge review"}
+            </button>
+            <button
+              type="button"
+              className="rx-btn"
+              onClick={() => exportHandoff(p)}
+            >
+              Export handoff
+            </button>
+            <button
+              type="button"
+              className="rx-btn"
+              disabled={!!p.pending}
+              onClick={() => actions.requestCheckin(p.id)}
+            >
+              {p.pending ? "Check-in sent" : "Request new check-in"}
+            </button>
+            <a className="rx-btn" href={`#/doctor/messages/${p.id}`}>
+              Message {p.first}
+            </a>
+          </div>
         </section>
       </div>
 

@@ -54,6 +54,7 @@ export function checkinTriggerKey(p) {
 }
 
 export function checkinDue(p, now = Date.now()) {
+  const dayNumber = p.dayHome + 1;
   const answeredRecently = p.checkins.some(
     (c) => c.answeredAt && now - c.answeredAt < RECENT_ANSWER,
   );
@@ -74,7 +75,7 @@ export function checkinDue(p, now = Date.now()) {
   )
     return { due: true, reason: "readings" };
   if (answeredRecently) return { due: false, reason: "answered" };
-  if (isScheduledDay(p.dayHome)) return { due: true, reason: "scheduled" };
+  if (isScheduledDay(dayNumber)) return { due: true, reason: "scheduled" };
   return { due: false, reason: "not-scheduled" };
 }
 
@@ -82,10 +83,11 @@ export function checkinDue(p, now = Date.now()) {
 // shows. Cadence: daily for the first week home, then every other day.
 export function checkinWhy(p, now = Date.now()) {
   const due = checkinDue(p, now);
+  const dayNumber = p.dayHome + 1;
   const cadence =
-    p.dayHome <= SCHEDULE.dailyUntil
-      ? `In your first week home we check in every day; this is day ${p.dayHome}.`
-      : `After the first week we check in every other day; this is day ${p.dayHome}.`;
+    dayNumber <= SCHEDULE.dailyUntil
+      ? `In your first week home we check in every day; this is day ${dayNumber}.`
+      : `After the first week we check in every other day; this is day ${dayNumber}.`;
   const moved = p.moved.map((s) => s.plain.toLowerCase());
   if (due.reason === "asked")
     return `Your care team asked for this check-in. ${
@@ -111,7 +113,9 @@ export function checkinWhy(p, now = Date.now()) {
 }
 
 export function nextScheduledDay(day) {
-  let d = day + 1;
+  // `day` is the internal zero-based elapsed-day index; display/schedule days
+  // count the discharge day as Day 1.
+  let d = day + 2;
   while (d <= 30 && !isScheduledDay(d)) d++;
   return d <= 30 ? d : null;
 }
@@ -280,7 +284,7 @@ export function notifications(p, now = Date.now()) {
           ? "Your care team has questions for you"
           : due.reason === "readings"
             ? "Your readings moved. Please check in"
-            : `Day ${p.dayHome} check-in`,
+            : `Day ${p.dayHome + 1} check-in`,
       body:
         due.reason === "scheduled"
           ? "A short conversation with Relay about today. About two minutes."
@@ -343,7 +347,7 @@ export const alreadySent = (p, since) =>
 export function buildReport(p, now = Date.now()) {
   const i = insight(p);
   const lines = [
-    `Recovery report for ${p.name}, day ${p.dayHome} at home after ${p.profile.after}.`,
+    `Recovery report for ${p.name}, day ${p.dayHome + 1} at home after ${p.profile.after}.`,
     `Prepared ${new Date(now).toLocaleString()} from the Relay patient app. Sent by the patient.`,
     "",
     "What the readings show:",
@@ -401,7 +405,7 @@ export function buildReport(p, now = Date.now()) {
     "Relay describes readings against the patient's own baseline. It does not diagnose. Every patient in this demo is synthetic.",
   );
   return {
-    subject: `Recovery report: ${p.name}, day ${p.dayHome} after ${p.profile.after}`,
+    subject: `Recovery report: ${p.name}, day ${p.dayHome + 1} after ${p.profile.after}`,
     body: lines.join("\n"),
     to: p.careEmail || "",
     modelContext: p.answered

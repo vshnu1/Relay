@@ -1,3 +1,4 @@
+import "./assurance.css";
 import { authHeaders } from "../model/authHeaders.js";
 import { useEffect, useState } from "react";
 import {
@@ -57,7 +58,7 @@ const SAFEGUARDS = [
     name: "Automatic logoff",
     state: BUILT,
     was: "The browser signed you out. The credential stayed valid, because there was no session store to revoke.",
-    note: "Fifteen minutes idle, warned at fourteen, measured from real user events so a polling timer cannot hold a session open. Sessions now live on the server with a twelve-hour ceiling, so signing out ends the session rather than clearing the tab.",
+    note: "Fifteen minutes without activity, measured from real user events so a polling timer cannot hold a session open. Sessions live on the server with a twelve-hour ceiling, so signing out ends the session rather than clearing the tab.",
   },
   {
     cite: "164.312(a)(2)(iv)",
@@ -272,8 +273,8 @@ export default function Assurance() {
           </span>
           <h3>Sessions end by themselves</h3>
           <p>
-            Fifteen minutes idle, warned first, and ended on the server rather
-            than in your browser.
+            Fifteen minutes without activity, then ended on the server than in
+            your browser.
           </p>
         </article>
         <article className="rx-assurance-point">

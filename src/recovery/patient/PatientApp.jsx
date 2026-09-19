@@ -1,3 +1,4 @@
+import HomeMessages from "./HomeMessages.jsx";
 import { useEffect } from "react";
 import {
   Activity,
@@ -51,7 +52,8 @@ function Home({ patient: p }) {
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  const left = Math.max(0, p.windowDays - p.dayHome);
+  const dayNumber = p.dayHome + 1;
+  const left = Math.max(0, p.windowDays - dayNumber);
   return (
     <>
       <header className="rx-ph-top">
@@ -69,7 +71,7 @@ function Home({ patient: p }) {
         <div className="rx-ph-progress">
           <div className="rx-ph-progress-labels">
             <strong>
-              Day {p.dayHome} of {p.windowDays} at home
+              Day {dayNumber} of {p.windowDays} at home
             </strong>
             <span>
               {left === 0
@@ -80,7 +82,7 @@ function Home({ patient: p }) {
           <div className="rx-ph-bar" aria-hidden="true">
             <i
               style={{
-                width: `${Math.min(100, (p.dayHome / p.windowDays) * 100)}%`,
+                width: `${Math.min(100, (dayNumber / p.windowDays) * 100)}%`,
               }}
             />
           </div>
@@ -105,6 +107,7 @@ function Home({ patient: p }) {
         </div>
       </header>
 
+      <HomeMessages patient={p} />
       <HomeAlert patient={p} />
 
       <div className="rx-ph-lanes">

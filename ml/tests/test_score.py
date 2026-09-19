@@ -56,6 +56,8 @@ class EngineScenarioTest(unittest.TestCase):
         self.assertEqual(after["state"], "review")
         self.assertEqual([s["flagged"] for s in before["signals"]], [s["flagged"] for s in after["signals"]])
         self.assertIn("fatigue — Worsening", after["summary"])
+        self.assertTrue(after["restraint"]["escalated"])
+        self.assertNotIn("note", after["restraint"])
 
     def test_model_alone_never_yields_review(self):
         for scenario in ("ambiguous", "explained", "review"):

@@ -30,7 +30,7 @@ function summary(p, a) {
   }
 }
 
-export default function ModelSummary({ patient: p, run, busy, error }) {
+export default function ModelSummary({ patient: p, error }) {
   const a = p.analysis;
   const state = a ? STATES[a.application_state] || STATES.monitoring : null;
   const score =
@@ -44,24 +44,12 @@ export default function ModelSummary({ patient: p, run, busy, error }) {
         <div>
           <span className="rx-ph-kicker">Relay's model</span>
           <strong>
-            {busy && !a
-              ? "Comparing with your usual…"
-              : state
-                ? state.label
-                : "Not scored yet"}
+            {state ? state.label : "Not scored yet"}
             {score !== null && (
               <span className="rx-model-scorenum"> · {score} of 100</span>
             )}
           </strong>
         </div>
-        <button
-          type="button"
-          className="rx-ph-btn outline small"
-          disabled={busy}
-          onClick={() => run(p.answered ? p.answered.answers : null)}
-        >
-          {busy ? "Scoring…" : a ? "Score again" : "Score"}
-        </button>
       </div>
       {score !== null && (
         <div className="rx-model-bar" aria-label={`Score ${score} of 100`}>

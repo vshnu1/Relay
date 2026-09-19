@@ -9,6 +9,7 @@ import { authHeaders } from "../model/authHeaders.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { describeAnalysis } from "../model/mlClient.js";
 import { checkinWhy } from "../model/schedule.js";
+import { matchQuestionOption } from "./answerText.js";
 
 export async function voiceStatus(fetchFn = fetch) {
   try {
@@ -53,7 +54,7 @@ export function recoveryStatus(
     // cannot answer "what about my sleep?" for a patient whose program
     // records sleep but does not watch it.
     recorded_not_counted: (p.others || []).map((s) => s.plain),
-    day_at_home: p.dayHome,
+    day_at_home: p.dayHome + 1,
     window_days: p.windowDays,
     hospital: p.hospital,
     readings: p.counted.map((s) => ({
@@ -94,43 +95,58 @@ export function recoveryStatus(
   };
 }
 
-// Match what the agent says an answer was to one of the allowed options.
-function pickOption(value, options) {
-  if (typeof value !== "string") return null;
-  const v = value.trim().toLowerCase();
-  const direct =
-    options.find((o) => o.toLowerCase() === v) ||
-    options.find((o) => v.includes(o.toLowerCase())) ||
-    null;
-  if (direct) return direct;
-  if (
-    options.includes("A lot") &&
-    /\b(much|a lot|very|severe|significantly|far more)\b/.test(v)
-  )
-    return "A lot";
-  if (
-    options.includes("A little") &&
-    /\b(a little|slightly|a bit|somewhat|mildly)\b/.test(v)
-  )
-    return "A little";
-  if (
-    options.includes("Not sure") &&
-    /\b(not sure|unsure|don't know|do not know|uncertain|maybe)\b/.test(v)
-  )
-    return "Not sure";
-  if (
-    options.includes("Yes") &&
-    /\b(yes|yeah|yep|i did|i have|i am|i was)\b/.test(v)
-  )
-    return "Yes";
-  if (
-    options.includes("No") &&
-    /\b(no|nope|not really|unchanged|the same|haven't|have not|didn't|did not)\b/.test(
-      v,
-    )
-  )
-    return "No";
-  return null;
+// Use the same cautious, whole-phrase answer mapping as the text check-in.
+const pickOption = (questionId, value) =>
+  matchQuestionOption(questionId, value);
+
+// Adapt the next spoken turn to the current discharge-specific question and
+// the patient's answer. One brief follow-up for the whole check-in is enough to
+// clarify a change; the agent otherwise acknowledges and moves on.
+export function adaptiveTurnGuidance(
+  questionId,
+  utterance,
+  followUpUsed = false,
+) {
+  const question = QUESTIONS[questionId];
+  if (!question)
+    return {
+      message: "Continue briefly with the next selected question.",
+      asksFollowUp: false,
+    };
+  const answer = matchQuestionOption(questionId, utterance);
+  const unchanged = ["No", "Same", "Usual"].includes(answer);
+  if (followUpUsed) {
+    return {
+      message: `The patient has used the one clarification. Their answer is ${answer || "unclear"} for “${question.short}.” Do not ask another follow-up. If clear, record it; otherwise use “Not sure” if available. Acknowledge in a few words and continue.`,
+      asksFollowUp: false,
+    };
+  }
+  if (unchanged) {
+    return {
+      message: `The patient answered “${question.short}” with ${answer}. Do not probe. Acknowledge in a few words and ask the next selected question. Keep it brief.`,
+      asksFollowUp: false,
+    };
+  }
+  const followUp = {
+    mealPlan: "What did you eat or drink, and which instruction differed?",
+    medicine: "Which medicine changed, and when?",
+    activity: "What activity, and when?",
+  }[questionId] || "When did it start, or how often?";
+  if (!answer) {
+    const clarification = {
+      mealPlan: "Was it outside your discharge instructions?",
+      medicine: "Which medicine changed, if any?",
+      activity: "Was that more activity than your plan?",
+    }[questionId] || `Could you say more about ${question.short.toLowerCase()}?`;
+    return {
+      message: `The answer about “${question.short}” is unclear. Ask only: “${clarification}” Do not suggest an answer. Keep the acknowledgment under 8 words, then continue.`,
+      asksFollowUp: true,
+    };
+  }
+  return {
+    message: `The patient reports ${answer} for “${question.short}.” Acknowledge in a few words, then ask only: “${followUp}” Keep it brief; do not infer a cause.`,
+    asksFollowUp: true,
+  };
 }
 
 export function openingMessage(
@@ -149,16 +165,17 @@ export function openingMessage(
     // available to the agent if the patient asks, but the greeting should not
     // become a spoken report before the first question.
     const leadFinding = findingSummary?.split(",")[0]?.trim();
-    const context = leadFinding
-      ? `I noticed ${leadFinding.replace(/^(.+?) (higher|lower) than your usual/, "your $1 has been $2 than usual")}. I cannot tell what caused it.`
-      : "I noticed a change from your usual readings.";
+    const match = leadFinding?.match(/^(.+?) (higher|lower) than your usual/);
+    const context = match
+      ? `I noticed your ${match[1]} is ${match[2]} than usual.`
+      : "I noticed a change in your readings.";
     return `Hi ${patient.first}, this is Relay. ${context} ${first.text}`;
   }
 
   if (mode === "insufficient")
-    return `Hi ${patient.first}, this is Relay. I do not have enough recent readings to compare yet. ${first.text}`;
+    return `Hi ${patient.first}, I do not have enough readings to compare yet. ${first.text}`;
 
-  return `Hi ${patient.first}, this is Relay checking in about your recovery. ${first.text}`;
+  return `Hi ${patient.first}, how has your recovery been? ${first.text}`;
 }
 
 export async function startPatientVoiceSession({
@@ -202,7 +219,8 @@ export async function startPatientVoiceSession({
     focusSummary: findingSummary,
   });
   const why = checkinWhy({ ...p, analysis });
-  return Conversation.startSession({
+  let activeSession = null;
+  activeSession = await Conversation.startSession({
     signedUrl: body.signed_url,
     connectionType: "websocket",
     // Render's strict CSP blocks generated blob/data worklet modules. Serve
@@ -214,7 +232,7 @@ export async function startPatientVoiceSession({
     dynamicVariables: {
       patient_name: p.first,
       program: p.profile.name,
-      day_at_home: String(p.dayHome),
+      day_at_home: String(p.dayHome + 1),
       checkin_reason: why,
       model_state: status.model.state,
       model_summary: status.model.summary,
@@ -246,7 +264,10 @@ export async function startPatientVoiceSession({
     onMessage: (m) => {
       if (!m?.message) return;
       if (m.source === "ai") onAgentSaid?.(m.message);
-      else if (m.source === "user") onPatientSaid?.(m.message);
+      else if (m.source === "user")
+        onPatientSaid?.(m.message, (context) =>
+          activeSession?.sendContextualUpdate?.(context),
+        );
     },
     onError: (e) => onError?.(e),
     clientTools: {
@@ -264,7 +285,7 @@ export async function startPatientVoiceSession({
             questions.map((id, index) => [id, params?.[`answer_${index + 1}`]]),
           );
         for (const id of questions) {
-          const picked = pickOption(raw[id], QUESTIONS[id].options);
+          const picked = pickOption(id, raw[id]);
           if (picked) answers[id] = picked;
         }
         const note =
@@ -280,4 +301,5 @@ export async function startPatientVoiceSession({
       },
     },
   });
+  return activeSession;
 }

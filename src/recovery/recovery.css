@@ -221,6 +221,12 @@ body {
   font-weight: 600;
   box-shadow: inset 3px 0 0 #315e4c;
 }
+.rx-signout-link {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
 .rx-side-heading {
   padding: 0 13px 4px;
   color: #879188;
@@ -707,14 +713,58 @@ p.rx-row-summary {
   gap: 4px;
   min-width: 0;
 }
+.rx-cells .rx-day-cell {
+  height: 30px;
+  min-width: 0;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition:
+    outline-color 0.12s,
+    filter 0.12s,
+    transform 0.12s;
+}
+.rx-cells .rx-day-cell:hover:not(:disabled) {
+  filter: brightness(0.94);
+  transform: translateY(-1px);
+}
+.rx-cells .rx-day-cell:focus-visible,
+.rx-cells .rx-day-cell.selected {
+  outline: 2px solid var(--pine, #29483e);
+  outline-offset: 2px;
+  z-index: 1;
+}
+.rx-cells .rx-day-cell:disabled {
+  cursor: default;
+}
+.rx-cells .rx-day-cell.hatch,
 .rx-cells i {
   height: 30px;
   flex-shrink: 0;
   border-radius: 5px;
 }
+.rx-cells .rx-day-cell.hatch,
 .rx-cells i.hatch,
 .rx-hatch {
   background: repeating-linear-gradient(135deg, #f1f3f0 0 3px, #cfd5ce 3px 4px);
+}
+.rx-grid-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin: 16px 108px 4px 228px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #f7f9f6;
+  color: var(--muted);
+  font-size: 14px;
+}
+.rx-grid-detail strong {
+  color: var(--ink);
 }
 .rx-matrix-labels {
   padding-top: 34px;
@@ -3070,7 +3120,7 @@ p.rx-row-summary {
 /* Authentication shell. This is a demo sign-in surface, not an identity provider. */
 .rx-auth-page {
   min-height: 100vh;
-  padding: 34px 28px 56px;
+  padding: 28px clamp(20px, 4vw, 56px) 44px;
   background:
     radial-gradient(
       circle at 15% 12%,
@@ -3080,7 +3130,7 @@ p.rx-row-summary {
     var(--paper);
 }
 .rx-auth-shell {
-  width: min(1080px, 100%);
+  width: min(1240px, 100%);
   margin: 0 auto;
 }
 .rx-auth-back {
@@ -3096,33 +3146,37 @@ p.rx-row-summary {
 }
 .rx-auth-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
-  gap: clamp(44px, 9vw, 120px);
+  grid-template-columns: minmax(0, 1fr) minmax(400px, 460px);
+  gap: clamp(42px, 6vw, 84px);
   align-items: center;
-  min-height: calc(100vh - 110px);
-  padding: 40px 4vw 30px;
+  min-height: calc(100vh - 72px);
+  padding: 18px 18px 30px;
 }
 .rx-auth-intro {
-  max-width: 540px;
+  max-width: 680px;
 }
 .rx-auth-brand {
   display: inline-flex;
   font-size: 23px;
+  margin-bottom: 28px;
 }
 .rx-auth-intro .rx-eyebrow {
   display: flex;
   margin-bottom: 20px;
 }
 .rx-auth-intro h1 {
-  max-width: 520px;
+  max-width: 16ch;
   font-weight: 600;
+  font-size: clamp(38px, 3.2vw, 50px);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
 }
 .rx-auth-intro > p {
   max-width: 475px;
-  margin-top: 24px;
+  margin-top: 12px;
   color: var(--muted);
-  font-size: 18px;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.55;
 }
 .rx-auth-promise {
   display: flex;
@@ -3155,11 +3209,11 @@ p.rx-row-summary {
   line-height: 1.45;
 }
 .rx-auth-card {
-  padding: 30px;
+  padding: 30px clamp(24px, 3vw, 36px);
   border: 1px solid var(--line);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 24px 70px rgba(31, 47, 42, 0.1);
+  box-shadow: 0 16px 48px rgba(31, 47, 42, 0.075);
 }
 .rx-auth-card-head {
   display: flex;
@@ -3179,8 +3233,14 @@ p.rx-row-summary {
 }
 .rx-auth-card h2 {
   margin-top: 4px;
-  font-size: 30px;
+  font-size: 25px;
   letter-spacing: -0.04em;
+}
+.rx-auth-card-intro {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
 }
 .rx-auth-demo-note {
   margin-top: 15px;
@@ -3278,18 +3338,19 @@ p.rx-row-summary {
   }
   .rx-auth-grid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 24px;
     min-height: auto;
-    padding: 44px 0 0;
+    padding: 26px 0 0;
   }
   .rx-auth-brand {
-    margin-bottom: 40px;
+    margin-bottom: 24px;
   }
   .rx-auth-intro h1 {
-    font-size: clamp(40px, 12vw, 58px);
+    font-size: clamp(36px, 9vw, 46px);
   }
   .rx-auth-card {
-    max-width: 520px;
+    width: 100%;
+    max-width: 560px;
   }
 }
 
@@ -3455,8 +3516,17 @@ p.rx-row-summary {
 }
 .rx-home-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Four statuses, so four columns: three left the last card on a line of its own. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 11px;
+}
+/* On a narrower laptop four across is tight, so the icon sits above the words and the
+   words get the card's full width. Below 1050px the row becomes two columns. */
+@media (min-width: 1051px) and (max-width: 1280px) {
+  .rx-home-summary-card {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 .rx-home-summary-card {
   display: flex;
@@ -4011,6 +4081,9 @@ p.rx-row-summary {
 .rx-watch-stat.waiting svg {
   color: var(--amber-ink);
 }
+.rx-watch-stat.nodata svg {
+  color: var(--muted);
+}
 .rx-watch-stat strong {
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -4157,12 +4230,12 @@ p.rx-row-summary {
 }
 
 .rx-auth-intro h1 {
-  font-size: clamp(40px, 4.5vw, 60px);
+  font-size: clamp(38px, 3.2vw, 50px);
   line-height: 1.08;
   letter-spacing: -0.05em;
 }
 .rx-auth-brand {
-  margin-bottom: 40px;
+  margin-bottom: 28px;
 }
 .rx .rx-auth-submit {
   width: 100%;
@@ -4198,6 +4271,7 @@ p.rx-row-summary {
   box-shadow: 0 24px 70px rgba(31, 47, 42, 0.09);
 }
 .rx-landing-inner .rx-brand {
+  width: fit-content;
   margin: 0 0 34px;
   padding: 0;
 }
@@ -4528,17 +4602,6 @@ p.rx-row-summary {
   font-size: 15px;
   line-height: 1.55;
 }
-.rx-followup-details {
-  margin-top: 2px;
-  padding-top: 15px;
-  border-top: 1px solid var(--line-soft);
-}
-.rx-followup-details > summary {
-  cursor: pointer;
-  color: var(--pine);
-  font-size: 13px;
-  font-weight: 700;
-}
 .rx-legend-details > h3 {
   margin: 0;
   color: var(--pine);
@@ -4563,6 +4626,10 @@ p.rx-row-summary {
   font-size: 11.5px;
 }
 .rx-review-actions {
+  /* The rule that used to sit above the collapsed follow-up section, which is gone:
+     the actions now close the card directly. */
+  padding-top: 15px;
+  border-top: 1px solid var(--line-soft);
   display: flex;
   flex-flow: row wrap;
   gap: 8px;
@@ -4709,6 +4776,9 @@ p.rx-row-summary {
   .rx-picker-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rx-grid-detail {
+    margin: 14px 0 4px;
   }
 }
 @media (max-width: 520px) {
@@ -5533,15 +5603,18 @@ p.rx-row-summary {
 }
 /* A program that needs a boundary stated carries it on its own card, where a
    clinician reading the review criteria will see it. */
-.rx-profile-caution {
-  margin: 14px 0 0;
-  padding: 10px 12px;
-  border-left: 3px solid #d9c38a;
+/* `.rx p` resets padding and outranks a bare class, which is why this box's padding
+   never applied. The extra `.rx` is what lets it. */
+.rx .rx-profile-caution {
+  margin: 16px 0 0;
+  padding: 14px 18px;
+  border: 1px solid #e6d7a8;
   background: #fbf7ec;
-  border-radius: 0 6px 6px 0;
-  font-size: 0.83rem;
-  line-height: 1.5;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  line-height: 1.55;
   color: #5d5540;
+  text-wrap: pretty;
 }
 
 /* Check-in conversation: use the available workspace and keep its context in
@@ -6469,39 +6542,6 @@ p.rx-row-summary {
   display: inline;
 }
 
-/* Automatic logoff: a warning in the last minute, and an explanation on the
-   sign-in screen afterwards so nobody thinks the app dropped them. */
-.rx-idle-warning {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  z-index: 60;
-  max-width: 340px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid #d9c38a;
-  background: #fbf7ec;
-  color: #5d5540;
-  box-shadow: 0 8px 24px rgb(20 43 40 / 14%);
-  font-size: 13px;
-  line-height: 1.45;
-}
-.rx-idle-warning strong {
-  font-size: 14px;
-  color: var(--ink);
-}
-.rx-timed-out-note {
-  margin: 0;
-  padding: 12px 20px;
-  border-bottom: 1px solid #d9c38a;
-  background: #fbf7ec;
-  color: #5d5540;
-  font-size: 13.5px;
-}
-
 /* Intended use. Collapsed to one line by default: a clinician should not have
    to dismiss a disclaimer to reach the ward, but the line itself has to be
    there, and the detail has to be one click away rather than in a document. */
@@ -6874,11 +6914,11 @@ p.rx-row-summary {
 /* Signing in as a person. Reuses the existing auth shell, grid, card, labels
    and submit button; only the pieces that did not exist before are here. */
 .rx-auth-lede {
-  margin-top: 14px;
+  margin-top: 12px;
   color: var(--muted);
-  font-size: 14.5px;
+  font-size: 16px;
   line-height: 1.55;
-  max-width: 46ch;
+  max-width: 48ch;
 }
 .rx-auth-points {
   margin: 18px 0 0;
@@ -7024,16 +7064,18 @@ p.rx-row-summary {
    typing its URL, which meant a viewer of the demo never learned it existed. */
 .rx-role-switch {
   display: grid;
-  gap: 10px;
-  margin-top: 22px;
-  max-width: 46ch;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+  max-width: 680px;
 }
 .rx-role-switch button {
   display: grid;
   grid-template-columns: 22px 1fr;
   grid-template-rows: auto auto;
-  gap: 2px 12px;
-  padding: 14px 16px;
+  gap: 4px 12px;
+  min-height: 112px;
+  padding: 17px 18px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.72);
@@ -7051,15 +7093,23 @@ p.rx-row-summary {
 }
 .rx-role-switch button strong {
   color: var(--ink);
-  font-size: 14.5px;
+  font-size: 15px;
+  line-height: 1.35;
 }
 .rx-role-switch button span {
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.45;
 }
 .rx-role-switch button:hover {
   border-color: var(--pine);
+}
+.rx-role-switch button:focus-visible,
+.rx-auth-tabs button:focus-visible,
+.rx-auth-demo:focus-visible,
+.rx-auth-submit:focus-visible {
+  outline: 3px solid rgba(36, 73, 61, 0.32);
+  outline-offset: 3px;
 }
 .rx-role-switch button.active {
   border-color: var(--pine);
@@ -7070,9 +7120,15 @@ p.rx-row-summary {
 .rx-role-switch button.active strong {
   color: var(--pine);
 }
-@media (min-width: 720px) {
+@media (max-width: 600px) {
   .rx-role-switch {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+  }
+  .rx-role-switch button {
+    min-height: 90px;
+  }
+  .rx-auth-card {
+    padding: 24px 20px;
   }
 }
 
@@ -7089,4 +7145,20 @@ p.rx-row-summary {
   margin: 26px 0 8px;
   font-size: 19px;
   letter-spacing: -0.02em;
+}
+
+/* Keep sign-out easy to locate and centered in both workspaces. */
+.rx-side-foot {
+  align-items: center;
+}
+.rx-side-foot .rx-signout-link {
+  justify-content: center;
+}
+.rx-pweb .rx-side-foot .rx-textbtn {
+  align-self: center;
+}
+
+/* The Care team intro runs the width of its page; elsewhere the lead keeps its measure. */
+.rx-pweb .rx-p-lead.wide {
+  max-width: none;
 }

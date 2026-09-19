@@ -1,10 +1,10 @@
+import { forgetUser, rememberUser } from "./model/currentUser.js";
 import { useEffect, useState } from "react";
 import {
   useCohort,
   usePatient,
   useRoster,
   useSourceLabel,
-  useSyncStatus,
   useRoute,
   go,
 } from "./useRecovery.js";
@@ -16,7 +16,8 @@ import { currentPatientId, signIn, signOut } from "./patient/session.js";
 import Login from "./Login.jsx";
 import Account from "./Account.jsx";
 import RoleSignIn from "./SignIn.jsx";
-import { useIdleSignOut, IdleWarning, IDLE_MINUTES } from "./idleSignOut.jsx";
+import { useIdleSignOut } from "./idleSignOut.jsx";
+import { LANDING_URL } from "./landingUrl.js";
 import "./recovery.css";
 
 const CODE_KEY = "rx-code";
@@ -40,7 +41,6 @@ function endServerSession() {
 }
 const SIGNED_ROLE_KEY = "rx-signed-role";
 const OPEN_DEMO_KEY = "rx-open-demo";
-const TIMED_OUT_KEY = "rx-timed-out";
 
 export default function Root() {
   const route = useRoute();
@@ -81,6 +81,7 @@ export default function Root() {
             const body = await me.json();
             if (["clinician", "patient"].includes(body.user?.role))
               role = body.user.role;
+            rememberUser(body.user);
           } else if (!accounts) {
             const verified = await fetch("/api/session", {
               method: "POST",
@@ -104,6 +105,7 @@ export default function Root() {
         else if (required) {
           sessionStorage.removeItem(SIGNED_ROLE_KEY);
           sessionStorage.removeItem(CODE_KEY);
+          forgetUser();
           signOut();
         }
         setGate({ checked: true, required, accounts, role });
@@ -120,12 +122,12 @@ export default function Root() {
   // Automatic logoff, which the HIPAA Security Rule requires of a system
   // holding health records. Only armed once a session exists, so the sign-in
   // screen is not a thing that expires.
-  const idleLeft = useIdleSignOut(!!gate.role, () => {
+  useIdleSignOut(!!gate.role, () => {
     endServerSession();
     sessionStorage.removeItem(SIGNED_ROLE_KEY);
     sessionStorage.removeItem(CODE_KEY);
+    forgetUser();
     signOut();
-    sessionStorage.setItem(TIMED_OUT_KEY, "1");
     location.hash = "";
     location.reload();
   });
@@ -141,6 +143,14 @@ export default function Root() {
         </button>
       </div>
     );
+  // Nobody signed in and no destination asked for: the front door is the public landing
+  // page, not a sign-in form. Any hash is a deliberate destination (the landing page's
+  // own buttons come back through #/patient and #/login), so it falls through to the
+  // gate below. The open local demo has no sign-in, so its bare address stays the ward.
+  if (gate.required && !gate.role && !section && location.pathname === "/") {
+    location.replace(LANDING_URL);
+    return null;
+  }
   // Role gate first (shared code per role, verified by the server); the patient
   // then opens their own profile with the discharge code in PatientRoot.
   // With accounts required, both roles go through the same screen; it asks for
@@ -151,22 +161,14 @@ export default function Root() {
       ? RoleSignIn
       : Login;
   if (gate.required && !gate.role) {
-    const timedOut = sessionStorage.getItem(TIMED_OUT_KEY) === "1";
     return (
       <div className="rx">
-        {timedOut && (
-          <p className="rx-timed-out-note" role="status">
-            You were signed out after {IDLE_MINUTES} minutes without activity.
-            Sign in again to continue.
-          </p>
-        )}
         <AccessScreen
           audience={section === "patient" ? "patient" : "clinician"}
           onSignedIn={(role, code) => {
             sessionStorage.setItem(SIGNED_ROLE_KEY, role);
             sessionStorage.setItem(CODE_KEY, code);
             // The code decides the view. A patient code cannot reach the ward.
-            sessionStorage.removeItem(TIMED_OUT_KEY);
             go(role === "patient" ? "/patient" : "/doctor");
             setGate((g) => ({ ...g, role }));
           }}
@@ -195,116 +197,54 @@ export default function Root() {
 
   return (
     <>
-      <IdleWarning msLeft={idleLeft} />
       {section === "patient" ? (
-        <PatientRoot route={route} />
+        <PatientRoot
+          route={route}
+          onFullSignOut={gate.accounts && gate.role ? signOutFully : null}
+        />
       ) : (
-        <DoctorRoot route={route} />
+        <DoctorRoot
+          route={route}
+          canSignOut={gate.required && !!gate.role}
+          onSignOut={signOutFully}
+        />
       )}
     </>
   );
 }
 
-// Demo scaffolding, not product: one browser plays both roles with no login between
-// them. Labelled as such so a judge is never misled about what it is.
-// When access codes are configured the role switcher is gone: the signed-in
-// role decides the view, and offering a toggle would contradict the gate. The
-// note has to change with it, claiming no login stands between the views
-// would be false once one does.
-const SYNC_LABEL = {
-  live: "Synced with the care team",
-  connecting: "Connecting…",
-  offline: "Offline: this browser only",
-  off: "This browser only",
-};
-function DemoBar({ isPatient, roster, actingId, onSelect }) {
-  const sourceLabel = useSourceLabel();
-  const sync = useSyncStatus();
-  // Read the session directly rather than threading two props through both
-  // route components; the bar is the only thing that needs them.
-  const gated = !!sessionStorage.getItem(SIGNED_ROLE_KEY);
-  const onSignOut = () => {
-    endServerSession();
-    sessionStorage.removeItem(SIGNED_ROLE_KEY);
-    sessionStorage.removeItem(CODE_KEY);
-    sessionStorage.removeItem(ROLE_KEY);
-    signOut();
-    location.hash = "";
-    location.reload();
-  };
-  return (
-    <div className="rx-demobar">
-      <div className="rx-demobar-main">
-        <span className="rx-demobar-label">Demo controls</span>
-        {gated ? (
-          <span className="rx-demobar-role">
-            Signed in as {isPatient ? "patient" : "clinician"}
-          </span>
-        ) : (
-          <nav className="rx-switch" aria-label="Switch role (demo only)">
-            <a href="#/doctor" aria-current={isPatient ? undefined : "page"}>
-              Clinician view
-            </a>
-            <a href="#/patient" aria-current={isPatient ? "page" : undefined}>
-              Patient view
-            </a>
-          </nav>
-        )}
-        <div className="rx-demobar-right">
-          {isPatient && roster && (
-            <label>
-              Signed in as
-              <select
-                value={actingId}
-                onChange={(e) => onSelect(e.target.value)}
-              >
-                {roster.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                    {p.pending ? " (questions waiting)" : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <span className="rx-live">
-            <i aria-hidden="true" />
-            {sourceLabel}
-          </span>
-          <span className={`rx-live rx-sync ${sync}`} title="Shared record">
-            <i aria-hidden="true" />
-            {SYNC_LABEL[sync] || sync}
-          </span>
-          {gated && (
-            <button type="button" className="rx-signout" onClick={onSignOut}>
-              Sign out
-            </button>
-          )}
-        </div>
-      </div>
-      <p className="rx-demobar-note">
-        {gated
-          ? "Access codes are shared per role, checked by the server. A real deployment gives each person an account."
-          : "Demo only, a real deployment separates these by account. No login stands between the two views here."}
-      </p>
-    </div>
-  );
+// Ends the account's session on the server and in this tab, for either role. The bare
+// address it reloads to is the landing page once nobody is signed in.
+function signOutFully() {
+  endServerSession();
+  sessionStorage.removeItem(SIGNED_ROLE_KEY);
+  sessionStorage.removeItem(CODE_KEY);
+  forgetUser();
+  sessionStorage.removeItem(ROLE_KEY);
+  signOut();
+  location.hash = "";
+  location.reload();
 }
 
-function DoctorRoot({ route }) {
+function DoctorRoot({ route, canSignOut, onSignOut }) {
   const cohort = useCohort();
   const sourceLabel = useSourceLabel();
   if (!cohort.length)
     return <div className="rx rx-loading">Connecting to the data stream…</div>;
   return (
     <div className="rx">
-      <DemoBar isPatient={false} />
-      <DoctorApp route={route} cohort={cohort} sourceLabel={sourceLabel} />
+      <DoctorApp
+        route={route}
+        cohort={cohort}
+        sourceLabel={sourceLabel}
+        canSignOut={canSignOut}
+        onSignOut={onSignOut}
+      />
     </div>
   );
 }
 
-function PatientRoot({ route }) {
+function PatientRoot({ route, onFullSignOut }) {
   // The patient side is gated by the discharge code: one profile per sign-in, and
   // the app never derives or holds another patient's record. The roster carries
   // identities and codes only, for the sign-in screen.
@@ -318,6 +258,10 @@ function PatientRoot({ route }) {
     go("/patient");
   };
   const leave = () => {
+    // With accounts, signing out means the account, not only this profile: otherwise
+    // the session stays open behind the discharge-code screen. A shared role code and
+    // the open local demo have no account, so there it closes the profile as before.
+    if (onFullSignOut) return onFullSignOut();
     signOut();
     setSignedIn(null);
     go("/patient");
@@ -327,7 +271,6 @@ function PatientRoot({ route }) {
   if (!patient)
     return (
       <div className="rx">
-        <DemoBar isPatient />
         <main className="rx-p-auth">
           <div className="rx-p-screen rx-card">
             <SignIn roster={roster} onSignIn={enter} />
@@ -337,12 +280,6 @@ function PatientRoot({ route }) {
     );
   return (
     <div className="rx">
-      <DemoBar
-        isPatient
-        roster={roster}
-        actingId={patient.id}
-        onSelect={enter}
-      />
       <PatientApp
         key={patient.id}
         patient={patient}

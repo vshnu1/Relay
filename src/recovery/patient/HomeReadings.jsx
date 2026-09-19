@@ -6,7 +6,7 @@ import ModelSummary from "./ModelSummary.jsx";
 
 // The readings lane: one tile per counted signal, then the model's line.
 export default function HomeReadings({ patient: p }) {
-  const { run, busy, error } = useAnalysis(p);
+  const { run, error } = useAnalysis(p);
   useEffect(() => {
     // Score the patient's own recent readings when their home opens, so a
     // model-triggered focused check-in is visible before they start one.
@@ -70,7 +70,7 @@ export default function HomeReadings({ patient: p }) {
             </div>
           );
         })}
-        <ModelSummary patient={p} run={run} busy={busy} error={error} />
+        <ModelSummary patient={p} error={error} />
       </div>
 
       <a className="rx-ph-lane-foot" href="#/patient/readings">

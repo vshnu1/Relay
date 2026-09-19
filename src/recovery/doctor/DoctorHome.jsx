@@ -56,8 +56,8 @@ function PatientRow({ patient }) {
           </span>
         </div>
         <p className="rx-home-patient-context">
-          {patient.profile.name} · Day {patient.dayHome} of {patient.windowDays}{" "}
-          at home
+          {patient.profile.name} · Day {patient.dayHome + 1} of{" "}
+          {patient.windowDays} at home
         </p>
         <p className="rx-serif rx-home-patient-finding">{patient.line}</p>
       </div>

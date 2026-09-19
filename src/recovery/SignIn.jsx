@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Activity } from "lucide-react";
+import { LANDING_URL } from "./landingUrl.js";
 
 // Sign-in for the two roles. The code is verified by the server, not here -
 // a check in the browser would be decoration. What this cannot do is tell
@@ -42,12 +43,12 @@ export default function SignIn({ onSignedIn, audience = "patient" }) {
   return (
     <div className="rx rx-landing">
       <main className="rx-landing-inner">
-        <div className="rx-brand">
+        <a className="rx-brand" href={LANDING_URL} aria-label="Relay home page">
           <span className="rx-brand-mark" aria-hidden="true">
             <Activity size={19} strokeWidth={2.4} />
           </span>
           <span className="rx-brand-word">Relay</span>
-        </div>
+        </a>
         <h1 className="rx-landing-lede">
           {isPatient ? "Patient access" : "Clinician access"}
         </h1>

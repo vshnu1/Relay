@@ -15,7 +15,11 @@ export default function HomeAlert({ patient: p }) {
   const due = checkinDue(p);
   const checkin = notes.find((n) => n.id === "checkin");
   const report = notes.find((n) => n.id === "report");
-  const rest = notes.filter((n) => n.id !== "checkin" && n.id !== "report");
+  // Unread messages have their own banner at the top of Home (HomeMessages.jsx), so
+  // they are left out here rather than shown twice.
+  const rest = notes.filter(
+    (n) => n.id !== "checkin" && n.id !== "report" && !n.id.startsWith("msg-"),
+  );
   const unusual = (checkin && due.reason !== "scheduled") || report;
   const modelUnusual = ["review_recommended", "context_needed"].includes(
     p.analysis?.application_state,

@@ -37,7 +37,7 @@ function plain(s) {
   if (s.today === null) return "No reading yet today.";
   const word = s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase();
   if (s.moved)
-    return `${word[0].toUpperCase() + word.slice(1)} than your usual since day ${s.runStart}. Your care team can see this.`;
+    return `${word[0].toUpperCase() + word.slice(1)} than your usual since day ${s.runStart + 1}. Your care team can see this.`;
   if (s.towardDays > 0)
     return `${word[0].toUpperCase() + word.slice(1)} than your usual for ${s.towardDays === 1 ? "one day" : `${numberWord(s.towardDays)} ${s.span}`}, but not by much.`;
   return "About your usual.";
@@ -97,7 +97,7 @@ function status(s) {
   const word = s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase();
   if (s.moved)
     return {
-      text: `Changed · ${word} since day ${s.runStart}`,
+      text: `Changed · ${word} since day ${s.runStart + 1}`,
       changed: true,
     };
   if (s.towardDays > 0)
@@ -166,14 +166,15 @@ export default function Metrics({ patient: p }) {
             <i className="band" aria-hidden="true" /> Your usual range
           </span>
           <span>
-            <i className="thr" aria-hidden="true" /> Where a change counts
+            <i className="thr" aria-hidden="true" /> Where your care team takes
+            notice
           </span>
         </div>
       </header>
 
       <div className="rx-ph-metrics">
         <div className="rx-ph-siglist" role="tablist" aria-label="Readings">
-          <span className="rx-ph-kicker">Counted for {p.profile.after}</span>
+          <span className="rx-ph-kicker">Tracked for {p.profile.after}</span>
           {counted.map(item)}
           {others.length > 0 && (
             <>
@@ -214,7 +215,7 @@ export default function Metrics({ patient: p }) {
               {s.today === null
                 ? "No reading"
                 : s.moved
-                  ? `Changed since day ${s.runStart}`
+                  ? `Changed since day ${s.runStart + 1}`
                   : st.changed
                     ? "Changed"
                     : "Usual"}

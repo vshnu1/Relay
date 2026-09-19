@@ -1,0 +1,170 @@
+/* The shared conversation. Its own file, imported by Conversation.jsx, so it adds
+   nothing to recovery.css. Tokens come from .rx. */
+.rx .rx-convo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.rx .rx-convo-thread {
+  list-style: none;
+  margin: 0;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.rx .rx-convo-thread li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 82%;
+}
+.rx .rx-convo-thread li.mine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.rx .rx-convo-thread li.theirs {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+.rx .rx-convo-thread li p {
+  margin: 0;
+  padding: 9px 13px;
+  border-radius: 14px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rx .rx-convo-thread li.mine p {
+  background: var(--pine);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+.rx .rx-convo-thread li.theirs p {
+  background: #ffffff;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+}
+.rx .rx-convo-who {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.rx .rx-convo-thread li small {
+  display: block;
+  font-size: 12px;
+  color: var(--faint);
+}
+.rx .rx-convo-thread li.rx-convo-day {
+  align-self: center;
+  max-width: none;
+}
+.rx .rx-convo-day span {
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: #e9ece8;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.rx .rx-convo-thread li.rx-convo-empty {
+  align-self: center;
+  max-width: none;
+  padding: 18px 8px;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+}
+.rx .rx-convo-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rx .rx-convo-compose label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.rx .rx-convo-compose > div {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.rx .rx-convo-compose textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #cfd6cf;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 14.5px;
+  line-height: 1.45;
+  resize: vertical;
+}
+.rx .rx-convo-compose button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--pine);
+  border-radius: 10px;
+  background: var(--pine);
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.rx .rx-convo-note {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* The patient's copy: larger type and targets, for readers in their fifties and up. */
+.rx .rx-convo.patient .rx-convo-thread {
+  max-height: 440px;
+  padding: 16px;
+  gap: 12px;
+}
+.rx .rx-convo.patient .rx-convo-thread li p {
+  padding: 11px 15px;
+  font-size: 17px;
+}
+.rx .rx-convo.patient .rx-convo-who {
+  font-size: 14.5px;
+}
+.rx .rx-convo.patient .rx-convo-thread li small,
+.rx .rx-convo.patient .rx-convo-day span {
+  font-size: 14px;
+}
+.rx .rx-convo.patient .rx-convo-thread li.rx-convo-empty {
+  font-size: 17px;
+}
+.rx .rx-convo.patient .rx-convo-compose label {
+  font-size: 17px;
+  color: var(--ink);
+}
+.rx .rx-convo.patient .rx-convo-compose > div {
+  flex-direction: column;
+  align-items: stretch;
+}
+.rx .rx-convo.patient .rx-convo-compose textarea {
+  font-size: 17px;
+  padding: 13px 15px;
+  border-radius: 12px;
+}
+.rx .rx-convo.patient .rx-convo-compose button {
+  min-height: 56px;
+  border-radius: 12px;
+  font-size: 18px;
+}

@@ -433,7 +433,7 @@ export const QUESTIONS = {
     toModel: yes,
   },
   mealPlan: {
-    text: "Since your last check-in, have you eaten or drunk anything outside your discharge instructions, including any texture or swallowing guidance?",
+    text: "Since our last check-in, did you eat or drink beyond discharge instructions, including swallowing guidance?",
     short: "Eating or drinking changes",
     options: NYS,
     reports: "a change to eating or drinking",
@@ -454,7 +454,7 @@ export const QUESTIONS = {
     toModel: worse,
   },
   device: {
-    text: "Have you had any nights without your CPAP machine since your last check-in?",
+    text: "Any nights without your CPAP since our last check-in?",
     short: "Nights without the CPAP machine",
     options: NYS,
     reports: "nights without the CPAP machine",

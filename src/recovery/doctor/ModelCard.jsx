@@ -1,6 +1,5 @@
 import { MODEL_STATE } from "./watchStatus.js";
 import { useEffect } from "react";
-import { RefreshCw } from "lucide-react";
 import { useAnalysis } from "../patient/useAnalysis.js";
 
 // The model, shown to the person the product is decision support for. Until now
@@ -130,15 +129,6 @@ export default function ModelCard({ patient: p }) {
             recovery-watch status.
           </p>
         </div>
-        <button
-          type="button"
-          className="rx-model-run"
-          onClick={() => run(p.answered ? p.answered.answers : null)}
-          disabled={busy}
-        >
-          <RefreshCw size={14} aria-hidden="true" />
-          {busy ? "Scoring…" : a ? "Run ML again" : "Try ML scoring"}
-        </button>
       </div>
 
       {!a && (
@@ -273,16 +263,15 @@ export default function ModelCard({ patient: p }) {
                   </li>
                 ))}
               </ul>
-              <p className="rx-model-fine">
-                {/* restraint.py already opens `note` with this exact sentence
-                    on a near miss, so bolding a hard-coded copy of it printed
-                    it twice in a row. Bold the sentence the model sent. */}
-                {a.restraint.near_miss ? (
-                  <strong>{a.restraint.note}</strong>
-                ) : (
-                  a.restraint.note
-                )}
-              </p>
+              {!a.restraint.escalated && a.restraint.note && (
+                <p className="rx-model-fine">
+                  {a.restraint.near_miss ? (
+                    <strong>{a.restraint.note}</strong>
+                  ) : (
+                    a.restraint.note
+                  )}
+                </p>
+              )}
             </>
           )}
 

@@ -11,7 +11,11 @@ import { actions, useSyncStatus } from "../useRecovery.js";
 import { QUESTIONS, SIGNALS } from "../model/profiles.js";
 import { checkinDue, checkinTriggerKey } from "../model/schedule.js";
 import { useAnalysis } from "./useAnalysis.js";
-import { startPatientVoiceSession, voiceStatus } from "./voice.js";
+import {
+  adaptiveTurnGuidance,
+  startPatientVoiceSession,
+  voiceStatus,
+} from "./voice.js";
 import { buildCheckinPlan } from "./checkinPlan.js";
 import { matchOption } from "./answerText.js";
 
@@ -61,6 +65,9 @@ export default function Checkin({ patient: p }) {
   const completedDraftRef = useRef(null);
   const endingByPatientRef = useRef(false);
   const voiceTranscriptRef = useRef([]);
+  const voiceQuestionIndexRef = useRef(0);
+  const voiceFollowUpUsedRef = useRef(false);
+  const voiceAwaitingFollowUpRef = useRef(false);
 
   const noteWithVoiceTranscript = (note) => {
     const transcript = voiceTranscriptRef.current
@@ -113,6 +120,9 @@ export default function Checkin({ patient: p }) {
   const startAgent = async (plan) => {
     if (!voiceConsent) return;
     voiceTranscriptRef.current = [];
+    voiceQuestionIndexRef.current = 0;
+    voiceFollowUpUsedRef.current = false;
+    voiceAwaitingFollowUpRef.current = false;
     completedDraftRef.current = null;
     endingByPatientRef.current = false;
     setEngine("elevenlabs");
@@ -130,9 +140,32 @@ export default function Checkin({ patient: p }) {
         consent: voiceConsent,
         onStatus: (st) => setVoice((v) => ({ ...v, status: st })),
         onAgentSaid: (text) => say("relay", text),
-        onPatientSaid: (text) => {
+        onPatientSaid: (text, sendContextualUpdate) => {
           voiceTranscriptRef.current.push(text);
           say("you", text);
+          const questionId = plan.questions[voiceQuestionIndexRef.current];
+          if (!questionId) {
+            sendContextualUpdate?.(
+              "The selected check-in questions are complete. Invite the patient to add optional context in their own words, or say no. Do not ask another symptom question or probe for a cause.",
+            );
+            return;
+          }
+          const wasFollowUp = voiceAwaitingFollowUpRef.current;
+          const guidance = adaptiveTurnGuidance(
+            questionId,
+            text,
+            voiceFollowUpUsedRef.current,
+          );
+          sendContextualUpdate?.(guidance.message);
+          if (wasFollowUp) {
+            voiceAwaitingFollowUpRef.current = false;
+            voiceQuestionIndexRef.current += 1;
+          } else if (guidance.asksFollowUp) {
+            voiceFollowUpUsedRef.current = true;
+            voiceAwaitingFollowUpRef.current = true;
+          } else {
+            voiceQuestionIndexRef.current += 1;
+          }
         },
         onAnswers: (a, note) => {
           const merged = { ...answersRef.current, ...a };
@@ -224,7 +257,7 @@ export default function Checkin({ patient: p }) {
     setVoice((v) => ({ ...v, status: "connected", error: "" }));
     say(
       "relay",
-      `Hi ${p.first}, this is Relay. ${plan.priority ? "I noticed a change from your usual readings, so I have a few focused questions." : "I have a few brief questions about how recovery is going."} You can answer in your own words. ${QUESTIONS[plan.questions[0]].text}`,
+      `Hi ${p.first}, this is Relay. ${plan.priority ? "Let’s check what has changed." : "How has your recovery been?"} ${QUESTIONS[plan.questions[0]].text}`,
     );
   };
 
@@ -378,7 +411,7 @@ export default function Checkin({ patient: p }) {
               ? "Your care team asked"
               : due.reason === "readings"
                 ? "Priority check-in"
-                : `Day ${p.dayHome} check-in`}
+                : `Day ${p.dayHome + 1} check-in`}
           </span>
           <h1 className="rx-p-title">Talk to Relay</h1>
           <p className="rx-p-lead">
@@ -499,15 +532,17 @@ export default function Checkin({ patient: p }) {
                     ? "Preparing check-in…"
                     : `Start ${checkinPlan.priority ? "priority" : "daily"} ${inputMode === "text" ? "text" : "voice"} check-in`}
                 </button>
-                <small className="rx-p-fine">
-                  {modelUsed
-                    ? "Questions are focused using the latest Relay score and your discharge plan."
-                    : scoreAttempted
-                      ? "The scorer could not be reached, so questions use your discharge plan and recent reading changes."
-                      : checkinPlan.mode === "insufficient"
-                        ? "There are not enough recent readings to compare yet. We’ll focus on how you feel and your discharge plan."
-                        : "Your latest readings will be checked when you start, so the questions can focus on what matters today."}
-                </small>
+                {(modelUsed ||
+                  scoreAttempted ||
+                  checkinPlan.mode === "insufficient") && (
+                  <small className="rx-p-fine">
+                    {modelUsed
+                      ? "Questions are focused using the latest Relay score and your discharge plan."
+                      : scoreAttempted
+                        ? "The scorer could not be reached, so questions use your discharge plan and recent reading changes."
+                        : "There are not enough recent readings to compare yet. We’ll focus on how you feel and your discharge plan."}
+                  </small>
+                )}
                 {inputMode === "voice" && !voice.available && (
                   <small className="rx-p-fine">
                     {voice.unavailableReason ||
@@ -804,7 +839,7 @@ export default function Checkin({ patient: p }) {
             </small>
           </section>
           <section className="rx-p-card rx-p-next-card">
-            <h2>At your pace</h2>
+            <h2>At your pace.</h2>
             <ol>
               <li>
                 <span>1</span>

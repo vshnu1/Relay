@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Activity, KeyRound } from "lucide-react";
 import { normalizeCode } from "./session.js";
+import { LANDING_URL } from "../landingUrl.js";
 
 const formatCode = (value) => {
   const raw = value
@@ -35,12 +36,12 @@ export default function SignIn({ roster, onSignIn }) {
   return (
     <>
       <header className="rx-p-top">
-        <span className="rx-brand">
+        <a className="rx-brand" href={LANDING_URL} aria-label="Relay home page">
           <span className="rx-brand-mark">
             <Activity size={18} strokeWidth={2.4} />
           </span>
           Relay
-        </span>
+        </a>
       </header>
       <span className="rx-p-signin-kicker">Patient portal</span>
       <h1 className="rx-p-title">Sign in to Relay</h1>
