@@ -99,7 +99,7 @@
   var PRIMARY =
     ".rx-p-btn.primary, .rx-ph-btn.primary, .rx-signin-button, .rx-p-text-reply-actions .rx-p-btn";
   var LIGHT =
-    ".rx-navlink, .rx-p-mode-choice label, .rx-ph-hrow.clickable, .rx-ph-row, .rx-p-back, .rx-p-btn:not(.primary), .rx-p-textbtn, .rx-ph-device, input[type=checkbox], input[type=radio]";
+    ".rx-navlink, .rx-p-mode-choice label, .rx-ph-hrow.clickable, .rx-ph-row, .rx-ph-sig, .rx-ph-links a, .rx-p-iconbtn, .rx-p-back, .rx-p-btn:not(.primary), .rx-p-textbtn, .rx-ph-device, input[type=checkbox], input[type=radio]";
   function installHaptics() {
     if (!haptics()) return;
     document.addEventListener(
@@ -172,6 +172,18 @@
     window.addEventListener("hashchange", function () {
       var active = document.activeElement;
       if (active && active !== document.body && active.blur) active.blur();
+    });
+    // On a phone the readings list sits under the chart it drives (the shell
+    // reorders them; see chrome.css §12). A row far down the list would
+    // otherwise change a chart that is off-screen, so the chart comes back.
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (!(t instanceof Element) || !t.closest(".rx-ph-sig")) return;
+      var detail = document.querySelector(".rx-ph-detail");
+      if (!detail) return;
+      requestAnimationFrame(function () {
+        detail.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     });
     new MutationObserver(function (records) {
       for (var i = 0; i < records.length; i++) {

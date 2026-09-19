@@ -78,8 +78,26 @@ product's own tokens (`--pine`, `--sage`, `--amber-tint`, `--serif`) and:
   sage panel with a pulsing indicator and the question in serif, renders the
   transcript as chat bubbles, and pins the text composer above the bar like a
   messaging app;
-- moves the responsive sidebar to a translucent bottom tab bar (icon over label,
-  badge on the icon, sign-out as the last item);
+- moves the responsive sidebar to a translucent bottom tab bar with **four
+  tabs** — Home, Check-in, Readings, Care team — icon over label, badge on the
+  icon. "Your data" is a settings screen: it is reached from the device row on
+  Home (styled as a tappable row with a chevron), keeps Home lit while open,
+  and carries the Sign out button as a floating action above the bar. Both
+  hidden links stay in the DOM, which is what lets `:has()` tell which screen
+  is showing without any script;
+- on Readings, puts the **detail card first** — title, three figures across
+  (last night · your usual · change), the plain-language line, then the chart —
+  with the list of readings underneath driving it. At phone width the page had
+  laid out list-then-detail, so tapping a reading changed a chart a thousand
+  pixels below;
+- makes the chart readable: the compact chart reserves 168px on its right for
+  two rule captions, which on a 330px card left about 100px of graph. The plot
+  container is made exactly that much wider than the card, the card clips the
+  excess, the "usual" caption (a repeat of the figure above) is hidden and the
+  threshold caption is re-anchored to end inside the plot with a halo. The
+  graph is also taller (250px) with 12px axis text;
+- turns the hospital detail panel (a right-hand drawer on desktop) into a
+  bottom sheet with a grabber;
 - hides the demo role switcher — on a phone the app is one patient signed in
   with their own code.
 
@@ -98,6 +116,8 @@ product's own tokens (`--pine`, `--sage`, `--amber-tint`, `--serif`) and:
   discharge → home happen with no hash change, while the keyboard's scroll
   offset is still in effect, which otherwise opens the next screen with its
   heading under the status bar), and dismisses the keyboard on route changes;
+- on Readings, scrolls the chart card back into view when a reading is tapped,
+  since the list now sits underneath the chart it drives;
 - opens on `#/patient` however the app was last left.
 
 Traps worth knowing if you edit these. At phone widths `.rx-side` is a CSS
@@ -142,7 +162,11 @@ Three changes in `src/recovery` would remove the most friction on a phone:
    device passcode).
 2. Default the check-in to voice when the server reports `voice: true`; text
    stays one tap away.
-3. Move sign-out into "Your data" so the tab bar can be five items.
+3. Give the compact chart a phone layout of its own (`SignalChart` in
+   `src/recovery/doctor/Readings.jsx`): captions below the plot instead of a
+   168px right gutter, and a touch handler for the day tooltip, which today
+   listens to mouse events only. The shell works around the first; it cannot
+   add the second.
 
 ## Why this is a separate npm project
 
