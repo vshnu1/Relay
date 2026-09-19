@@ -1070,3 +1070,31 @@
 .rx-ph-banner.noicon .rx-ph-banner-actions {
   align-self: center;
 }
+
+/* Compact alert: one kicker, one line, one short sentence. */
+.rx-ph-banner.noicon {
+  gap: 16px;
+  padding: 10px 16px;
+  align-items: center;
+}
+.rx-ph-banner.noicon > div:not(.rx-ph-banner-actions) {
+  gap: 2px;
+}
+.rx-ph-banner.noicon .rx-ph-kicker {
+  font-size: 11px;
+}
+.rx-ph-banner.noicon strong {
+  font-size: 14px;
+}
+.rx-ph-banner.noicon p {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.rx-ph-banner.noicon .rx-ph-banner-actions {
+  align-self: center;
+}
+.rx-ph-btn.small {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
