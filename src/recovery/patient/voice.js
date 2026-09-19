@@ -36,6 +36,14 @@ export function recoveryStatus(p, questions) {
   return {
     patient_first_name: p.first,
     program: p.profile.name,
+    // The phrasing the rest of the app uses, so the agent opens the way every
+    // other screen speaks: "recovering after a COPD flare-up", not "recovering
+    // after COPD flare-up".
+    recovering_after: p.profile.after,
+    // What this condition deliberately does not count. Without it the agent
+    // cannot answer "what about my sleep?" for a patient whose program
+    // records sleep but does not watch it.
+    recorded_not_counted: (p.others || []).map((s) => s.plain),
     day_at_home: p.dayHome,
     window_days: p.windowDays,
     hospital: p.hospital,
@@ -57,7 +65,7 @@ export function recoveryStatus(p, questions) {
             direction: c.direction === "above_baseline" ? "higher" : "lower",
             robust_deviation: c.robust_deviation,
           })),
-          summary: describeAnalysis(a),
+          summary: describeAnalysis(a, p.profile),
         }
       : {
           state: "not_scored",
