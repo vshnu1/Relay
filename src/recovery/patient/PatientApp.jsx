@@ -28,6 +28,8 @@ import Assistant from "./Assistant.jsx";
 import Journal from "./Journal.jsx";
 import Care from "./Care.jsx";
 import Insight from "./Insight.jsx";
+import { useAnalysis } from "./useAnalysis.js";
+import { describeAnalysis } from "../model/mlClient.js";
 
 const NAV = [
   { id: "home", label: "Home", href: "#/patient", icon: HomeIcon },
@@ -79,6 +81,7 @@ function phrase(s) {
 
 function Home({ patient: p }) {
   const notes = notifications(p);
+  const { run, busy, error } = useAnalysis(p);
   const due = checkinDue(p);
   const next = nextScheduledDay(p.dayHome);
   const connected = Object.entries(p.devices).filter(
@@ -175,6 +178,33 @@ function Home({ patient: p }) {
                 </p>
               </div>
             ))}
+            <div className="rx-p-entryrow">
+              <span>Relay's model</span>
+              <p>
+                {p.analysis
+                  ? describeAnalysis(p.analysis)
+                  : "Not scored yet. Scoring compares your recent readings with your own usual."}
+              </p>
+              {error && (
+                <p className="rx-p-error" role="alert">
+                  {error}
+                </p>
+              )}
+              <div>
+                <button
+                  type="button"
+                  className="rx-p-btn small"
+                  disabled={busy}
+                  onClick={() => run(p.answered ? p.answered.answers : null)}
+                >
+                  {busy
+                    ? "Scoring…"
+                    : p.analysis
+                      ? "Score again"
+                      : "Score my readings"}
+                </button>
+              </div>
+            </div>
             <a className="rx-p-rowlink" href="#/patient/readings">
               See all readings
               <ChevronRight size={20} aria-hidden="true" />

@@ -3,6 +3,7 @@ import { CheckCircle2, ChevronLeft, Mic, Volume2 } from "lucide-react";
 import { actions, useRecovery } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { checkinDue } from "../model/schedule.js";
+import { useAnalysis } from "./useAnalysis.js";
 
 const canSpeak = () => typeof speechSynthesis !== "undefined";
 function speak(text) {
@@ -27,6 +28,7 @@ export default function Checkin({ patient: p }) {
   const [note, setNote] = useState("");
   const [sentNote, setSentNote] = useState(false);
   const [aloud, setAloud] = useState(false);
+  const { run: score } = useAnalysis(p);
   const spoken = useRef(null);
   useEffect(() => {
     if (mode === "question" && aloud && spoken.current !== step) {
@@ -175,6 +177,7 @@ export default function Checkin({ patient: p }) {
           disabled={!agreed}
           onClick={() => {
             actions.submitCheckin(p.id, answers);
+            score(answers); // the model re-scores with the answers in the background
             setMode("more");
           }}
         >

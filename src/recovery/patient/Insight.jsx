@@ -2,13 +2,17 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { insight, concerningReports } from "../model/schedule.js";
 import { SendReport } from "./Care.jsx";
+import { useAnalysis } from "./useAnalysis.js";
+import { describeAnalysis } from "../model/mlClient.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { clock, list } from "../format.js";
 
 // What the last check-in means, in plain words, with the one action that follows.
 export default function Insight({ patient: p }) {
   const [sending, setSending] = useState(false);
+  const { run, busy, error } = useAnalysis(p);
   const i = insight(p);
+  const a = p.analysis;
   const reports = concerningReports(p.answered);
   const moved = p.moved;
   return (
@@ -41,6 +45,50 @@ export default function Insight({ patient: p }) {
             Send the report to my care team
           </button>
         )}
+      </section>
+      <section className="rx-p-card list" aria-label="Relay's model">
+        <h2>Relay's model</h2>
+        {a ? (
+          <>
+            <p>{describeAnalysis(a)}</p>
+            <p className="rx-p-fine">
+              State: {a.application_state.replace("_", " ")} · score{" "}
+              {a.anomaly_score ?? "n/a"} · data {a.data_quality?.status} ·{" "}
+              {a.withContext ? "with your answers" : "readings only"} ·{" "}
+              {a.model_version}
+            </p>
+            {a.contributors?.length > 0 && (
+              <ul className="rx-p-bullets">
+                {a.contributors.slice(0, 4).map((c) => (
+                  <li key={c.metric}>
+                    {c.label}:{" "}
+                    {c.direction === "above_baseline" ? "higher" : "lower"} than
+                    usual by {Math.abs(c.robust_deviation).toFixed(1)} of your
+                    usual spread
+                    {c.persistence_windows
+                      ? `, for ${c.persistence_windows} six-hour windows`
+                      : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <p>The model has not scored your readings yet.</p>
+        )}
+        {error && (
+          <p className="rx-p-error" role="alert">
+            {error}
+          </p>
+        )}
+        <button
+          type="button"
+          className="rx-p-btn small"
+          disabled={busy}
+          onClick={() => run(p.answered ? p.answered.answers : null)}
+        >
+          {busy ? "Scoring…" : a ? "Score again" : "Score my readings"}
+        </button>
       </section>
       <section className="rx-p-card list" aria-label="What we looked at">
         <h2>What we looked at</h2>

@@ -140,7 +140,8 @@ app.post("/api/session", (req, res) => {
   if (!configured.length)
     return res.json({ role: "clinician", mode: "local-demo" });
   const role = matchRole(String(req.body?.code || ""));
-  if (!role) return res.status(401).json({ error: "That code was not recognised." });
+  if (!role)
+    return res.status(401).json({ error: "That code was not recognised." });
   res.json({ role, mode: "access-code" });
 });
 
@@ -453,6 +454,57 @@ app.post("/api/patients/:id/voice", async (req, res) => {
   audit("checkin.voice.started", req.patient.id);
   res.json({ signed_url: payload.signed_url });
 });
+// Score any patient's readings with the Python model. Used by the patient view,
+// which keeps its own store in the browser: it sends the event contract plus the
+// structured check-in context and gets the evidence object back. Either role may
+// call it; a patient can only send what their own browser holds.
+app.post("/api/ml/score", async (req, res) => {
+  const {
+    events,
+    context = null,
+    program,
+    patient_id: patientId,
+  } = req.body || {};
+  if (!Array.isArray(events) || !events.length || events.length > 10000)
+    return res
+      .status(400)
+      .json({ error: "Supply 1-10,000 measurement records." });
+  if (process.env.VESPER_ML_ENABLED !== "true")
+    return res.status(503).json({
+      error:
+        "The model is not enabled on this server. Set VESPER_ML_ENABLED=true.",
+      code: "ML_DISABLED",
+    });
+  try {
+    const evidence = await scoreWithVesper({
+      events,
+      context,
+      program,
+      patientId,
+    });
+    audit(
+      "ml.scored",
+      patientId || null,
+      `${events.length} events; ${evidence.application_state}`,
+    );
+    // The patient view needs the decision and its explanation, not every raw event.
+    res.json({
+      ...evidence,
+      signals: evidence.signals.map(({ recent, ...signal }) => ({
+        ...signal,
+        recentCount: recent?.length ?? 0,
+      })),
+    });
+  } catch (error) {
+    res
+      .status(502)
+      .json({
+        error: `Model scoring failed: ${error.message}`,
+        code: "ML_FAILED",
+      });
+  }
+});
+
 app.use("/api", (req, res) =>
   res.status(404).json({ error: "Unknown API route." }),
 );

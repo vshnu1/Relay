@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Mic, Send, Volume2, VolumeX } from "lucide-react";
 import { actions } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
+import { useAnalysis } from "./useAnalysis.js";
 
 // A conversational check-in: the same profile questions, asked one at a time in a
 // chat, answered by tapping, typing, or speaking. It is scripted, not a chatbot: it
@@ -74,6 +75,7 @@ export default function Assistant({ patient: p }) {
   const [listening, setListening] = useState(false);
   const endRef = useRef(null);
   const recRef = useRef(null);
+  const { run: score } = useAnalysis(p);
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [log]);
@@ -125,6 +127,7 @@ export default function Assistant({ patient: p }) {
   const finish = (note) => {
     actions.submitCheckin(p.id, answers);
     if (note) actions.sendNote(p.id, note);
+    score(answers);
     setStage({ kind: "done" });
     say({
       who: "relay",

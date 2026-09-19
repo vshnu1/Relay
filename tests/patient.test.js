@@ -278,3 +278,63 @@ test("what the patient enters survives a reload through the local log", async ()
   b.store.destroy();
   clearLog();
 });
+
+test("readings become the model's event contract and the model's state leads the insight", async () => {
+  const { toModelEvents, buildRequest } =
+    await import("../src/recovery/model/mlClient.js");
+  const events = toModelEvents({
+    restingHr: [
+      { t: 1000, v: 62 },
+      { t: 1000, v: 63 },
+      { t: 2000, v: 61 },
+    ],
+    oxygen: [
+      { t: 3000, v: 96.5 },
+      { t: 4000, v: 101 },
+    ],
+    skinTemp: [{ t: 5000, v: 33.9 }],
+  });
+  assert.deepEqual(
+    events.map((e) => [e.metric, e.value, e.unit, e.source]),
+    [
+      ["rhr", 62, "bpm", "wearable"],
+      ["rhr", 61, "bpm", "wearable"],
+      ["spo2", 96.5, "%", "wearable"],
+    ],
+  );
+  const { store, view } = await cohort();
+  const req = buildRequest(view("maya"), {
+    breathing: "A lot",
+    medicine: "No",
+    activity: "No",
+  });
+  assert.equal(req.program, "pneumonia_recovery");
+  assert.equal(req.context.shortness_of_breath, true);
+  assert.ok(req.events.length > 20);
+  store.actions.setAnalysis("maya", {
+    application_state: "review_recommended",
+    anomaly_score: 0.83,
+    is_anomalous: true,
+    model_version: "baseline-iforest-v1",
+    data_quality: { status: "sufficient" },
+    contributors: [
+      {
+        metric: "respiratory",
+        label: "Respiratory rate",
+        direction: "above_baseline",
+        robust_deviation: 3.1,
+        persistence_windows: 5,
+      },
+    ],
+    missing_signals: [],
+  });
+  await flush();
+  const i = insight(view("maya"));
+  assert.equal(i.level, "send");
+  assert.match(i.body, /scored this pattern 83 out of 100/);
+  assert.match(
+    buildReport(view("maya")).body,
+    /Relay model \(baseline-iforest-v1\): review_recommended/,
+  );
+  store.destroy();
+});

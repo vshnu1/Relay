@@ -54,6 +54,72 @@ export function insight(p) {
   const missed = answered?.answers.medicine === "Yes";
   const active = answered?.answers.activity === "Yes";
   const moved = p.moved.map((s) => s.plain.toLowerCase());
+  const a = p.analysis;
+  // When the model has scored this patient, its state leads. The rules below are
+  // the fallback when it has not run.
+  if (a) {
+    const top = (a.contributors || [])
+      .slice(0, 3)
+      .map((c) => c.label.toLowerCase());
+    const why = top.length
+      ? `${sentenceList(top)} ${top.length === 1 ? "is" : "are"} away from your usual`
+      : "Your readings are away from your usual";
+    if (a.application_state === "review_recommended")
+      return {
+        level: "send",
+        title: "Your readings and your answers point the same way",
+        body: `${why}${reports.length ? `, and you reported ${list(reports)}` : ", and nothing you told us explains it"}. Relay's model scored this pattern ${Math.round((a.anomaly_score || 0) * 100)} out of 100. We recommend sending this report to your care team now.`,
+        send: true,
+        model: a,
+      };
+    if (a.application_state === "context_needed")
+      return answered && (active || reports.length === 0)
+        ? {
+            level: "explained",
+            title: "Your readings moved, and your answers may explain it",
+            body: `${why}. ${active ? "You told us you were more active than usual." : "Nothing you reported points to a problem."} Your care team will see both. Rest today and answer again tomorrow.`,
+            send: false,
+            model: a,
+          }
+        : {
+            level: "watch",
+            title: "Your readings moved. A few questions would help",
+            body: `${why}. Relay's model wants your answers before saying more. It takes two minutes.`,
+            send: false,
+            askFirst: true,
+            model: a,
+          };
+    if (a.application_state === "insufficient_data")
+      return {
+        level: "watch",
+        title: "Not enough recent readings to judge",
+        body: `Relay's model needs more recent readings${
+          a.missing_signals?.length
+            ? ` (missing: ${a.missing_signals
+                .filter((m) => m.core)
+                .map((m) => m.metric.replace("_", " "))
+                .join(", ")})`
+            : ""
+        }. Wear your watch tonight and check it is connected.`,
+        send: false,
+        model: a,
+      };
+    if (reports.length > 0)
+      return {
+        level: "watch",
+        title: "Your readings are usual, but you reported symptoms",
+        body: `You reported ${list(reports)}. Relay's model finds nothing unusual in your readings. Your care team will see your answers; if it gets worse, send them a report.`,
+        send: false,
+        model: a,
+      };
+    return {
+      level: "fine",
+      title: "Nothing stands out today",
+      body: "Relay's model finds nothing unusual in your recent readings, and your answers raise nothing. Nothing is needed from you.",
+      send: false,
+      model: a,
+    };
+  }
   if (p.status === "nodata")
     return {
       level: "watch",
@@ -122,6 +188,16 @@ export function notifications(p, now = Date.now()) {
       href: "#/patient/checkin",
       cta: "Answer now",
     });
+  if (p.analysis?.is_anomalous && !due.due && !p.answered) {
+    out.push({
+      id: "model-asks",
+      kind: "action",
+      title: "Relay's model found an unusual pattern",
+      body: "A few questions help your care team understand why.",
+      href: "#/patient/checkin",
+      cta: "Answer now",
+    });
+  }
   if (p.answered && !p.pending) {
     const i = insight(p);
     if (i.level === "send" && !alreadySent(p, p.answered.answeredAt))
@@ -215,6 +291,17 @@ export function buildReport(p, now = Date.now()) {
         (j) =>
           `- ${new Date(j.t).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}, ${j.kind}: ${j.text}`,
       ),
+    );
+  if (p.analysis)
+    lines.push(
+      "",
+      `Relay model (${p.analysis.model_version}): ${p.analysis.application_state}, anomaly score ${p.analysis.anomaly_score ?? "n/a"}, data quality ${p.analysis.data_quality?.status}.`,
+      ...(p.analysis.contributors || [])
+        .slice(0, 4)
+        .map(
+          (c) =>
+            `- ${c.label}: ${c.direction.replace("_", " ")}, robust deviation ${c.robust_deviation}, ${c.persistence_windows} windows`,
+        ),
     );
   lines.push(
     "",

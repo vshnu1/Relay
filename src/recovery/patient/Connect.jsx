@@ -62,6 +62,7 @@ function AllowSheet({ device, patient: p, onClose }) {
 
 function HealthImport({ patient: p }) {
   const [state, setState] = useState({ phase: "idle" });
+  const [replace, setReplace] = useState(true);
   const workerRef = useRef(null);
   useEffect(() => () => workerRef.current?.terminate(), []);
   const pick = (file) => {
@@ -160,6 +161,17 @@ function HealthImport({ patient: p }) {
               : "nothing Relay uses"}{" "}
             in {state.summary.recordsScanned.toLocaleString()} records.
           </p>
+          <label className="rx-p-consent">
+            <input
+              type="checkbox"
+              checked={replace}
+              onChange={(e) => setReplace(e.target.checked)}
+            />
+            <span>
+              Use only my own data from now on: replace the example readings and
+              stop the simulated stream for me.
+            </span>
+          </label>
           <div className="rx-p-stack">
             <button
               type="button"
@@ -170,6 +182,7 @@ function HealthImport({ patient: p }) {
                   p.id,
                   Object.fromEntries(usable),
                   state.summary,
+                  { replace },
                 );
                 setState({ phase: "done", count: usable.length });
               }}

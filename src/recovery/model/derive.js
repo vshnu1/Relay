@@ -390,6 +390,8 @@ export function derive(p, now) {
     messages: p.messages || [],
     journal: p.journal || [],
     reports: p.reports || [],
+    analysis: p.analysis || null,
+    readings: p.readings,
     headline,
     line,
     findings,

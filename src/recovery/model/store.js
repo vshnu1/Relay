@@ -46,13 +46,16 @@ export function createStore(source) {
   const apply = {
     import: (e) =>
       patch(e.patientId, (p) => {
-        const readings = { ...p.readings };
+        // `replace` drops the example readings so charts, baselines and the model
+        // run on the patient's own data only; the simulated stream stops for them.
+        const readings = e.replace ? {} : { ...p.readings };
         for (const [signal, list] of Object.entries(e.readings || {})) {
           if (!SIGNALS[signal]) continue;
           readings[signal] = merge(readings[signal], list.slice(-MAX_IMPORTED));
         }
         return {
           ...p,
+          ownData: e.replace ? true : p.ownData,
           readings,
           devices: {
             ...p.devices,
@@ -216,8 +219,10 @@ export function createStore(source) {
         for (const r of batch) {
           const p = patients[r.patientId];
           // Sharing is the patient's switch: readings from a paused device are dropped here,
-          // whatever the source does.
-          if (!p || !p.devices[SIGNALS[r.signal]?.device]?.sharing) continue;
+          // whatever the source does. A patient on their own imported data takes nothing
+          // from the simulated stream.
+          if (!p || p.ownData || !p.devices[SIGNALS[r.signal]?.device]?.sharing)
+            continue;
           const list = (p.readings[r.signal] || []).concat({ t: r.t, v: r.v });
           // Keep history, thin out today's live readings so a long session stays small.
           if (list.length > MAX_PER_SIGNAL) {
@@ -249,9 +254,15 @@ export function createStore(source) {
 
   const actions = {
     // Patient-entered facts, logged so they survive a reload.
-    importReadings(id, readings, summary) {
-      logged("import", { patientId: id, readings, summary, at: Date.now() });
-      send({ type: "import", patientId: id, summary });
+    importReadings(id, readings, summary, { replace = false } = {}) {
+      logged("import", {
+        patientId: id,
+        readings,
+        summary,
+        replace,
+        at: Date.now(),
+      });
+      send({ type: "import", patientId: id, summary, replace });
     },
     addManualReading(id, signal, v, t = Date.now()) {
       logged("manual", { patientId: id, signal, v, t });
@@ -271,6 +282,9 @@ export function createStore(source) {
     },
     markRead(id, t) {
       logged("read", { patientId: id, t, at: Date.now() });
+    },
+    setAnalysis(id, analysis) {
+      patch(id, (p) => ({ ...p, analysis }));
     },
     setDischarge(id, { notes, medications }) {
       logged("discharge", {
