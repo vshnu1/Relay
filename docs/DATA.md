@@ -337,6 +337,87 @@ recorded in `hrv_measure`. This is safe because the cohort is only used for
 within-subject z-scores, where the choice of measure cancels. **Never quote a
 LifeSnaps HRV figure as SDNN.**
 
+## Where this sits in the literature
+
+Olyanasab and Annabestani reviewed machine learning in personalised wearables
+across 60-odd studies, sorted into bio-electrical, bio-impedance and
+electro-chemical, and electro-mechanical devices.[^rev] Three things in it
+bear on decisions already made here.
+
+**Personal baselines are where the field went, not a choice we made alone.**
+78.5% of the articles they scrutinised incorporated personalised features; in
+the electro-mechanical group specifically, 18 of 23 papers personalised to the
+individual and the remaining 5 identified the potential without implementing
+it. The argument this repository makes from 71 LifeSnaps subjects — that
+between-person spread swamps within-person variation, so one shared threshold
+cannot serve everyone — is the same conclusion that literature reached from
+the other direction.
+
+**A patient-adaptive model reducing false alarms has been measured before.**
+Jeppesen and colleagues fitted patient-adaptive logistic regression to
+wearable ECG and heart-rate variability for seizure detection and report
+78.2% sensitivity with a **31% reduction in false-alarm rate**.[^jep] That is
+the closest published analogue to this product's central claim, on a different
+condition and a different signal set, and it is worth knowing it exists rather
+than presenting the idea as novel.
+
+**Gait carries clinical information, which the two gait programs rely on.**
+Igene et al. predicted Parkinson's disease from accelerometer data at 94.4%
+with an SVM;[^park] Chee et al. detected diabetes from gait analysis;[^diab]
+Stetter et al. estimated knee flexion and adduction moments from IMU signals
+with leave-one-subject-out validation.[^knee] None of these is what
+`stroke_rehabilitation` or `joint_replacement_recovery` does, but they
+establish that the six gait signals the importer now carries are not merely
+incidental phone telemetry.
+
+Also relevant to the roadmap: Cheon et al. detected low medication states from
+Apple Watch sensor data with a gradient-boosted tree at 80.27%,[^med] which is
+the unbuilt "medication adherence as a signal" item. The review marks that
+work as *not* personalised, so the obvious extension is the one this
+architecture would make.
+
+### What this does not license
+
+The accuracy figures throughout that review sit between 75% and 100%, with 78%
+of the electro-mechanical papers above 90%. **Those numbers are not comparable
+to the ones in this document and should never be quoted beside them.** They
+are mostly balanced classification tasks on curated datasets; the figures here
+are a false-alarm rate per subject-day on an undiagnosed cohort and a
+detection lag against an injected change. A detector that answers a different
+question is not better or worse, it is measuring something else.
+
+The review is also a narrative survey rather than a meta-analysis: no PRISMA
+procedure, no risk-of-bias assessment, no pooled effect sizes, and its
+category figure was produced with a chatbot. It is good evidence for the shape
+of the field and poor evidence that any particular method works.
+
+Finally, nothing across its 21 pages is post-discharge deterioration
+monitoring. Seizure forecasting, Parkinson's, diabetes, stress and falls are
+all covered; watching a recently discharged patient's own baseline for
+coordinated drift inside a readmission window is not. That absence is the
+opening this project aims at, and it also means there is no external benchmark
+to measure against — which is why the numbers above had to be produced here.
+
+[^rev]: Olyanasab, A.; Annabestani, M. Leveraging Machine Learning for
+    Personalized Wearable Biomedical Devices: A Review. *J. Pers. Med.* 2024,
+    14, 203. doi:10.3390/jpm14020203
+[^jep]: Jeppesen, J.; Christensen, J.; Johansen, P.; Beniczky, S. Personalized
+    Seizure Detection Using Logistic Regression Machine Learning Based on
+    Wearable ECG-Monitoring Device. *Seizure — Eur. J. Epilepsy* 2023, 107,
+    155–161.
+[^park]: Igene, L.; Alim, A.; Imtiaz, M.H.; Schuckers, S. A Machine Learning
+    Model for Early Prediction of Parkinson's Disease from Wearable Sensors.
+    IEEE CCWC 2023, 734–737.
+[^diab]: Chee, L.Z.; Hwong, H.H.; Sivakumar, S. Diabetes Detection Using Gait
+    Analysis and Machine Learning. ICDATE 2023, 1–7.
+[^knee]: Stetter, B.J.; Krafft, F.C.; Ringhof, S.; Stein, T.; Sell, S. A
+    Machine Learning and Wearable Sensor Based Approach to Estimate External
+    Knee Flexion and Adduction Moments During Various Locomotion Tasks.
+    *Front. Bioeng. Biotechnol.* 2020, 8, 9.
+[^med]: Cheon, A.; Jung, S.Y.; Prather, C.; Sarmiento, M.; Wong, K.;
+    Woodbridge, D.M. A Machine Learning Approach to Detecting Low Medication
+    State with Wearable Technologies. IEEE EMBC 2020, 4252–4255.
+
 ## A second opinion, from a method with no rules in it
 
 `analysis/detect.py` reaches its answer from per-signal z-scores against a
