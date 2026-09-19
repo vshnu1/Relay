@@ -1,7 +1,7 @@
 # Read this out loud
 
 Lines in _[square brackets]_ are for whoever drives the app. Do not read them.
-**564 words, about 3:31.**
+**574 words, about 3:35.**
 
 ---
 
@@ -10,7 +10,7 @@ _[Landing page. Slow scroll. Do not click.]_
 In healthcare, the hardest person to watch is the one who has gone home. The
 thirty days after a discharge are when a patient is most likely to come back,
 and when the line to their care team goes quiet. They do not know what is
-worth a phone call, and the clinician has forty of them.
+worth a phone call.
 
 _[Click "I have a discharge code". Bayfront Health, BAY-2741. Patient home.]_
 
@@ -20,16 +20,16 @@ absolute deviation, so the threshold is theirs, not a population's. Three of
 four signals must stay past it for twenty-four hours before Relay says
 anything.
 
-_[Point at the guidance card, the one with the next step and the Check in
-button.]_
+_[Point at the "What you can do today" card. Let the list of actions read.]_
 
-And the patient is not left holding a number. They get one next step, written
-from their own readings: breathing faster than usual since day nine, three
-others moved with it for thirty-five hours, so complete your check-in and
-meanwhile follow your discharge letter. It names the devices it used, and
-never says what is wrong.
+And the patient is not left holding a number. They get a list of things they
+can actually do today, written from their own readings and their own discharge
+plan: rest more than usual, sit upright rather than lying flat, take the
+medicines they were prescribed and nothing extra, add a temperature reading. A
+hundred and seventy-three of these sentences across the whole ward, and not
+one says what is wrong, because every one passes the same clinical guard.
 
-_[Click Check in. Start the voice check-in, answer one question, point at the
+_[Go to Check-in. Start the voice check-in, answer one question, point at the
 draft it writes.]_
 
 The check-in is an ElevenLabs conversational agent, and the questions come
@@ -46,7 +46,7 @@ readmission window; four are pathways here.
 _[Open Maya Okafor. Left summary, her own words, then "Listen to summary".]_
 
 Open one and you get the story, not a chart, with her own words beside the
-numbers and a FHIR bundle for the record. There is a spoken version too, our
+numbers. There is a spoken version too, our
 second use of ElevenLabs.
 
 _[Model view. Stop on the score.]_

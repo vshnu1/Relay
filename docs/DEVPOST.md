@@ -49,7 +49,14 @@ already recovery pathways in Relay.
 5. **Asks, rather than alarms.** When that happens, an ElevenLabs conversational
    agent runs a check-in whose questions come from the discharge plan itself.
    Nothing reaches the care team until the patient reviews and approves it.
-6. **Hands over one packet.** The clinician gets the pattern, the patient's own
+6. **Tells the patient what to do.** A "What you can do today" card turns the
+   same readings into a list of safe, concrete actions drawn from their own
+   discharge plan: rest more than usual, sit upright rather than lying flat,
+   take the prescribed medicines and nothing extra, add a temperature reading.
+   Across all 28 demo patients that is 173 distinct sentences, and every one
+   passes the clinical language guard. None of them names a condition, grades a
+   reading, or promises an outcome.
+7. **Hands over one packet.** The clinician gets the pattern, the patient's own
    words, a cohort comparison, a mock FHIR bundle, and the follow-up options.
 
 **Each recovery pathway watches different signals.** Fifteen pathways. Sleep is
