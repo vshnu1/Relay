@@ -78,7 +78,45 @@ function build(p) {
   return items.sort((a, b) => b.t - a.t);
 }
 
+// The model's contributors against the rule's flags, so a clinician can see
+// at a glance whether the second opinion is describing the same readings.
+function crossCheck(p) {
+  const a = p.analysis;
+  if (!a) return null;
+  const ruleIds = new Set(p.moved.map((s) => s.id));
+  const labelOf = (c) => (c.label || c.metric).toLowerCase();
+  const contributors = a.contributors || [];
+  const ruleSignals = p.moved.map((s) => s.name.toLowerCase());
+  const both = contributors.filter((c) => p.moved.some((s) => matches(s, c)));
+  const modelOnly = contributors.filter((c) => !both.includes(c));
+  const ruleOnly = p.moved.filter(
+    (s) => !contributors.some((c) => matches(s, c)),
+  );
+  return {
+    both: both.map(labelOf),
+    modelOnly: modelOnly.map(labelOf),
+    ruleOnly: ruleOnly.map((s) => s.name.toLowerCase()),
+    ruleSignals,
+    ruleIds,
+  };
+}
+const MODEL_TO_SIGNAL = {
+  rhr: "restingHr",
+  hrv: "hrv",
+  respiratory: "breathing",
+  spo2: "oxygen",
+  sleep: "sleep",
+  heart_rate: "avgHr",
+  weight: "weight",
+  temperature: "temperature",
+  skin_temperature: "skinTemp",
+};
+const matches = (signal, contributor) =>
+  MODEL_TO_SIGNAL[contributor.metric] === signal.id ||
+  (contributor.label || "").toLowerCase() === signal.name.toLowerCase();
+
 export default function PatientActivity({ patient: p }) {
+  const check = crossCheck(p);
   const [open, setOpen] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const items = build(p);
@@ -103,6 +141,26 @@ export default function PatientActivity({ patient: p }) {
           {reports === 1 ? "" : "s"} · {week} this week
         </span>
       </div>
+      {check && (
+        <p
+          className={`rx-activity-check ${check.modelOnly.length ? "differs" : "agrees"}`}
+        >
+          <strong>Model cross-check.</strong>{" "}
+          {check.both.length
+            ? `Model and rule both flag ${check.both.join(", ")}.`
+            : p.moved.length
+              ? "The model names none of the signals the rule flagged."
+              : "Neither the rule nor the model flags a signal."}
+          {check.modelOnly.length
+            ? ` Model only: ${check.modelOnly.join(", ")}.`
+            : ""}
+          {check.ruleOnly.length
+            ? ` Rule only: ${check.ruleOnly.join(", ")}.`
+            : ""}{" "}
+          Every contributor is a measured deviation from this patient's own
+          baseline; the model never adds a signal that was not recorded.
+        </p>
+      )}
       {items.length > 0 && (
         <ol className="rx-activity-list">
           {shown.map((i, n) => (

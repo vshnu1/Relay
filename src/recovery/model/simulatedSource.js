@@ -510,11 +510,138 @@ function storyFor(def, signal) {
   return story;
 }
 
+// What the hospital wrote at discharge, per pathway, so the demo opens on a
+// patient who has been home for days with a real discharge behind them. Notes,
+// prescriptions and the follow-up are illustrative, not clinical advice. The
+// care team can still overwrite them from the clinician view.
+const DISCHARGE = {
+  pneumonia: {
+    notes:
+      "Community-acquired pneumonia, right lower lobe, treated with IV then oral antibiotics. Oxygen saturation 96% on room air at discharge. Finish the antibiotic course, rest, and keep fluids up. Breathing should ease day by day; contact the respiratory team if breathlessness, fever or cough gets worse rather than better.",
+    medications: [
+      "Amoxicillin 500 mg, three times a day, 5 more days",
+      "Paracetamol 1 g, up to four times a day, as needed",
+    ],
+    followUpDay: 14,
+    where: "Respiratory clinic, outpatients level 2",
+  },
+  heartFailure: {
+    notes:
+      "Admitted with fluid overload from heart failure; diuretics adjusted and weight down 3.2 kg by discharge. Weigh yourself every morning after the toilet, before breakfast. Keep to the fluid and salt limits discussed. Report a weight gain of 2 kg in three days, more swelling, or waking breathless.",
+    medications: [
+      "Furosemide 40 mg, every morning",
+      "Bisoprolol 2.5 mg, once a day",
+      "Ramipril 5 mg, once a day",
+    ],
+    followUpDay: 10,
+    where: "Heart failure nurse clinic",
+  },
+  abdominalSurgery: {
+    notes:
+      "Laparoscopic cholecystectomy, uncomplicated. Wound dressings can come off on day 5; keep the sites clean and dry. Walk a little more each day; no lifting over 5 kg for four weeks. Contact the surgical team for fever, spreading redness at a wound, or pain that is getting worse instead of better.",
+    medications: [
+      "Ibuprofen 400 mg, three times a day with food, 5 days",
+      "Paracetamol 1 g, up to four times a day, as needed",
+    ],
+    followUpDay: 14,
+    where: "Surgical review clinic",
+  },
+  copd: {
+    notes:
+      "COPD exacerbation treated with steroids and antibiotics; back to baseline breathing on discharge. Continue inhalers as prescribed and use the rescue inhaler as agreed in your action plan. Contact the pulmonary team if you need the rescue inhaler more than four times a day or your mucus changes colour.",
+    medications: [
+      "Prednisolone 30 mg, once a day, 3 more days",
+      "Tiotropium inhaler, once a day",
+      "Salbutamol inhaler, as needed",
+    ],
+    followUpDay: 12,
+    where: "Pulmonary clinic",
+  },
+  afib: {
+    notes:
+      "Atrial fibrillation with fast rate, now rate-controlled. Anticoagulation started; do not miss doses. Avoid alcohol and heavy caffeine for now. Contact the arrhythmia nurses for a racing or irregular heartbeat lasting more than an hour, dizziness, or any bleeding.",
+    medications: ["Apixaban 5 mg, twice a day", "Bisoprolol 5 mg, once a day"],
+    followUpDay: 21,
+    where: "Arrhythmia clinic",
+  },
+  sepsisWatch: {
+    notes:
+      "Treated for a urinary infection with a blood-stream infection; completed IV antibiotics and switched to tablets. Temperature normal for 48 hours before discharge. Finish the tablets and drink well. Contact the team for a temperature over 38 °C, shivering, confusion, or feeling much worse.",
+    medications: ["Ciprofloxacin 500 mg, twice a day, 7 more days"],
+    followUpDay: 7,
+    where: "Acute medicine review clinic",
+  },
+  respiratoryInfection: {
+    notes:
+      "Lower respiratory tract infection, treated with antibiotics. Cough may take two to three weeks to settle. Contact the team if breathing gets harder, fever returns, or you cough up blood.",
+    medications: ["Doxycycline 100 mg, once a day, 4 more days"],
+    followUpDay: 14,
+    where: "Respiratory clinic",
+  },
+  asthma: {
+    notes:
+      "Asthma attack treated with nebulisers and steroids; peak flow back to 80% of your best. Keep the preventer inhaler going every day even when well. Follow your asthma action plan; contact the team if the reliever is needed more often than every four hours.",
+    medications: [
+      "Prednisolone 40 mg, once a day, 2 more days",
+      "Beclometasone inhaler, twice a day",
+      "Salbutamol inhaler, as needed",
+    ],
+    followUpDay: 10,
+    where: "Asthma nurse clinic",
+  },
+  pulmonaryEmbolism: {
+    notes:
+      "Pulmonary embolism confirmed on CT, started on anticoagulation. Do not miss doses. Walking is encouraged; avoid long periods sitting still. Contact the team for new chest pain, breathlessness getting worse, coughing blood, or any unusual bleeding.",
+    medications: ["Rivaroxaban 15 mg, twice a day with food, 3 weeks"],
+    followUpDay: 21,
+    where: "Anticoagulation clinic",
+  },
+  sleepApnoea: {
+    notes:
+      "Obstructive sleep apnoea confirmed; CPAP fitted and settings adjusted. Use it every night for the whole night. Contact the sleep service if the mask leaks, you wake unrefreshed, or daytime sleepiness returns.",
+    medications: [],
+    followUpDay: 28,
+    where: "Sleep service",
+  },
+  postpartum: {
+    notes:
+      "Delivery by caesarean section; recovering well. Keep the wound clean and dry. Rest and accept help. Contact the maternity team for heavy bleeding, fever, a painful red wound, headache with vision changes, or calf pain.",
+    medications: [
+      "Paracetamol 1 g, up to four times a day, as needed",
+      "Ibuprofen 400 mg, three times a day with food, as needed",
+    ],
+    followUpDay: 10,
+    where: "Postnatal clinic",
+  },
+  jointReplacement: {
+    notes:
+      "Total knee replacement, left. Physiotherapy exercises three times a day as shown. Walk with the frame, then sticks, as the physio advises. Contact the orthopaedic team for a hot, swollen or oozing wound, calf pain, or a fall.",
+    medications: [
+      "Paracetamol 1 g, four times a day",
+      "Codeine 30 mg, up to four times a day, as needed",
+      "Enoxaparin injection, once a day, 14 days",
+    ],
+    followUpDay: 14,
+    where: "Orthopaedic clinic",
+  },
+  postChemotherapy: {
+    notes:
+      "Discharged after cycle 3 of chemotherapy. Blood counts will be lowest around days 7 to 12; avoid crowds and anyone unwell. Check your temperature twice a day. A temperature of 38 °C or above is an emergency: call the oncology hotline at once.",
+    medications: [
+      "Ondansetron 8 mg, twice a day, 3 days",
+      "Dexamethasone 4 mg, twice a day, 2 days",
+    ],
+    followUpDay: 21,
+    where: "Oncology day unit",
+  },
+};
+
 function build(def, now, index) {
   const rand = seeded(index * 7919 + 17);
   const dischargedAt = now - (def.day * DAY + 15 * HOUR);
   const admittedAt = dischargedAt - def.stay * DAY;
   const profile = PROFILES[def.profile];
+  const discharge = DISCHARGE[def.profile] || null;
   const signals = [
     ...profile.counted.map((c) => c.signal),
     ...profile.recorded,
@@ -551,10 +678,19 @@ function build(def, now, index) {
     readings,
     code: def.code || defaultCode(def),
     careEmail: def.careEmail || null,
-    // Entered by the care team in the clinician view, never pre-written.
-    notes: "",
-    medications: [],
-    appointments: [],
+    // The discharge the hospital wrote. Messages, journal entries and reports
+    // are not pre-written: they happen during the demo.
+    notes: discharge?.notes || "",
+    medications: discharge?.medications || [],
+    appointments: discharge
+      ? [
+          {
+            t: dischargedAt + discharge.followUpDay * DAY - 5 * HOUR,
+            with: def.clinician,
+            where: `${discharge.where}, ${def.hospital}`,
+          },
+        ]
+      : [],
     messages: [],
     journal: [],
     reports: [],
