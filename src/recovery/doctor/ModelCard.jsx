@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { RefreshCw } from "lucide-react";
 import { useAnalysis } from "../patient/useAnalysis.js";
 
@@ -45,8 +46,21 @@ function readingsRundown(patient) {
 
 export default function ModelCard({ patient: p }) {
   const { run, busy, error } = useAnalysis(p);
+  useEffect(() => {
+    // Score on arrival, as the patient's own home already does. Opening a
+    // patient is the moment a clinician wants the second opinion; making them
+    // press a button first meant the card usually sat empty beside a rule that
+    // had already decided.
+    if (!p.analysis) void run(p.answered ? p.answered.answers : null);
+  }, [p.id]);
   const a = p.analysis;
-  const cohortRows = (a?.signals || []).filter((s) => s.cohort);
+  // The scorer returns a fixed metric list, not the program's, so metrics this
+  // program never watches come back with an empty baseline and rendered as
+  // "usual Not available". A row with no baseline of its own has nothing to
+  // say about where this patient sits, so it is not a row.
+  const cohortRows = (a?.signals || []).filter(
+    (s) => s.cohort && s.baseline && typeof s.baseline.median === "number",
+  );
   const withheld = a?.guard?.withheld?.length || 0;
   const fallback = readingsRundown(p);
 
@@ -143,13 +157,18 @@ export default function ModelCard({ patient: p }) {
               <ul className="rx-model-list rx-cohort">
                 {cohortRows.slice(0, 4).map((s) => (
                   <li key={s.metric}>
-                    <span>{s.label}</span>
-                    <span>
-                      usual {s.baseline?.median ?? "Not available"} {s.unit};
-                      across {s.cohort.subjects} people, baselines run{" "}
-                      {s.cohort.lowest_baseline}–{s.cohort.highest_baseline}
-                      {s.cohort.patient_percentile !== null &&
-                        ` · ${s.cohort.patient_percentile}th percentile`}
+                    <span className="rx-cohort-name">{s.label}</span>
+                    <span className="rx-cohort-own">
+                      <em>{s.baseline.median}</em> {s.unit}
+                    </span>
+                    <span className="rx-cohort-range">
+                      {s.cohort.subjects} others: {s.cohort.lowest_baseline}–
+                      {s.cohort.highest_baseline}
+                    </span>
+                    <span className="rx-cohort-pct">
+                      {s.cohort.patient_percentile === null
+                        ? ""
+                        : `${s.cohort.patient_percentile}th pct`}
                     </span>
                   </li>
                 ))}

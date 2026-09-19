@@ -6228,3 +6228,68 @@ p.rx-row-summary {
     height: 17px;
   }
 }
+
+/* Model view: the card is as wide as the workspace, but a label pinned to the
+   left edge with its value 1,400px away on the right is not a row anyone can
+   read across. Each list becomes a grid whose columns are only as wide as they
+   need to be, and the text stops at a measure rather than the card edge. */
+.rx-model-sub,
+.rx-model .rx-model-fine,
+.rx-model .rx-model-rundown {
+  max-width: 62ch;
+}
+.rx-model-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 22ch) minmax(0, max-content);
+  justify-content: start;
+  column-gap: 28px;
+  align-items: baseline;
+}
+.rx-model-list .rx-model-dir {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rx-cohort li {
+  grid-template-columns:
+    minmax(0, 22ch) minmax(0, 12ch)
+    minmax(0, 20ch) minmax(0, 10ch);
+  column-gap: 24px;
+}
+.rx-cohort li span:last-child {
+  text-align: left;
+}
+.rx-cohort-own,
+.rx-cohort-range,
+.rx-cohort-pct {
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rx-cohort-own em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink);
+}
+/* The gate name and its numbers belong together; the explanation sits under
+   them rather than being stretched to the far side of the card. */
+.rx-ledger li {
+  grid-template-columns: minmax(0, 30ch) minmax(0, max-content);
+  justify-content: start;
+  column-gap: 24px;
+}
+.rx-ledger .rx-ledger-detail {
+  grid-column: 1 / -1;
+  max-width: 62ch;
+}
+.rx-ledger .rx-ledger-val {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .rx-model-list li,
+  .rx-cohort li,
+  .rx-ledger li {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+  }
+}
