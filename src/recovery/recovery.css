@@ -5151,6 +5151,7 @@ p.rx-row-summary {
   .rx-home-hrrp {
     grid-template-columns: 1fr;
   }
+}
 
 /* ---------- Patient web: compact pass ----------
    Smaller type, tighter cards, fewer pixels per box. Appended after the earlier
