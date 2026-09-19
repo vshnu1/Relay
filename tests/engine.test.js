@@ -26,10 +26,12 @@ test("check-in adds facts without changing statistical results", () => {
     exercise: "No unusual activity",
     fatigue: "Worsening",
     medication: "No changes",
+    notes: "Had a soda after soccer practice.",
   });
   assert.equal(after.state, "review");
   assert.deepEqual(before.signals, after.signals);
   assert.match(after.summary, /fatigue — Worsening/);
+  assert.match(after.summary, /soda after soccer practice/);
 });
 test("missing history and gaps do not imply persistent deviation", () => {
   const events = simulate();

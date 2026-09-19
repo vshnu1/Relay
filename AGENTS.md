@@ -43,7 +43,21 @@ git config merge.conflictstyle zdiff3   # shows the common ancestor in conflict 
 
 ## Frontend map
 
-`src/App.jsx` holds shared state and the API handlers and composes everything else; keep it thin.
+Two apps share `src/main.jsx` and are never loaded together, so their global styles cannot collide.
+
+### Recovery watch: `src/recovery/` (the default app)
+
+The doctor and patient views for the post-discharge mission. `Root.jsx` holds the demo bar that switches roles.
+
+- `data/contract.js` is the seam to the backend and hardware. Read it before connecting a feed. A source delivers a roster, raw readings, and device state; nothing else.
+- `data/simulatedSource.js` is today's source. To go live, write another source to the same contract and change the one `createStore(...)` line in `useRecovery.js`. No view changes.
+- `data/derive.js` turns raw readings into every status, number, sentence, and chart point. It is pure and covered by `tests/recovery.test.js`. **The UI stores no computed values**, so late or out-of-order readings are safe.
+- `data/profiles.js` is the illness table: which signals count, in which direction, past what threshold, and which questions are asked. Illustrative until a clinician signs it off.
+- `doctor/`, `patient/` are the screens. They read derived state and call `actions`; they never fetch.
+
+### Classic workspace: everything else in `src/` (at `#/classic`)
+
+The original app, wired to the real API, Render Workflows, and ElevenLabs. `src/App.jsx` holds shared state and the API handlers and composes everything else; keep it thin.
 
 - `src/pages/` — one file per sidebar page. `pages/workspace/` holds the panels of the main monitoring screen.
 - `src/modals/` — one file per dialog. `Modal.jsx` is the shared shell.

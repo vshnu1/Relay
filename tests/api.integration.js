@@ -51,6 +51,28 @@ try {
     (await request("/patients/demo-01/checkin", { consent: false })).status,
     400,
   );
+  const checkin = await request("/patients/demo-01/checkin", {
+    consent: true,
+    exercise: "No unusual activity",
+    fatigue: "Worsening",
+    medication: "No changes",
+    notes: "Had a soda after soccer practice.",
+    method: "ElevenLabs voice assistant",
+    conversationId: "conversation-test-123",
+  });
+  assert.equal(checkin.data.evidence.state, "review");
+  assert.equal(
+    checkin.data.evidence.context.method,
+    "ElevenLabs voice assistant",
+  );
+  assert.equal(
+    checkin.data.evidence.context.conversationId,
+    "conversation-test-123",
+  );
+  assert.equal(
+    checkin.data.evidence.context.notes,
+    "Had a soda after soccer practice.",
+  );
   assert.equal(
     (
       await request("/patients/demo-01/checkin", {
@@ -58,9 +80,10 @@ try {
         exercise: "No unusual activity",
         fatigue: "Worsening",
         medication: "No changes",
+        method: "untrusted method",
       })
-    ).data.evidence.state,
-    "review",
+    ).status,
+    400,
   );
   assert.equal(
     (await request("/patients/demo-01/consent", { consent: false })).status,

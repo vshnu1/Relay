@@ -14,25 +14,57 @@ export default function CheckinModal({
       exercise: "",
       fatigue: "",
       medication: "",
+      notes: "",
     }),
     [voice, setVoice] = useState(null),
-    [voiceStatus, setVoiceStatus] = useState("");
+    [voiceStatus, setVoiceStatus] = useState(""),
+    [conversationId, setConversationId] = useState(""),
+    [checkinMethod, setCheckinMethod] = useState(
+      "Patient-confirmed structured form",
+    );
   const voiceRef = useRef(null);
   // Closing the dialog by any route unmounts it, which ends a live session.
   useEffect(() => () => voiceRef.current?.endSession(), []);
   async function startVoice() {
-    voiceRef.current = await startVoiceSession({
-      patient,
-      consent,
-      onStatus: setVoiceStatus,
-      onError: () =>
-        setError(
-          "Voice session interrupted. Complete the structured text check-in below.",
-        ),
-      onAnswers: (draft) => setAnswers((a) => ({ ...a, ...draft })),
-    });
+    setVoiceStatus("connecting");
+    try {
+      voiceRef.current = await startVoiceSession({
+        patient,
+        consent,
+        onStatus: setVoiceStatus,
+        onError: () => {
+          setVoice(false);
+          setVoiceStatus("disconnected");
+          setError(
+            "Voice session interrupted. Complete the structured text check-in below.",
+          );
+        },
+        onConversationCreated: ({ conversationId: id }) => {
+          setConversationId(id || "");
+          setCheckinMethod("ElevenLabs voice assistant");
+        },
+        onDisconnect: () => {
+          setVoice(false);
+          setVoiceStatus("disconnected");
+          voiceRef.current = null;
+        },
+        onAnswers: (draft) => {
+          setAnswers((a) => ({ ...a, ...draft }));
+          setCheckinMethod("ElevenLabs voice assistant");
+        },
+      });
+    } catch (error) {
+      setVoiceStatus("disconnected");
+      throw error;
+    }
     setVoice(true);
   }
+  const canStartVoice =
+    consent &&
+    patient?.consent &&
+    !busy &&
+    status?.voice &&
+    patient?.dataType === "synthetic";
   return (
     <>
       <div className="modal-symbol">
@@ -48,19 +80,21 @@ export default function CheckinModal({
         <input
           type="checkbox"
           checked={consent}
+          disabled={!patient?.consent}
           onChange={(e) => setConsent(e.target.checked)}
         />{" "}
         I consent to this check-in and sharing my answers with the demo care
         team.
       </label>
+      {!patient?.consent && (
+        <p className="fine-print">
+          Monitoring consent is currently revoked. Restore consent before
+          starting a patient check-in.
+        </p>
+      )}
       <button
         className="button secondary full"
-        disabled={
-          !consent ||
-          busy ||
-          !status?.voice ||
-          patient?.dataType !== "synthetic"
-        }
+        disabled={!voice ? !canStartVoice : busy}
         onClick={() =>
           run(
             voice
@@ -80,10 +114,21 @@ export default function CheckinModal({
             ? "Start ElevenLabs voice check-in"
             : "Voice not configured · use text below"}
       </button>
+      {voice && (
+        <p className="fine-print" role="status">
+          Voice session {voiceStatus || "connecting"}. Speak naturally; the
+          assistant will draft answers for your review.
+        </p>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit({ ...answers, consent });
+          onSubmit({
+            ...answers,
+            consent,
+            method: checkinMethod,
+            conversationId,
+          });
         }}
       >
         {[
@@ -119,12 +164,25 @@ export default function CheckinModal({
             </select>
           </label>
         ))}
+        <label className="form-field">
+          Anything else that may explain the change? (Optional)
+          <textarea
+            value={answers.notes}
+            maxLength={500}
+            rows={3}
+            placeholder="For example: meal, soda, strenuous activity, or symptoms you want your care team to know about."
+            onChange={(e) => setAnswers({ ...answers, notes: e.target.value })}
+          />
+        </label>
         <p className="fine-print">
           For urgent symptoms, follow your existing emergency instructions.
           Verify the answers above before submitting, including any drafted
           during a voice session.
         </p>
-        <button className="button primary full" disabled={!consent || busy}>
+        <button
+          className="button primary full"
+          disabled={!consent || !patient?.consent || busy}
+        >
           Save check-in & update summary <ArrowRight size={15} />
         </button>
       </form>
