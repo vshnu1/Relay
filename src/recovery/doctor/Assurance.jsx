@@ -170,6 +170,7 @@ const ACTION = {
   "analysis.run": "Ran the analysis",
   "simulation.run": "Ran a simulation",
   "clinician.voice_summary.generated": "Spoke a clinician summary",
+  "audit.unreadable": "An entry written under a previous key",
 };
 
 // What this process is doing, as opposed to what this file says it does. A

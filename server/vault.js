@@ -194,14 +194,34 @@ export function readSealedLines(file) {
     .trim()
     .split("\n")
     .filter(Boolean)
-    .map((line) => {
-      const record = JSON.parse(line);
+    .map((line, index) => {
+      let record;
+      try {
+        record = JSON.parse(line);
+      } catch {
+        return {
+          at: null,
+          action: "audit.unreadable",
+          detail: `line ${index + 1} is not JSON`,
+        };
+      }
       if (!isEnvelope(record)) {
         const { prev, hash, ...entry } = record;
         return entry;
       }
-      requireKeyFor(file);
-      return JSON.parse(open(record));
+      // One line that cannot be opened must not cost the whole log. A rotated
+      // key leaves earlier entries unreadable for good, and throwing here made
+      // the audit page a 500 rather than showing the entries that are fine. The
+      // gap is returned as a gap, so the count stays honest and it is visible.
+      try {
+        return JSON.parse(open(record));
+      } catch {
+        return {
+          at: null,
+          action: "audit.unreadable",
+          detail: `line ${index + 1} was written under a different key`,
+        };
+      }
     });
 }
 
