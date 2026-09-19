@@ -7,7 +7,7 @@ Branch: `Pranav`. Owner: Pranav (ML and synthetic). Scope: `ml/**`, `docs/ML.md`
 - [x] define ml ownership — one row added to `AGENTS.md`
 - [x] scaffold ml pipeline — package, contracts mirroring `shared/engine.js`, program configs, CLI skeleton, engine-parity synthetic generator, unittest suite
 - [x] parse health export — streaming Apple Health reader behind `HEALTH_EXPORT_XML`, generic source categories, six-hour aggregation, aggregate-only logging
-- [ ] build baseline features — six-hour windows, cadence-aware staleness, median/MAD baselines, robust deviations, missingness and coverage features
+- [x] build baseline features — six-hour windows, cadence-aware staleness, median/MAD baselines, robust deviations, missingness and coverage features
 - [ ] train anomaly model — SimpleImputer(add_indicator) + RobustScaler + IsolationForest, chronological split, validation-calibrated threshold, persistence, synthetic-only prior artifact
 - [ ] add synthetic scenarios — postoperative drift, missing sensor, gait decline; fixtures under `ml/fixtures/synthetic/`
 - [ ] test ml pipeline — end-to-end CLI tests and scenario outcome tests
@@ -20,3 +20,5 @@ Branch: `Pranav`. Owner: Pranav (ML and synthetic). Scope: `ml/**`, `docs/ML.md`
 - Tests use `unittest` (`python3 -m unittest discover -s ml/tests -t ml`).
 - Output is a superset of the existing evidence object; legacy `state` keeps `quiet`/`context`/`review`.
 - Engine parity verified once via Node: `simulate("ambiguous"|"explained", 1789732800000)` in `shared/engine.js` and `vesper_ml.synthetic.simulate` produce identical 378-event lists (metric, value, timestamp, source).
+- Every contract event value is a level (a reading), not an increment. Windows take the mean of in-window samples; empty windows fall back to a trailing lookback of max(6h, 1.5 x metric cadence) and are stale beyond it.
+- Robust scale = max(1.4826 x MAD, legacy percent threshold / 3 of the median). Demo configuration so near-constant synthetic histories do not amplify ordinary fluctuation.
