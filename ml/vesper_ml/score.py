@@ -6,6 +6,7 @@ import time
 import numpy as np
 
 from . import MODEL_VERSION
+from .cohort import annotate as annotate_cohort
 from .contracts import STATE_TO_LEGACY, ContractError, epoch_ms, from_epoch_ms, normalize, normalize_context, parse_timestamp, public_event, to_iso
 from .explain import (
     attach_sources,
@@ -20,6 +21,7 @@ from .explain import (
 from .features import build_features
 from .model import fit_and_score, load_prior, terminal_run
 from .programs import get_program
+from .restraint import build_restraint
 from .windows import HOUR_MS, WINDOW_MS, build_grid
 
 
@@ -88,11 +90,13 @@ def score_request(request, seed=None, artifact_dir=None):
 
     signals = build_signals(grid, fs, program)
     attach_sources(signals, events)
+    cohort = annotate_cohort(signals)
     rule_coordinated, overlap = coordinated_rule(signals, program)
     missing = missing_signals(grid, fs, program)
     dq = data_quality(grid, fs, program, missing)
     contributors = build_contributors(grid, fs, program, signals)
 
+    run_len = 0
     if model.status in ("fitted", "prior") and len(model.flags_recent):
         run_len, run_start = terminal_run(model.flags_recent)
         is_anomalous = run_len >= program.min_persistence_windows and dq["status"] != "insufficient"
@@ -140,6 +144,12 @@ def score_request(request, seed=None, artifact_dir=None):
         "missing_signals": missing,
         "data_quality": dq,
         "protocol_notes": protocol_notes,
+        "cohort": cohort,
+        "restraint": build_restraint(
+            signals, program,
+            {"terminal_run": run_len, "anomaly_score": anomaly_score},
+            dq, application_state, rule_coordinated, is_anomalous, context,
+        ),
         "model": {
             "status": model.status,
             "window_scores": window_scores,

@@ -1,0 +1,311 @@
+[
+  {
+    "evidence_id": "132c74adb8d5-2026-09-11",
+    "patient_id": "132c74adb8d5",
+    "generated_at": "2026-09-19T03:43:23+00:00",
+    "observation_date": "2026-09-11",
+    "study_day": 1379,
+    "status": "context_incomplete",
+    "headline": "Statistical review trigger",
+    "summary": "2 of 4 monitored signals sit beyond 1.75 standard deviations of this patient's own baseline.",
+    "signals": [
+      {
+        "signal": "respiratory_rate",
+        "value": 18.51,
+        "unit": "breaths/min",
+        "baseline_mean": 16.78,
+        "baseline_sd": 0.583,
+        "baseline_observations": 71,
+        "z_score": 2.97,
+        "percent_from_baseline": 10.3,
+        "direction": "above"
+      },
+      {
+        "signal": "resting_heart_rate",
+        "value": 73.0,
+        "unit": "bpm",
+        "baseline_mean": 58.94,
+        "baseline_sd": 4.904,
+        "baseline_observations": 53,
+        "z_score": 2.87,
+        "percent_from_baseline": 23.9,
+        "direction": "above"
+      }
+    ],
+    "data_quality": {
+      "signals_observed": 4,
+      "signals_missing": [
+        "hrv_sdnn"
+      ],
+      "signals_insufficient_baseline": [],
+      "heart_rate_samples": 1415,
+      "notes": [
+        "No reading recorded for: hrv_sdnn."
+      ]
+    },
+    "context": {
+      "requested": true,
+      "questions": [
+        "Any recent exercise or unusually strenuous activity?",
+        "Any new or worsening pain?",
+        "Any fever, nausea, dizziness, or wound changes?",
+        "Were any medications missed or changed?"
+      ],
+      "responses": []
+    },
+    "provenance": {
+      "source": "wrist_wearable",
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "min_baseline_observations": 14,
+      "baseline_window_days": "all prior history"
+    },
+    "persistence": {
+      "consecutive_days": 1,
+      "continues_next_day": false
+    }
+  },
+  {
+    "evidence_id": "132c74adb8d5-2026-09-20",
+    "patient_id": "132c74adb8d5",
+    "generated_at": "2026-09-19T03:43:23+00:00",
+    "observation_date": "2026-09-20",
+    "study_day": 1388,
+    "status": "review_suggested",
+    "headline": "Statistical review trigger",
+    "summary": "2 of 5 monitored signals sit beyond 1.75 standard deviations of this patient's own baseline.",
+    "signals": [
+      {
+        "signal": "respiratory_rate",
+        "value": 18.01,
+        "unit": "breaths/min",
+        "baseline_mean": 16.78,
+        "baseline_sd": 0.601,
+        "baseline_observations": 71,
+        "z_score": 2.05,
+        "percent_from_baseline": 7.3,
+        "direction": "above"
+      },
+      {
+        "signal": "hrv_sdnn",
+        "value": 72.55,
+        "unit": "ms",
+        "baseline_mean": 55.98,
+        "baseline_sd": 9.095,
+        "baseline_observations": 65,
+        "z_score": 1.82,
+        "percent_from_baseline": 29.6,
+        "direction": "above"
+      }
+    ],
+    "data_quality": {
+      "signals_observed": 5,
+      "signals_missing": [],
+      "signals_insufficient_baseline": [],
+      "heart_rate_samples": 1374,
+      "notes": [
+        "All monitored signals reported on this day."
+      ]
+    },
+    "context": {
+      "requested": false,
+      "questions": [],
+      "responses": []
+    },
+    "provenance": {
+      "source": "wrist_wearable",
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "min_baseline_observations": 14,
+      "baseline_window_days": "all prior history"
+    },
+    "persistence": {
+      "consecutive_days": 1,
+      "continues_next_day": false
+    }
+  },
+  {
+    "evidence_id": "132c74adb8d5-2026-10-08",
+    "patient_id": "132c74adb8d5",
+    "generated_at": "2026-09-19T03:43:23+00:00",
+    "observation_date": "2026-10-08",
+    "study_day": 1406,
+    "status": "context_incomplete",
+    "headline": "Statistical review trigger",
+    "summary": "2 of 4 monitored signals sit beyond 1.75 standard deviations of this patient's own baseline.",
+    "signals": [
+      {
+        "signal": "hrv_sdnn",
+        "value": 28.43,
+        "unit": "ms",
+        "baseline_mean": 56.66,
+        "baseline_sd": 8.648,
+        "baseline_observations": 65,
+        "z_score": -3.26,
+        "percent_from_baseline": -49.8,
+        "direction": "below"
+      },
+      {
+        "signal": "respiratory_rate",
+        "value": 18.05,
+        "unit": "breaths/min",
+        "baseline_mean": 16.78,
+        "baseline_sd": 0.6,
+        "baseline_observations": 71,
+        "z_score": 2.12,
+        "percent_from_baseline": 7.6,
+        "direction": "above"
+      }
+    ],
+    "data_quality": {
+      "signals_observed": 4,
+      "signals_missing": [
+        "resting_heart_rate"
+      ],
+      "signals_insufficient_baseline": [],
+      "heart_rate_samples": 1418,
+      "notes": [
+        "No reading recorded for: resting_heart_rate."
+      ]
+    },
+    "context": {
+      "requested": true,
+      "questions": [
+        "Any recent exercise or unusually strenuous activity?",
+        "Any new or worsening pain?",
+        "Any fever, nausea, dizziness, or wound changes?",
+        "Were any medications missed or changed?"
+      ],
+      "responses": []
+    },
+    "provenance": {
+      "source": "wrist_wearable",
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "min_baseline_observations": 14,
+      "baseline_window_days": "all prior history"
+    },
+    "persistence": {
+      "consecutive_days": 1,
+      "continues_next_day": false
+    }
+  },
+  {
+    "evidence_id": "132c74adb8d5-2026-10-15",
+    "patient_id": "132c74adb8d5",
+    "generated_at": "2026-09-19T03:43:23+00:00",
+    "observation_date": "2026-10-15",
+    "study_day": 1413,
+    "status": "review_suggested",
+    "headline": "Statistical review trigger",
+    "summary": "2 of 5 monitored signals sit beyond 1.75 standard deviations of this patient's own baseline.",
+    "signals": [
+      {
+        "signal": "resting_heart_rate",
+        "value": 78.0,
+        "unit": "bpm",
+        "baseline_mean": 58.85,
+        "baseline_sd": 4.574,
+        "baseline_observations": 53,
+        "z_score": 4.19,
+        "percent_from_baseline": 32.5,
+        "direction": "above"
+      },
+      {
+        "signal": "hrv_sdnn",
+        "value": 38.58,
+        "unit": "ms",
+        "baseline_mean": 56.51,
+        "baseline_sd": 9.056,
+        "baseline_observations": 65,
+        "z_score": -1.98,
+        "percent_from_baseline": -31.7,
+        "direction": "below"
+      }
+    ],
+    "data_quality": {
+      "signals_observed": 5,
+      "signals_missing": [],
+      "signals_insufficient_baseline": [],
+      "heart_rate_samples": 1345,
+      "notes": [
+        "All monitored signals reported on this day."
+      ]
+    },
+    "context": {
+      "requested": false,
+      "questions": [],
+      "responses": []
+    },
+    "provenance": {
+      "source": "wrist_wearable",
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "min_baseline_observations": 14,
+      "baseline_window_days": "all prior history"
+    },
+    "persistence": {
+      "consecutive_days": 1,
+      "continues_next_day": false
+    }
+  },
+  {
+    "evidence_id": "132c74adb8d5-2026-11-06",
+    "patient_id": "132c74adb8d5",
+    "generated_at": "2026-09-19T03:43:23+00:00",
+    "observation_date": "2026-11-06",
+    "study_day": 1435,
+    "status": "review_suggested",
+    "headline": "Statistical review trigger",
+    "summary": "2 of 5 monitored signals sit beyond 1.75 standard deviations of this patient's own baseline.",
+    "signals": [
+      {
+        "signal": "hr_night",
+        "value": 106.39,
+        "unit": "bpm",
+        "baseline_mean": 70.51,
+        "baseline_sd": 16.513,
+        "baseline_observations": 72,
+        "z_score": 2.17,
+        "percent_from_baseline": 50.9,
+        "direction": "above"
+      },
+      {
+        "signal": "hrv_sdnn",
+        "value": 38.88,
+        "unit": "ms",
+        "baseline_mean": 56.5,
+        "baseline_sd": 9.065,
+        "baseline_observations": 65,
+        "z_score": -1.94,
+        "percent_from_baseline": -31.2,
+        "direction": "below"
+      }
+    ],
+    "data_quality": {
+      "signals_observed": 5,
+      "signals_missing": [],
+      "signals_insufficient_baseline": [],
+      "heart_rate_samples": 3785,
+      "notes": [
+        "All monitored signals reported on this day."
+      ]
+    },
+    "context": {
+      "requested": false,
+      "questions": [],
+      "responses": []
+    },
+    "provenance": {
+      "source": "wrist_wearable",
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "min_baseline_observations": 14,
+      "baseline_window_days": "all prior history"
+    },
+    "persistence": {
+      "consecutive_days": 1,
+      "continues_next_day": false
+    }
+  }
+]

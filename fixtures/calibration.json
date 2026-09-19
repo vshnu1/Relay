@@ -1,0 +1,121 @@
+{
+  "population_spread": {
+    "resting_heart_rate": {
+      "n": 66,
+      "min": 47.3,
+      "max": 78.3,
+      "between_sd": 6.67,
+      "within_sd": 2.42
+    },
+    "hr_night": {
+      "n": 39,
+      "min": 48.4,
+      "max": 77.5,
+      "between_sd": 6.76,
+      "within_sd": 4.57
+    },
+    "hrv_sdnn": {
+      "n": 39,
+      "min": 19.7,
+      "max": 100.4,
+      "between_sd": 18.37,
+      "within_sd": 9.47
+    },
+    "respiratory_rate": {
+      "n": 40,
+      "min": 11.2,
+      "max": 19.8,
+      "between_sd": 2.27,
+      "within_sd": 1.0
+    },
+    "spo2": {
+      "n": 24,
+      "min": 94.3,
+      "max": 97.2,
+      "between_sd": 0.68,
+      "within_sd": 0.91
+    }
+  },
+  "fire_rates": [
+    {
+      "threshold_sd": 1.0,
+      "min_signals": 2,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 957,
+      "rate_pct": 21.65
+    },
+    {
+      "threshold_sd": 1.0,
+      "min_signals": 3,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 447,
+      "rate_pct": 10.11
+    },
+    {
+      "threshold_sd": 1.5,
+      "min_signals": 2,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 306,
+      "rate_pct": 6.92
+    },
+    {
+      "threshold_sd": 1.5,
+      "min_signals": 3,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 104,
+      "rate_pct": 2.35
+    },
+    {
+      "threshold_sd": 2.0,
+      "min_signals": 2,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 87,
+      "rate_pct": 1.97
+    },
+    {
+      "threshold_sd": 2.0,
+      "min_signals": 3,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 21,
+      "rate_pct": 0.48
+    },
+    {
+      "threshold_sd": 2.5,
+      "min_signals": 2,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 24,
+      "rate_pct": 0.54
+    },
+    {
+      "threshold_sd": 2.5,
+      "min_signals": 3,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 7,
+      "rate_pct": 0.16
+    },
+    {
+      "threshold_sd": 3.0,
+      "min_signals": 2,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 6,
+      "rate_pct": 0.14
+    },
+    {
+      "threshold_sd": 3.0,
+      "min_signals": 3,
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 1,
+      "rate_pct": 0.02
+    }
+  ]
+}

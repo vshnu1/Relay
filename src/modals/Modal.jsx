@@ -1,5 +1,15 @@
+import { useEffect } from "react";
 import { X } from "lucide-react";
 export default function Modal({ label, wide, error, onClose, children }) {
+  // Escape closes the dialog. onClose is a no-op for the access modal, which
+  // must stay dismissal-proof, so this needs no special case here.
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   return (
     <div className="modal-backdrop">
       <section

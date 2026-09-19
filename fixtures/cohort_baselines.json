@@ -1,0 +1,137 @@
+{
+  "source": {
+    "dataset": "LifeSnaps",
+    "subjects_enrolled": 71,
+    "device": "Fitbit Sense",
+    "span": "roughly four months",
+    "license": "CC-BY-4.0",
+    "url": "https://zenodo.org/records/7229547"
+  },
+  "subject_days": 4453,
+  "min_observations_per_subject": 14,
+  "notes": "LifeSnaps carries no gait metrics, so the stroke-rehabilitation program has no cohort context. Stated rather than interpolated.",
+  "metrics": {
+    "rhr": {
+      "unit": "bpm",
+      "subjects": 66,
+      "lowest_baseline": 47.18,
+      "highest_baseline": 78.69,
+      "spread": 31.51,
+      "cohort_median": 65.75,
+      "between_subject_sd": 6.72,
+      "within_subject_sd": 2.42,
+      "spread_ratio": 2.77,
+      "deciles": [
+        47.18,
+        55.98,
+        61.34,
+        62.86,
+        64.53,
+        65.8,
+        67.65,
+        69.73,
+        72.33,
+        74.37,
+        78.69
+      ]
+    },
+    "hrv": {
+      "unit": "ms",
+      "subjects": 39,
+      "lowest_baseline": 18.95,
+      "highest_baseline": 99.66,
+      "spread": 80.7,
+      "cohort_median": 38.4,
+      "between_subject_sd": 19.12,
+      "within_subject_sd": 9.47,
+      "spread_ratio": 2.02,
+      "deciles": [
+        18.95,
+        24.02,
+        24.7,
+        27.81,
+        32.54,
+        38.4,
+        41.12,
+        44.95,
+        62.77,
+        73.56,
+        99.66
+      ],
+      "caveat": "LifeSnaps reports RMSSD; our own export is SDNN. Different measures, not comparable in absolute terms. Use for spread, never quote as SDNN."
+    },
+    "respiratory": {
+      "unit": "/min",
+      "subjects": 40,
+      "lowest_baseline": 11.2,
+      "highest_baseline": 20.0,
+      "spread": 8.8,
+      "cohort_median": 14.85,
+      "between_subject_sd": 2.27,
+      "within_subject_sd": 1.0,
+      "spread_ratio": 2.26,
+      "deciles": [
+        11.2,
+        12.0,
+        13.1,
+        14.0,
+        14.6,
+        14.9,
+        16.0,
+        17.0,
+        17.2,
+        18.0,
+        20.0
+      ]
+    },
+    "spo2": {
+      "unit": "%",
+      "subjects": 24,
+      "lowest_baseline": 94.5,
+      "highest_baseline": 97.2,
+      "spread": 2.7,
+      "cohort_median": 96.0,
+      "between_subject_sd": 0.71,
+      "within_subject_sd": 0.91,
+      "spread_ratio": 0.78,
+      "deciles": [
+        94.5,
+        95.05,
+        95.5,
+        95.65,
+        95.8,
+        96.0,
+        96.1,
+        96.25,
+        96.6,
+        97.1,
+        97.2
+      ],
+      "caveat": "Between-subject spread is smaller than within-subject variation here, so a population threshold is defensible for oxygen saturation and personal baselining adds least. Thinnest row in the table."
+    },
+    "sleep": {
+      "unit": "h",
+      "subjects": 58,
+      "lowest_baseline": 5.71,
+      "highest_baseline": 9.23,
+      "spread": 3.52,
+      "cohort_median": 7.7,
+      "between_subject_sd": 0.82,
+      "within_subject_sd": 1.63,
+      "spread_ratio": 0.5,
+      "deciles": [
+        5.71,
+        6.57,
+        6.85,
+        7.13,
+        7.33,
+        7.7,
+        7.87,
+        8.03,
+        8.3,
+        8.72,
+        9.23
+      ]
+    }
+  }
+}
