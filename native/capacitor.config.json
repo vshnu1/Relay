@@ -1,0 +1,23 @@
+{
+  "appId": "health.relay.patient",
+  "appName": "Relay",
+  "webDir": "www",
+  "server": {
+    "url": "http://localhost:3001",
+    "cleartext": true,
+    "errorPath": "index.html"
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#f4f1ea",
+    "limitsNavigationsToAppBoundDomains": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 900,
+      "launchAutoHide": true,
+      "backgroundColor": "#142b28",
+      "showSpinner": false
+    }
+  }
+}

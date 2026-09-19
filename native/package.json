@@ -1,0 +1,21 @@
+{
+  "name": "relay-native",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Relay patient app as a native iOS shell. Separate from the root package.json on purpose: adding Capacitor there would touch a hot file every teammate also edits.",
+  "type": "module",
+  "scripts": {
+    "prepare:web": "node scripts/prepare-web.mjs",
+    "sync": "node scripts/prepare-web.mjs && cap sync ios",
+    "open:ios": "cap open ios"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3"
+  }
+}
