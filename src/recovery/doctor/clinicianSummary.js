@@ -35,6 +35,11 @@ function spokenUnit(unit) {
       ms: "milliseconds",
       kg: "kilograms",
       "m/s": "meters per second",
+      // Without these two the gait programs are spoken as "fifty two c m" and
+      // "three thousand steps steps".
+      cm: "centimeters",
+      steps: "",
+      "steps/day": "steps",
       hours: "hours",
       points: "points",
       "/10": "out of ten",
@@ -46,7 +51,7 @@ function signalUpdate(signal) {
   const label = signal.plain || signal.name || "Reading";
   if (signal.today === null) return `${label} has no reading today`;
 
-  const value = `${signal.fmt(signal.today)} ${spokenUnit(signal.unit)}`;
+  const value = `${signal.fmt(signal.today)} ${spokenUnit(signal.unit)}`.trim();
   const delta = String(signal.change || "").match(/^([+-])?([\d.]+)\s*(.*)$/);
   if (!delta) return `${label} is ${value}`;
 
