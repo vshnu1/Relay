@@ -1,0 +1,201 @@
+{
+  "ambiguous": {
+    "program": "post_abdominal_surgery",
+    "events": 378,
+    "without_context": {
+      "application_state": "context_needed",
+      "state": "context",
+      "coordinated": true,
+      "is_anomalous": true,
+      "rule_coordinated": true,
+      "data_quality_status": "sufficient",
+      "flagged": [
+        "glucose",
+        "hrv",
+        "respiratory",
+        "rhr",
+        "sleep"
+      ],
+      "missing": [
+        "heart_rate",
+        "steps",
+        "temperature"
+      ],
+      "model_status": "fitted"
+    },
+    "with_context": null
+  },
+  "explained": {
+    "program": "post_abdominal_surgery",
+    "events": 378,
+    "without_context": {
+      "application_state": "monitoring",
+      "state": "quiet",
+      "coordinated": false,
+      "is_anomalous": false,
+      "rule_coordinated": false,
+      "data_quality_status": "sufficient",
+      "flagged": [],
+      "missing": [
+        "heart_rate",
+        "steps",
+        "temperature"
+      ],
+      "model_status": "fitted"
+    },
+    "with_context": {
+      "application_state": "monitoring",
+      "state": "quiet",
+      "coordinated": false,
+      "is_anomalous": false,
+      "rule_coordinated": false,
+      "data_quality_status": "sufficient",
+      "flagged": [],
+      "missing": [
+        "heart_rate",
+        "steps",
+        "temperature"
+      ],
+      "model_status": "fitted"
+    }
+  },
+  "review": {
+    "program": "post_abdominal_surgery",
+    "events": 378,
+    "without_context": {
+      "application_state": "context_needed",
+      "state": "context",
+      "coordinated": true,
+      "is_anomalous": true,
+      "rule_coordinated": true,
+      "data_quality_status": "sufficient",
+      "flagged": [
+        "glucose",
+        "hrv",
+        "respiratory",
+        "rhr",
+        "sleep"
+      ],
+      "missing": [
+        "heart_rate",
+        "steps",
+        "temperature"
+      ],
+      "model_status": "fitted"
+    },
+    "with_context": {
+      "application_state": "review_recommended",
+      "state": "review",
+      "coordinated": true,
+      "is_anomalous": true,
+      "rule_coordinated": true,
+      "data_quality_status": "sufficient",
+      "flagged": [
+        "glucose",
+        "hrv",
+        "respiratory",
+        "rhr",
+        "sleep"
+      ],
+      "missing": [
+        "heart_rate",
+        "steps",
+        "temperature"
+      ],
+      "model_status": "fitted"
+    }
+  },
+  "postoperative_drift": {
+    "program": "post_abdominal_surgery",
+    "events": 443,
+    "without_context": {
+      "application_state": "context_needed",
+      "state": "context",
+      "coordinated": true,
+      "is_anomalous": true,
+      "rule_coordinated": false,
+      "data_quality_status": "sufficient",
+      "flagged": [
+        "rhr"
+      ],
+      "missing": [
+        "glucose",
+        "respiratory",
+        "temperature"
+      ],
+      "model_status": "fitted"
+    },
+    "with_context": {
+      "application_state": "review_recommended",
+      "state": "review",
+      "coordinated": true,
+      "is_anomalous": true,
+      "rule_coordinated": false,
+      "data_quality_status": "sufficient",
+      "flagged": [
+        "rhr"
+      ],
+      "missing": [
+        "glucose",
+        "respiratory",
+        "temperature"
+      ],
+      "model_status": "fitted"
+    }
+  },
+  "missing_sensor": {
+    "program": "post_abdominal_surgery",
+    "events": 417,
+    "without_context": {
+      "application_state": "insufficient_data",
+      "state": "context",
+      "coordinated": false,
+      "is_anomalous": false,
+      "rule_coordinated": false,
+      "data_quality_status": "insufficient",
+      "flagged": [],
+      "missing": [
+        "glucose",
+        "heart_rate",
+        "hrv",
+        "respiratory",
+        "rhr",
+        "sleep",
+        "spo2",
+        "temperature"
+      ],
+      "model_status": "fitted"
+    },
+    "with_context": null
+  },
+  "gait_decline": {
+    "program": "stroke_rehabilitation",
+    "events": 327,
+    "without_context": {
+      "application_state": "context_needed",
+      "state": "context",
+      "coordinated": true,
+      "is_anomalous": true,
+      "rule_coordinated": false,
+      "data_quality_status": "sufficient",
+      "flagged": [],
+      "missing": [
+        "walking_steadiness"
+      ],
+      "model_status": "fitted"
+    },
+    "with_context": {
+      "application_state": "review_recommended",
+      "state": "review",
+      "coordinated": true,
+      "is_anomalous": true,
+      "rule_coordinated": false,
+      "data_quality_status": "sufficient",
+      "flagged": [],
+      "missing": [
+        "walking_steadiness"
+      ],
+      "model_status": "fitted"
+    }
+  }
+}

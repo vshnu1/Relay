@@ -12,6 +12,7 @@ Edit files in your own area. If a task needs a change somewhere else, ask that o
 | Voice (ElevenLabs)  | `src/voice.js`, `docs/voice-agent.md`, the `/voice` route in `server/index.js`                                               | Vishnu |
 | API and Render      | `server/**`, `workflows/**`, `render.yaml`, `tests/api.*`, `tests/workflow.*`                                                | Vishnu |
 | Data and validation | `analysis/**`, `pipeline/**`, `fixtures/**`, `tools/**`, `scripts/**`, `docs/DATA.md`, `docs/INTEROP.md`, `docs/PIPELINE.md` | Anson  |
+| ML and synthetic    | `ml/**`, `docs/ML.md`                                                                                                        | Pranav |
 | Demo, pitch, video  | unassigned — claim it by editing this row                                                                                    | —      |
 
 AI agents: branches are named after people, so the branch tells you whose area you are in. Check every path against this table before editing. If the task needs a file outside your operator's area, stop and say so instead of editing it.
