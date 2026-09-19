@@ -11,8 +11,8 @@ import { dayColumns, domain, labelEvery, ticks } from "./chartScale.js";
 // the first version stays available as a compact alternative.
 
 const HOME_DAYS = 14;
-const CHART_H = 240;
-const M = { top: 24, right: 118, bottom: 44, left: 50 };
+const CHART_H = 172;
+const M = { top: 20, right: 112, bottom: 38, left: 44 };
 const FILL = {
   "-3": "#3d7ab8",
   "-2": "#8fb3d9",
@@ -95,7 +95,7 @@ function SignalChart({ signal: s, homeFrom, width }) {
   const every = labelEvery(cols[0].w);
   const beforeWidth = cols[s.before.length - 1].x + cols[s.before.length - 1].w;
   const right = M.left + inner;
-  const yTicks = ticks(lo, hi, 4);
+  const yTicks = ticks(lo, hi, 3);
   const usualY = y(s.usual);
   const thrY = s.threshold === null ? null : y(s.threshold);
   const crowded = thrY !== null && Math.abs(thrY - usualY) < 16;
@@ -662,22 +662,24 @@ export default function Readings({ patient: p }) {
       ) : (
         <>
           <div className="rx-picker" role="tablist" aria-label="Signals">
-            <span className="rx-picker-group">Counted</span>
-            {counted.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                role="tab"
-                aria-selected={s.id === open?.id}
-                className={dot(s)}
-                onClick={() => setOpenId(s.id)}
-              >
-                <i aria-hidden="true" />
-                {s.name}
-              </button>
-            ))}
+            <div className="rx-picker-row">
+              <span className="rx-picker-group">Counted</span>
+              {counted.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={s.id === open?.id}
+                  className={dot(s)}
+                  onClick={() => setOpenId(s.id)}
+                >
+                  <i aria-hidden="true" />
+                  {s.name}
+                </button>
+              ))}
+            </div>
             {recorded.length > 0 && (
-              <>
+              <div className="rx-picker-row">
                 <span className="rx-picker-group muted">Recorded only</span>
                 {recorded.map((s) => (
                   <button
@@ -692,7 +694,7 @@ export default function Readings({ patient: p }) {
                     {s.name}
                   </button>
                 ))}
-              </>
+              </div>
             )}
           </div>
           {open && (
