@@ -120,8 +120,8 @@ number a clinical judge pushes on.
 
 2.0 sd looks better still, but it deletes the only real coordinated deviation
 we have: on 2026-10-15 HRV sits at -1.98 sd and drops out, taking the day
-from two signals to one. That event is the demo, and it is the one Isolation
-Forest independently ranks most anomalous of 45 windows.
+from two signals to one. That event is the demo, and it is also the window an
+unsupervised model ranks most anomalous — see the corroboration below.
 
 **1.75 sd is the tightest setting that halves the false-alarm rate and still
 catches it.** `analysis/detect.py` now uses it. The surfaced events drop from
@@ -169,3 +169,39 @@ written into the `hrv_sdnn` column for schema compatibility and the truth is
 recorded in `hrv_measure`. This is safe because the cohort is only used for
 within-subject z-scores, where the choice of measure cancels. **Never quote a
 LifeSnaps HRV figure as SDNN.**
+
+## A second opinion, from a method with no rules in it
+
+`analysis/detect.py` reaches its answer from per-signal z-scores against a
+personal baseline plus a persistence rule. As a cross-check, `analysis/
+isolation_forest.py` fits an Isolation Forest on the same windows — no
+thresholds, no rules, no notion of a baseline — and asks only which rows sit
+furthest from the rest.
+
+It ranks **2026-10-15 first of 45**, score -0.675, ahead of the next window
+at -0.597:
+
+```
+ rank         date    score   restingHR  hr_night  hrv    resp   spo2
+    1   2026-10-15   -0.675       78.00     96.96  23.68  17.14  98.04
+    2   2026-11-23   -0.597       57.00    120.10  48.51  16.02  98.90
+    3   2026-11-04   -0.588       62.00     64.48  47.31  16.84  97.30
+```
+
+Two unrelated methods agreeing on one day is worth more than either alone.
+Reproduce it with `python3 analysis/isolation_forest.py` — it needs
+scikit-learn, which nothing else here does, and the seed is fixed so the
+numbers above come out the same.
+
+**The caveat is the interesting part.** Isolation Forest needs every feature
+present, and only **45 of 325 windows (14%)** have all five signals at once,
+because each sensor reports at its own rate. The model is starved by
+missingness, not by compute — a fit takes 99 ms. That is the argument for
+keeping the deterministic rule in charge: it uses whatever signals are
+present on the day and says which were missing, where the model simply
+discards 86% of the data.
+
+The model stays out of the product for a second reason. An isolation score is
+a number without a reason. It cannot be traced to the measurement that caused
+it, and traceability is the whole point of the evidence packet. This
+corroborates the detector; it does not replace it.
