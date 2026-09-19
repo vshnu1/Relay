@@ -31,6 +31,21 @@ test("statuses are derived from readings and check-ins, not stored", async () =>
       samuel: "monitoring",
       george: "monitoring",
       lena: "nodata",
+      // Six further conditions, two patients each: one whose signals have
+      // moved and one whose have not, so every profile is exercised in both
+      // directions and the quiet cases outnumber the loud ones.
+      marcus: "context",
+      nadia: "monitoring",
+      yusuf: "context",
+      ingrid: "nodata",
+      oliver: "context",
+      beatrice: "monitoring",
+      hassan: "context",
+      clara: "monitoring",
+      arthur: "context",
+      mei: "monitoring",
+      rosa: "context",
+      amara: "monitoring",
     },
   );
   assert.equal(v.maya.moved.length, 4);
@@ -68,6 +83,34 @@ test("a patient's answers move them from waiting to review, and a note attaches 
   store.actions.requestCheckin("priya");
   await flush();
   assert.equal(views().priya.status, "context");
+  store.destroy();
+});
+
+test("check-in questions follow the signals that moved for the discharge program", async () => {
+  const { store, views } = await cohort();
+  const priya = views().priya;
+  // Assert the behaviour, not a literal list: programs gain and lose questions,
+  // and a hardcoded array turns every such change into a false failure. What
+  // matters is that the same set is asked, reordered so the question tied to
+  // the signal that moved comes first.
+  assert.equal(
+    priya.questions[0],
+    "fever",
+    "skin temperature movement puts the fever question first for abdominal recovery",
+  );
+  assert.deepEqual(
+    [...priya.questions].sort(),
+    [...priya.profile.questions].sort(),
+    "reordering must not add or drop a question",
+  );
+  assert.match(priya.questionReason, /skin temperature/i);
+
+  const aisha = views().aisha;
+  assert.deepEqual(
+    aisha.questions,
+    aisha.profile.questions,
+    "without a persistent change, the program's normal context order is kept",
+  );
   store.destroy();
 });
 
