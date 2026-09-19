@@ -353,10 +353,13 @@ export default function Assurance() {
                   )}
                   {s.live === "chain" && live && (
                     <p className="rx-safeguard-live">
-                      Live: {live.auditChain.lines} lines,{" "}
+                      Live:{" "}
                       {live.auditChain.intact
-                        ? "chain intact."
-                        : `chain breaks at line ${live.auditChain.brokenAt} (${live.auditChain.reason}).`}
+                        ? `${live.auditChain.chained} chained ${live.auditChain.chained === 1 ? "line" : "lines"}, intact`
+                        : `chain breaks at line ${live.auditChain.brokenAt} (${live.auditChain.reason})`}
+                      {live.auditChain.unchained > 0 &&
+                        `, and ${live.auditChain.unchained} older ${live.auditChain.unchained === 1 ? "line" : "lines"} written before this log was chained`}
+                      .
                     </p>
                   )}
                   {s.was && (

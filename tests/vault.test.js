@@ -109,3 +109,44 @@ test("an encrypted file cannot be read back without its key, and says so", async
   const without = await load(null);
   assert.throws(() => without.readJson(file, null), /RELAY_DATA_KEY is not set/);
 });
+
+// A log that predates the chain is history, not tampering. The deployment that
+// has been running longest has the most such lines, and calling them a break
+// would paint the security page red for the wrong reason.
+test("lines written before the chain existed are counted, not called a break", async () => {
+  const v = await load(null);
+  const file = join(dir(), "audit.jsonl");
+  // Three lines in the old shape: no prev, no hash.
+  const legacy = ["record.view", "roster.view", "consent.changed"]
+    .map((action) => JSON.stringify({ id: action, action }))
+    .join("\n");
+  writeFileSync(file, legacy + "\n");
+
+  let head = v.lastHash(file);
+  for (const action of ["ml.scored", "handoff.exported"])
+    head = v.appendSealed(file, { action }, head);
+
+  const chain = v.verifyChain(file);
+  assert.equal(chain.ok, true, chain.reason);
+  assert.equal(chain.unchained, 3);
+  assert.equal(chain.chained, 2);
+  assert.equal(chain.lines, 5);
+});
+
+test("a break after the unchained history is still caught", async () => {
+  const v = await load(null);
+  const file = join(dir(), "audit.jsonl");
+  writeFileSync(file, JSON.stringify({ action: "old" }) + "\n");
+  let head = v.lastHash(file);
+  for (const action of ["a", "b", "c"]) head = v.appendSealed(file, { action }, head);
+
+  const lines = readFileSync(file, "utf8").trim().split("\n");
+  const target = JSON.parse(lines[2]);
+  target.action = "rewritten";
+  lines[2] = JSON.stringify(target);
+  writeFileSync(file, lines.join("\n") + "\n");
+
+  const chain = v.verifyChain(file);
+  assert.equal(chain.ok, false);
+  assert.equal(chain.brokenAt, 3);
+});

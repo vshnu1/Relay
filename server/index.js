@@ -240,12 +240,10 @@ app.use("/api", (req, res, next) => {
         req.role = user.role;
         req.user = user;
       } else if (REQUIRE_ACCOUNTS) {
-        return res
-          .status(401)
-          .json({
-            error: "Sign in to your account.",
-            code: "ACCOUNT_REQUIRED",
-          });
+        return res.status(401).json({
+          error: "Sign in to your account.",
+          code: "ACCOUNT_REQUIRED",
+        });
       } else {
         const role = matchRole(bearer);
         if (!role)
@@ -696,6 +694,8 @@ app.get("/api/safeguards", (req, res) => {
     },
     auditChain: {
       lines: chain.lines,
+      chained: chain.chained,
+      unchained: chain.unchained,
       intact: chain.ok,
       brokenAt: chain.brokenAt,
       reason: chain.reason || null,

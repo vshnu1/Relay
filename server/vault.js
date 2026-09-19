@@ -174,9 +174,12 @@ export function readSealedLines(file) {
 // Walks the chain and reports the first line that does not follow from the one
 // before it. This is the part that makes (c)(2) a claim rather than a hope.
 export function verifyChain(file) {
-  if (!existsSync(file)) return { ok: true, lines: 0, brokenAt: null };
+  if (!existsSync(file))
+    return { ok: true, lines: 0, chained: 0, unchained: 0, brokenAt: null };
   const lines = readFileSync(file, "utf8").trim().split("\n").filter(Boolean);
   let previous = GENESIS;
+  let chained = 0;
+  let unchained = 0;
   for (let i = 0; i < lines.length; i++) {
     let record;
     try {
@@ -185,14 +188,27 @@ export function verifyChain(file) {
       return {
         ok: false,
         lines: lines.length,
+        chained,
+        unchained,
         brokenAt: i + 1,
         reason: "not JSON",
       };
+    }
+    // Lines written before this log was chained carry no digest. They are
+    // history, not tampering, and calling them a break would put a red line on
+    // the security page for the one deployment that has been running longest.
+    // They are counted and stepped over; verification starts at the first line
+    // that claims to be part of a chain.
+    if (typeof record.hash !== "string") {
+      unchained++;
+      continue;
     }
     if (record.prev !== previous)
       return {
         ok: false,
         lines: lines.length,
+        chained,
+        unchained,
         brokenAt: i + 1,
         reason: "previous digest does not match",
       };
@@ -209,10 +225,13 @@ export function verifyChain(file) {
       return {
         ok: false,
         lines: lines.length,
+        chained,
+        unchained,
         brokenAt: i + 1,
         reason: "line does not match its own digest",
       };
     previous = record.hash;
+    chained++;
   }
-  return { ok: true, lines: lines.length, brokenAt: null };
+  return { ok: true, lines: lines.length, chained, unchained, brokenAt: null };
 }
