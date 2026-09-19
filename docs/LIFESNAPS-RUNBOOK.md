@@ -125,3 +125,27 @@ milliseconds. Check a few raw values and fix `normalise()` if it guessed wrong.
 **Fire rate near 0% or near 100%** — near zero usually means the per-subject
 series are too short to build baselines from (needs 14 observations per
 signal). Near 100% usually means a unit mismatch inflating the deviations.
+
+## Verified: the esbuild install-script warning is not a deploy blocker
+
+`npm ci` prints a warning on npm 11.16+ about `esbuild` having an install
+script not covered by `allowScripts`. That warning is real, and `allowScripts`
+and `npm approve-scripts` are real npm features — but in npm 11 the field is
+**advisory**. Install scripts still run; npm only lists the ones you have not
+reviewed. Blocking is scheduled for npm 12.
+
+Tested here rather than assumed:
+
+```
+npm ci && npm run build                  -> clean, no allowScripts field present
+npm ci --ignore-scripts && npm run build -> clean, built in 1.13s
+```
+
+The build survives install scripts being blocked **entirely**, because
+esbuild's platform binaries are `optionalDependencies` (`@esbuild/linux-x64`
+and 25 others in the lockfile), not something the postinstall downloads. The
+postinstall only validates.
+
+So this is not a reason a Render deploy would fail, and `allowScripts` should
+not be added to `package.json` as a deploy fix. It is reasonable
+future-proofing before npm 12, and nothing more urgent than that.
