@@ -8,6 +8,17 @@ import {
 } from "../model/profiles.js";
 import { list, numberWord } from "../format.js";
 
+// These read as a list inside a sentence, so each label is lowercased. An
+// acronym is not a word, though: it turned "Nights without the CPAP machine"
+// into "nights without the cpap machine". Splitting on the acronyms keeps them
+// whole, because a capturing split puts each match at an odd index.
+const ACRONYM = /\b(CPAP|COPD|HRV|SpO2|BP|ECG)\b/;
+const lower = (text) =>
+  String(text)
+    .split(new RegExp(ACRONYM.source, "g"))
+    .map((part, i) => (i % 2 ? part : part.toLowerCase()))
+    .join("");
+
 export default function Profiles() {
   return (
     <div className="rx-page">
@@ -65,9 +76,7 @@ export default function Profiles() {
                 <dt>Check-in asks about</dt>
                 <dd>
                   {list(
-                    profile.questions.map((q) =>
-                      QUESTIONS[q].short.toLowerCase(),
-                    ),
+                    profile.questions.map((q) => lower(QUESTIONS[q].short)),
                   )}
                 </dd>
               </div>
