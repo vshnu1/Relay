@@ -210,7 +210,15 @@ app.post("/api/patients/:id/simulate", async (req, res) => {
   );
 });
 app.post("/api/patients/:id/checkin", async (req, res) => {
-  const { exercise, fatigue, medication, consent } = req.body;
+  const {
+    exercise,
+    fatigue,
+    medication,
+    notes,
+    consent,
+    method,
+    conversationId,
+  } = req.body;
   if (
     consent !== true ||
     !["No unusual activity", "Recent exercise", "Unsure"].includes(exercise) ||
@@ -220,6 +228,26 @@ app.post("/api/patients/:id/checkin", async (req, res) => {
     return res.status(400).json({
       error: "Consent and all three structured answers are required.",
     });
+  if (
+    method !== undefined &&
+    ![
+      "Patient-confirmed structured form",
+      "ElevenLabs voice assistant",
+    ].includes(method)
+  )
+    return res.status(400).json({ error: "Unsupported check-in method." });
+  if (
+    conversationId !== undefined &&
+    (typeof conversationId !== "string" || conversationId.length > 200)
+  )
+    return res.status(400).json({ error: "Invalid voice conversation ID." });
+  if (
+    notes !== undefined &&
+    (typeof notes !== "string" || notes.trim().length > 500)
+  )
+    return res
+      .status(400)
+      .json({ error: "Additional context is limited to 500 characters." });
   return updateAnalysis(
     req,
     res,
@@ -228,9 +256,13 @@ app.post("/api/patients/:id/checkin", async (req, res) => {
       exercise,
       fatigue,
       medication,
+      ...(notes?.trim() && notes.trim().toLowerCase() !== "none"
+        ? { notes: notes.trim() }
+        : {}),
       consent,
       timestamp: new Date().toISOString(),
-      method: "Patient-confirmed structured form",
+      method: method || "Patient-confirmed structured form",
+      ...(conversationId ? { conversationId } : {}),
     },
     "checkin.recorded",
   );
@@ -306,19 +338,42 @@ app.post("/api/patients/:id/voice", async (req, res) => {
     return res.status(503).json({
       error: "Voice is not configured. The text check-in is available.",
     });
-  const response = await fetch(
-    `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(process.env.ELEVENLABS_AGENT_ID)}`,
-    {
-      headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY },
-      signal: AbortSignal.timeout(15000),
-    },
-  );
-  if (!response.ok)
-    throw new Error(
-      "Unable to start ElevenLabs session. Use the text check-in.",
+  let response;
+  try {
+    response = await fetch(
+      `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(process.env.ELEVENLABS_AGENT_ID)}`,
+      {
+        headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY },
+        signal: AbortSignal.timeout(15000),
+      },
     );
+  } catch {
+    return res.status(503).json({
+      error: "ElevenLabs is unavailable. Use the text check-in.",
+      code: "ELEVENLABS_UNAVAILABLE",
+    });
+  }
+  if (!response.ok)
+    return res.status(503).json({
+      error: "Unable to start ElevenLabs session. Use the text check-in.",
+      code: "ELEVENLABS_SESSION_FAILED",
+    });
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    return res.status(503).json({
+      error: "ElevenLabs returned an invalid session response.",
+      code: "ELEVENLABS_INVALID_RESPONSE",
+    });
+  }
+  if (typeof payload?.signed_url !== "string" || !payload.signed_url)
+    return res.status(503).json({
+      error: "ElevenLabs did not return a signed session URL.",
+      code: "ELEVENLABS_INVALID_RESPONSE",
+    });
   audit("checkin.voice.started", req.patient.id);
-  res.json(await response.json());
+  res.json({ signed_url: payload.signed_url });
 });
 app.use("/api", (req, res) =>
   res.status(404).json({ error: "Unknown API route." }),

@@ -277,9 +277,10 @@ export function compile(analysis, context = null) {
   let summary = analysis.coordinated
     ? statements.join(" ")
     : "No persistent coordinated deviation met the demo review rule. Inspect data coverage before interpreting this result.";
-  if (context)
+  if (context) {
     summary += ` Patient-reported context: recent exercise — ${context.exercise}; fatigue — ${context.fatigue}; medication changes — ${context.medication}.`;
-  else if (analysis.coordinated)
+    if (context.notes) summary += ` Additional note — ${context.notes}.`;
+  } else if (analysis.coordinated)
     summary += "Patient context is missing; a consented check-in is available.";
   return {
     ...analysis,

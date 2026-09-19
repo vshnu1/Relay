@@ -157,8 +157,8 @@ Use ElevenLabs as a consented **structured check-in assistant**, not a medical c
 ### Tools
 
 - `get_checkin_questions`: Render API returns the allowed question set based on missing context.
-- `record_checkin_response`: posts structured answers, timestamp, consent status, and conversation ID to the backend.
-- Optional client tool: updates the portal live from `Context missing` to `Check-in complete` after the conversation.
+- `record_checkin_response`: drafts structured answers plus the patient's own optional context note in the portal. The patient verifies the draft and submits it with consent and the ElevenLabs conversation ID.
+- The portal then reruns the evidence summary and records an auditable check-in event; the voice tool never saves a medical record or escalates automatically.
 
 The demo's best live moment: after the patient says they had no recent exercise and reports worsening fatigue, the portal refreshes the evidence summary to include those facts. It does not change to a diagnosis.
 
@@ -278,7 +278,7 @@ Use synthetic/de-identified patients with three scenarios:
 - Frontend: provider portal and patient check-in UI
 - Backend API: normalized synthetic event store and evidence objects
 - Render Workflows: ingest, baseline, deviation analysis, context request, evidence compilation
-- ElevenLabs: consented structured patient voice check-in and webhook response
+- ElevenLabs: consented structured patient voice check-in and client-tool draft
 - Mock FHIR: Observation, Communication, Task
 - Security demonstration: consent, roles, audit events, signed webhooks, secret-based configuration
 

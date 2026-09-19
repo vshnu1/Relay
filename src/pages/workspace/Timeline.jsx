@@ -41,12 +41,15 @@ export default function Timeline({ patient, tab, setTab, onStartCheckin }) {
           </p>
           {evidence.context &&
             Object.entries(evidence.context)
-              .filter(([k]) =>
-                ["exercise", "fatigue", "medication"].includes(k),
+              .filter(
+                ([k, v]) =>
+                  ["exercise", "fatigue", "medication", "notes"].includes(k) &&
+                  typeof v === "string" &&
+                  v.trim(),
               )
               .map(([k, v]) => (
                 <div className="context-answer" key={k}>
-                  <span>{k}</span>
+                  <span>{k === "notes" ? "additional note" : k}</span>
                   <strong>{v}</strong>
                 </div>
               ))}
