@@ -1,0 +1,113 @@
+/* Emergency access and the locked-record notice. Its own file, imported by
+   EmergencyAccess.jsx, so it adds nothing to recovery.css. Tokens come from .rx. */
+.rx .rx-emergency .rx-card {
+  padding: 26px 30px 28px;
+}
+.rx .rx-emergency .rx-card + .rx-card {
+  margin-top: 18px;
+}
+.rx .rx-emergency .rx-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.rx .rx-emergency-lede {
+  max-width: 68ch;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.rx .rx-emergency-form {
+  max-width: 620px;
+}
+.rx .rx-emergency-form select {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #cfd6cf;
+  border-radius: 10px;
+  background: #ffffff;
+  font: inherit;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.rx .rx-emergency-fine {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.rx .rx-emergency-open ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rx .rx-emergency-open li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #ecd9a8;
+  border-radius: 12px;
+  background: #fdf7e7;
+}
+.rx .rx-emergency-open li div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.rx .rx-emergency-open li span {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.rx .rx-emergency-locked {
+  max-width: 640px;
+  margin: 8vh auto 0;
+}
+.rx .rx-emergency-locked h1 {
+  margin: 14px 0 10px;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+.rx .rx-emergency-locked p {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.rx .rx-emergency-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fdf7e7;
+  color: #8a6a1f;
+}
+/* The signed-in clinician's team, under the sidebar heading. */
+.rx .rx-side-team {
+  display: block;
+  margin: -2px 8px 8px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+/* An open grant, marked on the sidebar link. A dot rather than a count: the label is
+   the longest in the sidebar and a count pill does not fit beside it. */
+.rx .rx-side-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c9962b;
+}

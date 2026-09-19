@@ -1,6 +1,7 @@
 import {
   Activity,
   House,
+  KeyRound,
   ListChecks,
   LogOut,
   MessageSquare,
@@ -14,26 +15,37 @@ import PatientOverview from "./PatientOverview.jsx";
 import Profiles from "./Profiles.jsx";
 import Assurance from "./Assurance.jsx";
 import Messages from "./Messages.jsx";
+import EmergencyAccess, { OutsideCareTeam } from "./EmergencyAccess.jsx";
+import { useCareTeam } from "../model/careTeam.js";
 
 export default function DoctorApp({
   route,
-  cohort,
+  cohort: ward,
   sourceLabel,
   canSignOut,
   onSignOut,
 }) {
+  // An account assigned to a care team works with that team's patients, plus any
+  // record it has open under emergency access. Every screen below gets that list,
+  // not the ward. The server enforces the same rule on what it will serve.
+  const care = useCareTeam(ward);
+  const cohort = care.visible;
+  const locked =
+    route[1] === "p" ? care.outside.find((p) => p.id === route[2]) : null;
   const page =
     route[1] === "p"
       ? "patient"
-      : route[1] === "messages"
-        ? "messages"
-        : route[1] === "profiles"
-          ? "profiles"
-          : route[1] === "watchlist"
-            ? "watchlist"
-            : route[1] === "assurance"
-              ? "assurance"
-              : "home";
+      : route[1] === "emergency"
+        ? "emergency"
+        : route[1] === "messages"
+          ? "messages"
+          : route[1] === "profiles"
+            ? "profiles"
+            : route[1] === "watchlist"
+              ? "watchlist"
+              : route[1] === "assurance"
+                ? "assurance"
+                : "home";
   const reviewCount = cohort.filter((p) => p.group === "review").length;
   const unreadCount = cohort.reduce(
     (n, p) =>
@@ -54,6 +66,7 @@ export default function DoctorApp({
           Relay
         </a>
         <span className="rx-side-heading">Care team</span>
+        {care.scoped && <span className="rx-side-team">{care.team}</span>}
         <a
           className="rx-navlink"
           href="#/doctor"
@@ -107,6 +120,24 @@ export default function DoctorApp({
             <ShieldCheck size={16} aria-hidden="true" /> Security
           </span>
         </a>
+        {care.scoped && (
+          <a
+            className="rx-navlink"
+            href="#/doctor/emergency"
+            aria-current={page === "emergency" ? "page" : undefined}
+          >
+            <span className="rx-navlink-label">
+              <KeyRound size={16} aria-hidden="true" /> Emergency access
+            </span>
+            {care.grants.length > 0 && (
+              <span
+                className="rx-side-dot"
+                role="img"
+                aria-label={`${care.grants.length} open`}
+              />
+            )}
+          </a>
+        )}
         {canSignOut && (
           <div className="rx-side-foot">
             <button
@@ -123,8 +154,12 @@ export default function DoctorApp({
       </nav>
       <main className="rx-main" id="rx-main" tabIndex={-1}>
         <IntendedUse />
-        {page === "patient" ? (
+        {locked ? (
+          <OutsideCareTeam patient={locked} team={care.team} />
+        ) : page === "patient" ? (
           <PatientOverview key={route[2]} id={route[2]} />
+        ) : page === "emergency" ? (
+          <EmergencyAccess care={care} cohort={ward} selectedId={route[2]} />
         ) : page === "messages" ? (
           <Messages cohort={cohort} selectedId={route[2]} />
         ) : page === "assurance" ? (

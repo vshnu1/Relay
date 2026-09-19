@@ -162,7 +162,14 @@ export function createAccountStore(dataDir) {
     // demo principal it keeps one id and one name for good, which is what lets a
     // conversation be between the same two people after either of them signs out
     // and back in, and after the server restarts.
-    ensureAccount({ email, password, role, name = null, patientId = null }) {
+    ensureAccount({
+      email,
+      password,
+      role,
+      name = null,
+      patientId = null,
+      careTeam = null,
+    }) {
       const clean = String(email).trim().toLowerCase();
       let user = users.find((u) => u.email.toLowerCase() === clean);
       const salt = user?.salt || randomBytes(16).toString("hex");
@@ -170,6 +177,7 @@ export function createAccountStore(dataDir) {
         role,
         name: cleanName(name),
         patientId: role === "patient" ? patientId : null,
+        careTeam: role === "clinician" ? careTeam : null,
         demo: true,
         standing: true,
         salt,
@@ -193,7 +201,10 @@ export function createAccountStore(dataDir) {
     // A distinct principal per browser, so two people exploring the deployed
     // demo at the same time are two different actors in the audit log rather
     // than one shared "clinician".
-    createDemoPrincipal(role, { name = null, patientId = null } = {}) {
+    createDemoPrincipal(
+      role,
+      { name = null, patientId = null, careTeam = null } = {},
+    ) {
       const tag = randomBytes(3).toString("hex");
       const salt = randomBytes(16).toString("hex");
       const user = {
@@ -204,13 +215,26 @@ export function createAccountStore(dataDir) {
         salt,
         hash: hash(randomBytes(32).toString("hex"), salt),
         role,
-        careTeam: null,
+        careTeam: role === "clinician" ? careTeam : null,
         demo: true,
         createdAt: new Date().toISOString(),
       };
       users.push(user);
       saveUsers();
       return publicUser(user);
+    },
+
+    // How clinician accounts are scoped, for the security page: assigned to one
+    // care team, explicitly ward-wide, or from before assignment existed.
+    clinicianScopes() {
+      const clinicians = users.filter((u) => u.role === "clinician");
+      return {
+        scopedAccounts: clinicians.filter(
+          (u) => u.careTeam && u.careTeam !== "*",
+        ).length,
+        wardWideAccounts: clinicians.filter((u) => u.careTeam === "*").length,
+        unassignedAccounts: clinicians.filter((u) => !u.careTeam).length,
+      };
     },
 
     openSession(userId) {
