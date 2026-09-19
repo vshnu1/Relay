@@ -1,18 +1,15 @@
 import Conversation from "../Conversation.jsx";
 import { useState } from "react";
-import { CalendarPlus, MessageSquare, NotebookPen } from "lucide-react";
+import { MessageSquare, NotebookPen } from "lucide-react";
 import { actions } from "../useRecovery.js";
 
-// What the care team gives the patient: discharge notes and medicines, messages,
-// appointments. Everything the patient sees under those headings is entered here
-// during the demo, never pre-written.
+// What the care team gives the patient from here: messages, and discharge notes with
+// medicines. What the patient sees under those headings is entered here during the
+// demo, never pre-written. Follow-up appointments come with the record.
 export default function CareTeamPanel({ patient: p, embedded = false }) {
   const [tab, setTab] = useState("message");
   const [notes, setNotes] = useState(p.notes || "");
   const [meds, setMeds] = useState((p.medications || []).join("\n"));
-  const [when, setWhen] = useState("");
-  const [who, setWho] = useState(p.clinician);
-  const [where, setWhere] = useState(p.hospital);
   const [saved, setSaved] = useState("");
   const flash = (msg) => {
     setSaved(msg);
@@ -31,7 +28,6 @@ export default function CareTeamPanel({ patient: p, embedded = false }) {
         {[
           ["message", "Message", MessageSquare],
           ["discharge", "Discharge notes", NotebookPen],
-          ["appointment", "Appointment", CalendarPlus],
         ].map(([id, label, Icon]) => (
           <button
             key={id}
@@ -77,48 +73,6 @@ export default function CareTeamPanel({ patient: p, embedded = false }) {
           />
           <button type="submit" className="rx-btn primary">
             Save to profile
-          </button>
-        </form>
-      )}
-      {tab === "appointment" && (
-        <form
-          className="rx-careteam-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const t = new Date(when).getTime();
-            if (!Number.isFinite(t)) return;
-            actions.bookAppointment(p.id, {
-              t,
-              with: who.trim() || p.clinician,
-              where: where.trim() || p.hospital,
-            });
-            setWhen("");
-            flash("Appointment added to the patient's app.");
-          }}
-        >
-          <label htmlFor="rx-when">When</label>
-          <input
-            id="rx-when"
-            type="datetime-local"
-            value={when}
-            onChange={(e) => setWhen(e.target.value)}
-          />
-          <label htmlFor="rx-who">With</label>
-          <input
-            id="rx-who"
-            type="text"
-            value={who}
-            onChange={(e) => setWho(e.target.value)}
-          />
-          <label htmlFor="rx-where">Where</label>
-          <input
-            id="rx-where"
-            type="text"
-            value={where}
-            onChange={(e) => setWhere(e.target.value)}
-          />
-          <button type="submit" className="rx-btn primary" disabled={!when}>
-            Book
           </button>
         </form>
       )}

@@ -6,7 +6,7 @@ import "./messages.css";
 // Every patient conversation in one place, reached from the sidebar. Whoever is
 // waiting on a reply is at the top. The panel on the right is the same one the patient
 // overview used to tuck inside a collapsed section: the conversation, and the discharge
-// notes and appointments that also go to the patient's app.
+// notes that also go to the patient's app.
 const unreadOf = (p) =>
   (p.messages || []).filter((m) => m.by === "patient" && !m.readAt).length;
 const lastOf = (p) => (p.messages || [])[(p.messages || []).length - 1] || null;
