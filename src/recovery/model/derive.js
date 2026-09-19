@@ -103,6 +103,10 @@ function deriveSignal(p, spec, dayHome, now) {
     rule: spec.counted ? ruleText(spec, info.unit) : null,
     usual,
     sd,
+    // How far from usual counts, in the signal's unit, and the value where
+    // counting starts in the watched direction. The charts draw both.
+    step,
+    threshold: step === null ? null : usual + spec.dir * step,
     before,
     home,
     today,

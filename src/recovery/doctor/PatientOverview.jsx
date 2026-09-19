@@ -239,8 +239,9 @@ export default function PatientOverview({ id }) {
 
       <Readings patient={p} />
       <p className="rx-fine">
-        Hatched squares are the hospital stay or a day with no reading.
-        Thresholds are demo settings, not clinically validated.
+        Hatched areas mark the hospital stay; a short grey tick on the day axis
+        marks a day with no reading. Thresholds are demo settings, not
+        clinically validated.
       </p>
     </div>
   );

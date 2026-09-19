@@ -1487,3 +1487,207 @@ p.rx-row-summary {
   color: var(--ink-2);
   line-height: 1.45;
 }
+
+/* ---------- Readings: one chart per counted signal ---------- */
+.rx-readings-head .rx-seg {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+}
+.rx-seg button {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.rx-seg button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(31, 47, 42, 0.12);
+}
+.rx-readings-intro {
+  margin: 2px 0 6px;
+  font-size: 14.5px;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.rx-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+.rx-signal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px 18px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.rx-signal.moved {
+  border-color: #dcc48a;
+  box-shadow: inset 4px 0 0 var(--amber);
+}
+.rx-signal.muted {
+  background: var(--paper);
+}
+.rx-signal > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rx-signal h3 {
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.rx-signal > header small {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--faint);
+}
+.rx-signal-now {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.rx-signal-now strong {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.rx-signal-now span:first-of-type {
+  font-size: 13.5px;
+  color: var(--faint);
+}
+.rx-signal-now .rx-change {
+  margin-left: 6px;
+}
+.rx-signal-plot {
+  min-width: 0;
+}
+.rx-signal-plot svg {
+  display: block;
+  overflow: visible;
+  font-family: inherit;
+}
+.rx-signal-plot text {
+  font-size: 11.5px;
+  fill: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.rx-signal-plot .rx-axis-cap {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.rx-signal-plot .rx-rule-label {
+  font-weight: 600;
+}
+.rx-signal-plot .rx-rule-label.amber {
+  fill: var(--amber-ink);
+}
+.rx-signal-plot .rx-rule-label.pine {
+  fill: var(--pine);
+}
+.rx-signal-plot .rx-last-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--pine);
+}
+.rx-signal-note {
+  font-size: 13.5px;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.rx-signal-note b {
+  font-weight: 600;
+  color: var(--amber-ink);
+}
+.rx-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.rx-chart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.rx-chart-legend i {
+  display: inline-block;
+  width: 18px;
+  height: 0;
+  border-top: 2px solid var(--pine);
+}
+.rx-chart-legend i.band {
+  height: 10px;
+  border: 0;
+  border-radius: 2px;
+  background: #e8f0e4;
+}
+.rx-chart-legend i.threshold {
+  border-top: 2px dashed var(--amber);
+}
+.rx-chart-legend i.usual {
+  border-top: 2px dashed #8fa398;
+}
+.rx-chart-legend i.run {
+  height: 10px;
+  border: 0;
+  border-radius: 2px;
+  background: #f3d9a0;
+}
+.rx-chart-legend i.gap {
+  height: 10px;
+  border: 0;
+  border-radius: 2px;
+  background: repeating-linear-gradient(135deg, #f1f3f0 0 3px, #cfd5ce 3px 4px);
+}
+.rx-recorded {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+.rx-recorded > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.rx-recorded p {
+  font-size: 14.5px;
+  color: var(--muted);
+}
+.rx-recorded .rx-chart-grid {
+  margin-top: 14px;
+}
+@media (max-width: 900px) {
+  .rx-chart-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rx-readings-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
