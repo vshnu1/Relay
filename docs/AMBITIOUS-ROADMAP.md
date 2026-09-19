@@ -77,8 +77,8 @@ patients. This becomes the one program the real data can drive end to end.
 
 ### 3. Oncology — post-chemotherapy neutropenic-fever watch
 
-Febrile neutropenia is a life-threatening complication of anticancer
-therapy; the REMEDY pilot and the THERMAL wearable study both use
+Febrile neutropenia is a serious complication of anticancer therapy that
+needs same-day assessment; the REMEDY pilot and the THERMAL wearable study both use
 **continuous temperature** for early detection, with one ECG-plus-temperature
 study predicting events up to 18 hours ahead. Manual temperature entry is
 already wired in the patient app.
