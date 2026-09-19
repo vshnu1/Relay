@@ -77,12 +77,23 @@ turns a check-in into the `context` object the ML CLI scores, and `buildReport()
 includes it. Each watch profile names its ML program (`ml`) and, where relevant, the
 adherence field its medicine question also feeds.
 
-## Persistence
+## Persistence and the shared record
 
-Patient-entered facts (imports, own readings, journal, device connections, check-ins,
-sent reports, read messages) are an event log in `localStorage` (`model/persist.js`),
-replayed onto the next snapshot by the store. Clear it with `clearLog()` or by
-clearing site data.
+Everything either side enters is one event with a client id: imports, own readings,
+journal entries, device connections, check-ins, notes, the model's result and sent
+reports from the patient; messages, discharge notes, appointments, check-in requests,
+acknowledgements and sharing changes from the clinician. The store applies an event
+locally at once, appends it to this browser's log (`model/persist.js`) and sends it to
+`POST /api/recovery/events`; `model/sync.js` polls `GET /api/recovery/events?after=`
+every three seconds so the other view, on any device, sees it within seconds. The
+server keeps the log append-only under `DATA_DIR` (`recovery-events.jsonl`, never in
+git) and filters the patient role to the signed-in patient's record. Replays skip ids
+already applied, so nothing lands twice. Without the API the app keeps working from
+this browser's log; the demo bar says "Offline: this browser only".
+
+A report is sent inside Relay: the patient confirms, the text travels as an event,
+and the clinician reads it under **Patient activity** on the patient's page. An email
+draft remains available as an extra.
 
 ## Limits
 

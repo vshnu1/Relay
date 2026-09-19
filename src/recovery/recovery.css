@@ -5495,3 +5495,86 @@ p.rx-row-summary {
   background: var(--surface);
   font-size: 14px;
 }
+
+/* ---------- Patient activity (clinician view) and sync status ---------- */
+.rx-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+}
+.rx-activity-stats {
+  font-size: 12.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.rx-activity-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rx-activity-list li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13px;
+}
+.rx-activity-list li:first-child {
+  border-top: 0;
+}
+.rx-activity-list li > svg {
+  margin-top: 2px;
+  color: var(--faint);
+}
+.rx-activity-list li.report > svg {
+  color: var(--amber-ink);
+}
+.rx-activity-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rx-activity-row strong {
+  font-size: 13px;
+}
+.rx-activity-row time {
+  font-size: 12px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.rx-activity-list p {
+  margin: 2px 0 0;
+  color: var(--ink-2);
+}
+.rx-activity-list blockquote {
+  margin: 4px 0 0;
+  font-family: var(--serif);
+  color: var(--ink-2);
+}
+.rx-activity-report {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font: 12px/1.5 ui-monospace, Menlo, monospace;
+  white-space: pre-wrap;
+}
+.rx-sync i {
+  background: var(--faint);
+}
+.rx-sync.live i {
+  background: #2f7a62;
+}
+.rx-sync.offline i {
+  background: var(--amber);
+}

@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import { actions } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
-import { checkinDue, checkinWhy } from "../model/schedule.js";
+import { checkinDue, checkinWhy, insight } from "../model/schedule.js";
+import { SendReport } from "./Care.jsx";
 import { useAnalysis } from "./useAnalysis.js";
 import { startPatientVoiceSession, voiceAvailable } from "./voice.js";
 
@@ -93,6 +94,11 @@ export default function Checkin({ patient: p }) {
   });
   const [listening, setListening] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  // Once the answers are in, the readings and the answers are judged together.
+  // If they point the same way the report is offered here, one tap away; the
+  // patient still confirms. The care team already sees the answers themselves.
+  const verdict = phase === "done" ? insight(p) : null;
   const sessionRef = useRef(null);
   const recRef = useRef(null);
   const endRef = useRef(null);
@@ -419,15 +425,36 @@ export default function Checkin({ patient: p }) {
       )}
 
       {phase === "done" && (
-        <section className="rx-p-card" aria-label="Sent">
+        <section
+          className={`rx-p-card ${verdict?.send ? "alert" : ""}`}
+          aria-label="Sent"
+        >
           <p className="rx-p-sent">
             <span>
               <CheckCircle2 size={18} aria-hidden="true" /> Sent to your care
               team, together with your readings
             </span>
           </p>
+          {verdict?.send && (
+            <>
+              <strong>{verdict.title}</strong>
+              <p>{verdict.body}</p>
+            </>
+          )}
           <div className="rx-p-stack">
-            <a className="rx-p-btn primary" href="#/patient/insight">
+            {verdict?.send ? (
+              <button
+                type="button"
+                className="rx-p-btn primary"
+                onClick={() => setSending(true)}
+              >
+                Send the report to my care team
+              </button>
+            ) : null}
+            <a
+              className={verdict?.send ? "rx-p-btn" : "rx-p-btn primary"}
+              href="#/patient/insight"
+            >
               What this means for me
             </a>
             <a className="rx-p-textbtn" href="#/patient">
@@ -435,6 +462,13 @@ export default function Checkin({ patient: p }) {
             </a>
           </div>
         </section>
+      )}
+      {sending && (
+        <SendReport
+          patient={p}
+          reason={verdict?.body || "You chose to send a report."}
+          onDone={() => setSending(false)}
+        />
       )}
 
       <p className="rx-p-fine">
