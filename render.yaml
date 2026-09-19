@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: relay-bayhacks
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    disk:
+      name: relay-demo-data
+      mountPath: /var/data/relay
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 24.11.1
+      - key: DATA_DIR
+        value: /var/data/relay
+      - key: APP_ACCESS_TOKEN
+        generateValue: true
+      - key: RENDER_API_KEY
+        sync: false
+      - key: RENDER_WORKFLOW_SLUG
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_AGENT_ID
+        sync: false
