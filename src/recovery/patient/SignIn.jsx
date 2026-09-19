@@ -2,6 +2,11 @@ import { useState } from "react";
 import { Activity, KeyRound } from "lucide-react";
 import { normalizeCode } from "./session.js";
 
+const formatCode = (value) => {
+  const raw = value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
+  return raw.length > 3 ? `${raw.slice(0, 3)}-${raw.slice(3)}` : raw;
+};
+
 // Hospital first, then the discharge code the hospital handed over at discharge.
 export default function SignIn({ roster, onSignIn }) {
   const hospitals = [...new Set(roster.map((p) => p.hospital))].sort();
@@ -66,12 +71,22 @@ export default function SignIn({ roster, onSignIn }) {
               inputMode="text"
               autoCapitalize="characters"
               autoComplete="one-time-code"
+              maxLength={8}
+              pattern="[A-Za-z]{3}-[0-9]{4}"
               placeholder="ABC-1234"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => {
+                setCode(formatCode(e.target.value));
+                if (error) setError("");
+              }}
+              aria-describedby="rx-code-help"
+              required
             />
           </div>
-          <small>It is printed on your discharge letter.</small>
+          <small id="rx-code-help">
+            Enter the three letters and four numbers printed on your discharge
+            letter.
+          </small>
         </div>
         <label className="rx-p-consent">
           <input

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { ArrowUp, ChevronLeft, ChevronRight } from "lucide-react";
-import { list, numberWord } from "../format.js";
+import { numberWord } from "../format.js";
 import { dayColumns, domain, labelEvery, ticks } from "./chartScale.js";
 
 // One chart at a time, chosen from a strip of the signals the patient's watch profile
@@ -621,9 +621,35 @@ export default function Readings({ patient: p }) {
   const open = order[index];
   const step = (by) =>
     setOpenId(order[(index + by + order.length) % order.length].id);
-  const profile = p.profile;
   const shownDays = Math.min(HOME_DAYS, p.dayHome + 1);
   const dot = (s) => (s.moved ? "moved" : s.towardDays > 0 ? "drifting" : "");
+  const attention = counted.filter(
+    (s) => s.moved || Math.abs(s.todayLevel ?? 0) >= 1,
+  );
+  const stable = counted.filter(
+    (s) => !s.moved && Math.abs(s.todayLevel ?? 0) < 1,
+  );
+  const SignalButton = ({ signal: s }) => (
+    <button
+      key={s.id}
+      type="button"
+      aria-current={s.id === open?.id ? "true" : undefined}
+      className={dot(s)}
+      onClick={() => setOpenId(s.id)}
+    >
+      <i aria-hidden="true" />
+      <span>
+        <strong>{s.name}</strong>
+        <small>
+          {s.moved
+            ? `Changed ${s.change}`
+            : s.towardDays > 0
+              ? "Moving from usual"
+              : "Within usual range"}
+        </small>
+      </span>
+    </button>
+  );
   return (
     <section
       id="rx-readings"
@@ -632,15 +658,14 @@ export default function Readings({ patient: p }) {
     >
       <div className="rx-readings-head">
         <div>
-          <h2>Readings counted for {profile.after}</h2>
+          <span className="rx-home-kicker">Evidence behind this review</span>
+          <h2>Wearable readings</h2>
           <p className="rx-readings-intro">
-            After {profile.after}, Relay watches{" "}
-            {list(p.counted.map((s) => s.short))}. A review is recommended when{" "}
-            {numberWord(profile.minMoved)} of the {numberWord(p.counted.length)}{" "}
-            stay past their threshold for 24 hours, together. Pick a signal to
-            see its last {shownDays} {shownDays === 1 ? "day" : "days"} at home
-            {p.dayHome + 1 > HOME_DAYS ? ` of ${p.dayHome + 1}` : ""} against
-            this patient's own usual.
+            {p.moved.length
+              ? `${numberWord(p.moved.length, true)} signals moved far enough from ${p.first}'s usual range to contribute to this review.`
+              : `No watched signal has produced a persistent change.`}{" "}
+            Select a reading to see the evidence over the last {shownDays}{" "}
+            {shownDays === 1 ? "day" : "days"} at home.
           </p>
         </div>
         <div className="rx-seg" role="group" aria-label="How to show readings">
@@ -656,7 +681,7 @@ export default function Readings({ patient: p }) {
             aria-pressed={mode === "grid"}
             onClick={() => setMode("grid")}
           >
-            Day grid
+            All days
           </button>
         </div>
       </div>
@@ -664,54 +689,48 @@ export default function Readings({ patient: p }) {
         <DayGrid patient={p} homeFrom={homeFrom} />
       ) : (
         <>
-          <div className="rx-picker" role="tablist" aria-label="Signals">
-            <div className="rx-picker-row">
-              <span className="rx-picker-group">Counted</span>
-              {counted.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={s.id === open?.id}
-                  className={dot(s)}
-                  onClick={() => setOpenId(s.id)}
-                >
-                  <i aria-hidden="true" />
-                  {s.name}
-                </button>
-              ))}
-            </div>
-            {recorded.length > 0 && (
-              <div className="rx-picker-row">
-                <span className="rx-picker-group muted">Recorded only</span>
-                {recorded.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={s.id === open?.id}
-                    className={`muted ${dot(s)}`}
-                    onClick={() => setOpenId(s.id)}
-                  >
-                    <i aria-hidden="true" />
-                    {s.name}
-                  </button>
+          <div className="rx-readings-body">
+            <nav className="rx-picker" aria-label="Patient readings">
+              <span className="rx-picker-group">Needs attention</span>
+              <div className="rx-picker-list">
+                {(attention.length ? attention : counted.slice(0, 1)).map((s) => (
+                  <SignalButton signal={s} key={s.id} />
                 ))}
               </div>
-            )}
+              {stable.length > 0 && (
+                <details className="rx-picker-more">
+                  <summary>{stable.length} other watched readings</summary>
+                  <div className="rx-picker-list">
+                    {stable.map((s) => <SignalButton signal={s} key={s.id} />)}
+                  </div>
+                </details>
+              )}
+              {recorded.length > 0 && (
+                <details className="rx-picker-more">
+                  <summary>{recorded.length} additional readings</summary>
+                  <div className="rx-picker-list">
+                    {recorded.map((s) => <SignalButton signal={s} key={s.id} />)}
+                  </div>
+                </details>
+              )}
+            </nav>
+            <div className="rx-reading-detail">
+              {open && (
+                <SignalPanel
+                  key={open.id}
+                  signal={open}
+                  patient={p}
+                  homeFrom={homeFrom}
+                  onPrev={() => step(-1)}
+                  onNext={() => step(1)}
+                  position={`${index + 1} of ${order.length}`}
+                />
+              )}
+            </div>
           </div>
-          {open && (
-            <SignalPanel
-              key={open.id}
-              signal={open}
-              patient={p}
-              homeFrom={homeFrom}
-              onPrev={() => step(-1)}
-              onNext={() => step(1)}
-              position={`${index + 1} of ${order.length}`}
-            />
-          )}
-          <ul className="rx-chart-legend" aria-label="How to read the chart">
+          <details className="rx-legend-details">
+            <summary>How to read this chart</summary>
+            <ul className="rx-chart-legend" aria-label="How to read the chart">
             <li>
               <i className="band" /> Usual range before admission
             </li>
@@ -733,7 +752,8 @@ export default function Readings({ patient: p }) {
             <li>
               <i className="tick" /> Day with no reading
             </li>
-          </ul>
+            </ul>
+          </details>
         </>
       )}
     </section>
