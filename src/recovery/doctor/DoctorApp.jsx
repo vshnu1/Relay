@@ -17,6 +17,9 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
   const reviewCount = cohort.filter((p) => p.group === "review").length;
   return (
     <div className="rx-doctor">
+      <a className="rx-skip" href="#rx-main">
+        Skip to main content
+      </a>
       <nav className="rx-side" aria-label="Workspace">
         <a className="rx-brand" href="#/doctor">
           <span className="rx-brand-mark">
@@ -56,7 +59,7 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
           </span>
         </a>
       </nav>
-      <main className="rx-main">
+      <main className="rx-main" id="rx-main" tabIndex={-1}>
         <IntendedUse />
         {page === "patient" ? (
           <PatientOverview key={route[2]} id={route[2]} />

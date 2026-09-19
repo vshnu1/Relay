@@ -2766,9 +2766,9 @@ p.rx-row-summary {
 .rx-p-iconbtn.live {
   border-color: #b5453a;
   color: #b5453a;
-  animation: rx-pulse 1s infinite;
+  animation: rx-pulse-ring 1s infinite;
 }
-@keyframes rx-pulse {
+@keyframes rx-pulse-ring {
   50% {
     box-shadow: 0 0 0 6px rgba(181, 69, 58, 0.15);
   }
@@ -6517,4 +6517,89 @@ p.rx-row-summary {
   .rx-intended-head svg:last-child {
     transition: none;
   }
+}
+
+/* Accessibility repairs found in a WCAG 2.1 AA audit. */
+
+/* Clipped rather than display:none, so a control stays in the tab order and in
+   the accessibility tree while being invisible. */
+.rx-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Both shells put a demo bar and a sidebar ahead of the content on every page.
+   A screen reader can jump by landmark; a keyboard-only user with a tremor
+   cannot, and tabs the whole nav on every navigation. */
+.rx-skip {
+  position: absolute;
+  left: 8px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--pine);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.12s ease;
+}
+.rx-skip:focus {
+  top: 8px;
+}
+
+/* Every one of these was a 9-12px label below 4.5:1 against its own
+   background. --muted is 7.48:1 on paper and already used across the patient
+   surface, so this makes the two surfaces agree as well as pass. */
+.rx-landing-steps article > span,
+.rx-side-heading,
+.rx-summary-label,
+.rx-eyebrow,
+.rx-home-focus-label,
+.rx-home-kicker,
+.rx-home-footnote,
+.rx-p-signin-kicker,
+.rx-demobar-note::before {
+  color: #5a6862;
+}
+
+/* No ::placeholder rule existed, so the colour came from the browser: 2.28:1
+   in Firefox for the search field, which inherits --faint. */
+.rx ::placeholder {
+  color: #5a6862;
+  opacity: 1;
+}
+
+/* A white button on a white card has only its border to say it is a control,
+   and 1.4:1 does not say it. 1.4.11 asks for 3:1. */
+.rx-btn,
+.rx-search,
+.rx-search input {
+  border-color: #808a83;
+}
+/* The sharing switch's off state is a control boundary too. */
+.rx-switch-track,
+.rx-p-switch-track {
+  border: 1px solid #808a83;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rx-p-iconbtn.live,
+  .rx-spin {
+    animation: none;
+  }
+}
+
+/* A fixed 100vh nav with no scroll clips its own sign-out button on a short
+   viewport. */
+.rx-side {
+  overflow-y: auto;
 }

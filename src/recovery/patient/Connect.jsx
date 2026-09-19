@@ -121,12 +121,17 @@ function HealthImport({ patient: p }) {
       </p>
       {state.phase === "idle" || state.phase === "error" ? (
         <>
-          <label className="rx-p-btn">
+          {/* `hidden` is display:none, which takes the input out of the tab
+              order and out of the accessibility tree, leaving the only route
+              for importing your own health data behind a mouse. Clipped
+              instead of hidden, so it keeps both. */}
+          <label className="rx-p-btn" htmlFor="rx-health-file">
             <Upload size={20} aria-hidden="true" /> Choose export.zip
             <input
+              id="rx-health-file"
+              className="rx-visually-hidden"
               type="file"
               accept=".zip,.xml,application/zip,text/xml"
-              hidden
               onChange={(e) => pick(e.target.files?.[0])}
             />
           </label>

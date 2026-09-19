@@ -40,6 +40,17 @@ const PREVIEW_PATIENTS = [
   },
 ];
 
+const scrollTo = (id) => (event) => {
+  const target = document.getElementById(id);
+  if (!target) return;
+  event.preventDefault();
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  // Focus follows the scroll, or a keyboard user is moved visually and left
+  // where they were in the tab order.
+  target.setAttribute("tabindex", "-1");
+  target.focus({ preventScroll: true });
+};
+
 export default function Landing() {
   return (
     <main className="rx-landing">
@@ -51,8 +62,15 @@ export default function Landing() {
           Relay
         </a>
         <div className="rx-landing-links">
-          <a href="#rx-how">How it works</a>
-          <a href="#rx-care">For care teams</a>
+          {/* The hash router parses any #fragment, so these scrolled nobody
+              anywhere and dropped the reader into the clinician workspace
+              instead. Scroll directly and leave the hash alone. */}
+          <a href="#rx-how" onClick={scrollTo("rx-how")}>
+            How it works
+          </a>
+          <a href="#rx-care" onClick={scrollTo("rx-care")}>
+            For care teams
+          </a>
           <a href="#/patient" onClick={() => choose("patient")}>
             For patients
           </a>

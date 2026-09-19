@@ -56,6 +56,9 @@ function Home({ patient: p }) {
     <>
       <header className="rx-ph-top">
         <div>
+          <a className="rx-skip" href="#rx-main">
+            Skip to main content
+          </a>
           <span className="rx-ph-kicker">
             Recovering from {p.profile.after} · {p.hospital.split(", ")[0]}
           </span>
@@ -172,7 +175,7 @@ export default function PatientApp({ patient, route, onSignOut }) {
           </button>
         </div>
       </nav>
-      <main className="rx-main">
+      <main className="rx-main" id="rx-main" tabIndex={-1}>
         <div className="rx-p-screen">
           {page === "checkin" ? (
             <Checkin key={patient.id} patient={patient} />

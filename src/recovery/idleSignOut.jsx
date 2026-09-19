@@ -61,7 +61,11 @@ export function IdleWarning({ msLeft }) {
   const seconds = Math.max(1, Math.ceil(msLeft / 1000));
   return (
     <div className="rx-idle-warning" role="status" aria-live="polite">
-      <strong>Signing out in {seconds}s</strong>
+      {/* Only the boundaries are announced. A live region holding a per-second
+          countdown speaks sixty times, which buries the message it carries. */}
+      <strong aria-hidden={seconds % 30 !== 0 && seconds > 10}>
+        Signing out in {seconds}s
+      </strong>
       <span>
         This workspace locks itself after {IDLE_MS / 60000} minutes without
         activity. Move the pointer or press a key to stay signed in.

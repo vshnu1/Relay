@@ -559,7 +559,12 @@ export default function Checkin({ patient: p }) {
             </div>
           )}
 
-          {current && phase === "interrupted" && (
+          {/* Tapping an answer is available whenever a question is on screen,
+              not only when the agent drops out. A deaf, non-verbal, aphasic or
+              simply hoarse post-surgical patient could otherwise not complete
+              the one task this app asks of them each day. tap() already
+              handles the agent engine; the buttons were just not rendered. */}
+          {current && (phase === "live" || phase === "interrupted") && (
             <div className="rx-p-quick" role="group" aria-label="Tap an answer">
               {listening && (
                 <span className="rx-p-pill live">
