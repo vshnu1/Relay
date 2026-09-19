@@ -205,3 +205,53 @@ The model stays out of the product for a second reason. An isolation score is
 a number without a reason. It cannot be traced to the measurement that caused
 it, and traceability is the whole point of the evidence packet. This
 corroborates the detector; it does not replace it.
+
+## False-positive rate for the ML engine, measured
+
+`docs/ML.md` reports "0 context_needed over 61 daily points" from one
+subject. That is not a false-positive rate: 61 points from one person cannot
+estimate one, and it left the model with no figure comparable to the
+deterministic rule's 3.35%.
+
+`analysis/calibrate_ml.py` runs the real scoring path over every LifeSnaps
+subject. Nobody in that cohort is recovering from surgery, so every state
+above `monitoring` is a false alarm.
+
+**Post-abdominal-surgery program, 64 subjects scored:**
+
+| State | Subjects |
+|---|---|
+| monitoring | 49 |
+| insufficient_data | 12 |
+| context_needed | 3 |
+
+Judged (excluding `insufficient_data`): 52. False alarms: 3.
+**False-positive rate: 5.77% of judged subjects.**
+
+Anomaly scores: median 0.138, p90 0.491, p99 0.822.
+
+Two details worth carrying into the pitch rather than hiding:
+
+**It is not 0%.** The real figure is 5.77% of subjects, against 0 of 61
+points reported from a single person. The single-subject number was not
+wrong, just far too small a sample to see anything.
+
+**Two of the three false alarms had no flagged signals at all.** The model
+fired while the deterministic rule stayed silent. So the model is
+contributing false alarms the rule would not have raised — which is the
+honest counterweight to the `gait_decline` scenario, where the model catches
+a real pattern the rule misses. It trades sensitivity for specificity in both
+directions, and now we can say so with numbers.
+
+**Stroke-rehabilitation program, same 64 subjects:** all 64 return
+`insufficient_data`. LifeSnaps carries no gait metrics, so the engine cannot
+see the signals that program depends on — and reports exactly that rather
+than defaulting to `monitoring`. Refusing to judge when it cannot see is the
+correct behaviour, and it means the stroke program has no cohort-validated
+false-positive rate. Stated, not interpolated.
+
+### Denominators are not interchangeable
+
+The rule's 3.35% is per subject-day; this 5.77% is per subject. A subject
+scored once can raise at most one alarm, so the two are not directly
+comparable and should never be quoted as though one is better than the other.
