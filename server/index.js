@@ -113,6 +113,54 @@ const matchRole = (provided) => {
   return role;
 };
 
+// Headers every response carries. A service handling health data is judged on
+// these before anyone looks at the product, and the deployment was sending
+// none of them. The policy is written tight rather than permissive: the app
+// loads no external fonts, styles or scripts, so the only third party it may
+// reach is ElevenLabs, and only for the voice check-in.
+const CSP = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  "script-src 'self'",
+  // React writes style attributes for the progress bars and chart geometry,
+  // and a style attribute is covered by style-src. No host is listed here
+  // because the typefaces are served from this origin: a font request to a
+  // third party would tell them the IP of everyone who opens a patient record.
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self' data:",
+  "worker-src 'self' blob:",
+  "media-src 'self' blob:",
+  "connect-src 'self' https://api.elevenlabs.io wss://api.elevenlabs.io",
+].join("; ");
+
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", CSP);
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  // A URL here can name a patient route, so it does not travel off-origin.
+  res.setHeader("Referrer-Policy", "no-referrer");
+  // The voice check-in needs the microphone. Nothing else is needed, so
+  // nothing else is permitted.
+  res.setHeader(
+    "Permissions-Policy",
+    "microphone=(self), camera=(), geolocation=(), interest-cohort=()",
+  );
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
+  // Only meaningful where TLS terminates in front of us, and actively unhelpful
+  // on a plain-HTTP localhost, so it is set where it applies.
+  if (process.env.NODE_ENV === "production")
+    res.setHeader(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains",
+    );
+  next();
+});
+
 app.use("/api", (req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
   const configured = ROLE_CODES();

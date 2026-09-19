@@ -15,10 +15,12 @@ import SignIn from "./patient/SignIn.jsx";
 import { currentPatientId, signIn, signOut } from "./patient/session.js";
 import Login from "./Login.jsx";
 import RoleSignIn from "./SignIn.jsx";
+import { useIdleSignOut, IdleWarning, IDLE_MINUTES } from "./idleSignOut.jsx";
 import "./recovery.css";
 
 const CODE_KEY = "rx-code";
 const SIGNED_ROLE_KEY = "rx-signed-role";
+const TIMED_OUT_KEY = "rx-timed-out";
 
 export default function Root() {
   const route = useRoute();
@@ -71,6 +73,17 @@ export default function Root() {
       live = false;
     };
   }, []);
+  // Automatic logoff, which the HIPAA Security Rule requires of a system
+  // holding health records. Only armed once a session exists, so the sign-in
+  // screen is not a thing that expires.
+  const idleLeft = useIdleSignOut(!!gate.role, () => {
+    sessionStorage.removeItem(SIGNED_ROLE_KEY);
+    sessionStorage.removeItem(CODE_KEY);
+    sessionStorage.setItem(TIMED_OUT_KEY, "1");
+    location.hash = "";
+    location.reload();
+  });
+
   if (!gate.checked)
     return <div className="rx rx-loading">Checking workspace access…</div>;
   if (gate.error)
@@ -85,20 +98,29 @@ export default function Root() {
   // Role gate first (shared code per role, verified by the server); the patient
   // then opens their own profile with the discharge code in PatientRoot.
   const AccessScreen = section === "patient" ? RoleSignIn : Login;
-  if (gate.required && !gate.role)
+  if (gate.required && !gate.role) {
+    const timedOut = sessionStorage.getItem(TIMED_OUT_KEY) === "1";
     return (
       <div className="rx">
+        {timedOut && (
+          <p className="rx-timed-out-note" role="status">
+            You were signed out after {IDLE_MINUTES} minutes without activity.
+            Sign in again to continue.
+          </p>
+        )}
         <AccessScreen
           onSignedIn={(role, code) => {
             sessionStorage.setItem(SIGNED_ROLE_KEY, role);
             sessionStorage.setItem(CODE_KEY, code);
             // The code decides the view. A patient code cannot reach the ward.
+            sessionStorage.removeItem(TIMED_OUT_KEY);
             go(role === "patient" ? "/patient" : "/doctor");
             setGate((g) => ({ ...g, role }));
           }}
         />
       </div>
     );
+  }
   // A signed-in patient has no business on the clinician route, whatever the
   // hash says. The server refuses the cohort too; this stops the round trip.
   if (gate.required && gate.role === "patient" && section !== "patient") {
@@ -118,10 +140,15 @@ export default function Root() {
       </div>
     );
 
-  return section === "patient" ? (
-    <PatientRoot route={route} />
-  ) : (
-    <DoctorRoot route={route} />
+  return (
+    <>
+      <IdleWarning msLeft={idleLeft} />
+      {section === "patient" ? (
+        <PatientRoot route={route} />
+      ) : (
+        <DoctorRoot route={route} />
+      )}
+    </>
   );
 }
 

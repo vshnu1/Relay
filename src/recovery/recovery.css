@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap");
+@import url("/fonts/fonts.css");
 @import "./patient-home.css";
 
 /* Everything lives under .rx. The classic workspace has its own global styles and the
@@ -6421,4 +6421,37 @@ p.rx-row-summary {
    should ever break a row. */
 .rx-mtable small {
   display: inline;
+}
+
+/* Automatic logoff: a warning in the last minute, and an explanation on the
+   sign-in screen afterwards so nobody thinks the app dropped them. */
+.rx-idle-warning {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #d9c38a;
+  background: #fbf7ec;
+  color: #5d5540;
+  box-shadow: 0 8px 24px rgb(20 43 40 / 14%);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.rx-idle-warning strong {
+  font-size: 14px;
+  color: var(--ink);
+}
+.rx-timed-out-note {
+  margin: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid #d9c38a;
+  background: #fbf7ec;
+  color: #5d5540;
+  font-size: 13.5px;
 }
