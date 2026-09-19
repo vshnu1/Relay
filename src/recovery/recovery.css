@@ -4466,6 +4466,29 @@ p.rx-row-summary {
   color: var(--pine);
 }
 
+.rx-p-signin-kicker {
+  display: block;
+  margin: 28px 0 7px;
+  color: #6b7b70;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.rx-p-signin-kicker + .rx-p-title { margin-top: 0; }
+.rx-p-signin-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.rx-p-signin-foot strong { color: var(--muted); font-size: 12px; }
+
 /* Clinician review hierarchy: essential discharge context, model-led evidence,
    and follow-up controls that stay out of the way until they are needed. */
 .rx-patienthead {

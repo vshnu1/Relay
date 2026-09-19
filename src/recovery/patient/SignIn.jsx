@@ -39,14 +39,15 @@ export default function SignIn({ roster, onSignIn }) {
           relay
         </span>
       </header>
-      <h1 className="rx-p-title">Open your recovery</h1>
+      <span className="rx-p-signin-kicker">Patient portal</span>
+      <h1 className="rx-p-title">Sign in to Relay</h1>
       <p className="rx-p-lead">
-        Your hospital gave you a discharge code when you left. It opens your
-        profile, the notes from your doctor, and your recovery check-ins.
+        Use the hospital and access code from your discharge letter to open
+        your recovery profile.
       </p>
       <form className="rx-p-form" onSubmit={submit}>
         <div className="rx-p-field">
-          <label htmlFor="rx-hospital">Your hospital</label>
+          <label htmlFor="rx-hospital">Hospital</label>
           <select
             id="rx-hospital"
             className="rx-p-select"
@@ -62,7 +63,7 @@ export default function SignIn({ roster, onSignIn }) {
           </select>
         </div>
         <div className="rx-p-field">
-          <label htmlFor="rx-code">Discharge code</label>
+          <label htmlFor="rx-code">Discharge access code</label>
           <div className="rx-p-code">
             <KeyRound size={20} aria-hidden="true" />
             <input
@@ -84,8 +85,7 @@ export default function SignIn({ roster, onSignIn }) {
             />
           </div>
           <small id="rx-code-help">
-            Enter the three letters and four numbers printed on your discharge
-            letter.
+            Three letters and four numbers, found on your discharge letter.
           </small>
         </div>
         <label className="rx-p-consent">
@@ -105,13 +105,15 @@ export default function SignIn({ roster, onSignIn }) {
           </p>
         )}
         <button type="submit" className="rx-p-btn primary">
-          Open my profile
+          Sign in to my profile
         </button>
       </form>
-      <p className="rx-p-fine">
-        Every patient here is synthetic; the demo codes are in the runbook.
-        Relay describes readings; it does not diagnose.
-      </p>
+      <div className="rx-p-signin-foot">
+        <strong>Demo patient portal</strong>
+        <span>
+          Synthetic records only. Demo access codes are listed in the runbook.
+        </span>
+      </div>
     </>
   );
 }
