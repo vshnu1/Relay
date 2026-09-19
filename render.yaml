@@ -67,7 +67,7 @@ services:
       - key: RENDER_API_KEY
         sync: false
       - key: RENDER_WORKFLOW_SLUG
-        sync: false
+        value: relay-workflow
       - key: ELEVENLABS_API_KEY
         sync: false
       - key: ELEVENLABS_AGENT_ID

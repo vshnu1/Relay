@@ -17,7 +17,7 @@ import {
   voiceStatus,
 } from "./voice.js";
 import { buildCheckinPlan } from "./checkinPlan.js";
-import { matchOption } from "./answerText.js";
+import { matchOption, matchQuestionOption } from "./answerText.js";
 
 // The check-in is one conversation. Relay opens by saying why it is checking in
 // (daily for the first week home, every other day after, or because the readings
@@ -28,7 +28,7 @@ const STATUS = {
   "": "Not started",
   connecting: "Connecting…",
   connected: "Listening",
-  ended: "Call ended",
+  ended: "Check-in paused",
   review: "Review your answers",
 };
 
@@ -68,7 +68,6 @@ export default function Checkin({ patient: p }) {
   const voiceQuestionIndexRef = useRef(0);
   const voiceFollowUpUsedRef = useRef(false);
   const voiceAwaitingFollowUpRef = useRef(false);
-  const voiceContextPromptedRef = useRef(false);
 
   const noteWithVoiceTranscript = (note) => {
     const transcript = voiceTranscriptRef.current
@@ -124,7 +123,6 @@ export default function Checkin({ patient: p }) {
     voiceQuestionIndexRef.current = 0;
     voiceFollowUpUsedRef.current = false;
     voiceAwaitingFollowUpRef.current = false;
-    voiceContextPromptedRef.current = false;
     completedDraftRef.current = null;
     endingByPatientRef.current = false;
     setEngine("elevenlabs");
@@ -145,21 +143,29 @@ export default function Checkin({ patient: p }) {
         onPatientSaid: (text, sendContextualUpdate) => {
           voiceTranscriptRef.current.push(text);
           say("you", text);
-          if (voiceContextPromptedRef.current) {
-            sendContextualUpdate?.(
-              "This is the patient's answer to the one optional context prompt. Do not ask another question. Call record_checkin_response now with the selected answers and the patient's context in their own words (or note None). After the tool confirms, say the short review handoff and end the conversation.",
-            );
-            return;
-          }
           const questionId = plan.questions[voiceQuestionIndexRef.current];
           if (!questionId) {
-            voiceContextPromptedRef.current = true;
             sendContextualUpdate?.(
-              `Ask this optional context question once: “${plan.contextPrompt}” Accept the patient's answer or no. Do not probe. Then call record_checkin_response and close into the review handoff.`,
+              "The selected questions are complete. Do not ask another question or ask whether the patient needs anything else. Call record_checkin_response with the answers already collected, then end the conversation.",
             );
             return;
           }
           const wasFollowUp = voiceAwaitingFollowUpRef.current;
+          const capturedAnswer =
+            matchQuestionOption(questionId, text) ||
+            (wasFollowUp && QUESTIONS[questionId].options.includes("Not sure")
+              ? "Not sure"
+              : null);
+          if (capturedAnswer) {
+            const merged = {
+              ...answersRef.current,
+              [questionId]: capturedAnswer,
+            };
+            answersRef.current = merged;
+            setAnswers(merged);
+            if (plan.questions.every((q) => merged[q]))
+              completedDraftRef.current = { answers: merged, note: null };
+          }
           const guidance = adaptiveTurnGuidance(
             questionId,
             text,
@@ -174,14 +180,33 @@ export default function Checkin({ patient: p }) {
           } else {
             voiceQuestionIndexRef.current += 1;
           }
-          if (
+          const allQuestionsAnswered = plan.questions.every(
+            (id) => answersRef.current[id],
+          );
+          if (allQuestionsAnswered && !voiceAwaitingFollowUpRef.current) {
+            // Finish as soon as the last required answer (and any one allowed
+            // clarification) is complete. The patient reviews and submits on
+            // screen; the agent must not add an "anything else?" turn.
+            const all = answersRef.current;
+            say(
+              "relay",
+              "Thanks. Review your answers, then submit them to your care team.",
+            );
+            finish(all, noteWithVoiceTranscript(null));
+          } else if (
             !voiceAwaitingFollowUpRef.current &&
             voiceQuestionIndexRef.current >= plan.questions.length
           ) {
-            voiceContextPromptedRef.current = true;
-            sendContextualUpdate?.(
-              `The selected questions are complete. Ask this optional context question once: “${plan.contextPrompt}” Accept the patient's answer or no. Do not ask any more symptom questions. Then call record_checkin_response, wait for the result, give the brief review handoff, and end the conversation.`,
+            const missing = plan.questions.find(
+              (id) => !answersRef.current[id],
             );
+            if (missing) {
+              voiceQuestionIndexRef.current = plan.questions.indexOf(missing);
+              voiceFollowUpUsedRef.current = true;
+              sendContextualUpdate?.(
+                `One answer is still unclear. Ask only this selected question once: “${QUESTIONS[missing].text}” If needed, offer “Not sure.” Do not ask anything else.`,
+              );
+            }
           } else {
             sendContextualUpdate?.(guidance.message);
           }
@@ -215,7 +240,7 @@ export default function Checkin({ patient: p }) {
               v.error ||
               (details?.reason === "error"
                 ? `Voice connection ended: ${details.message}`
-                : "The voice call ended before the check-in was complete. Nothing has been shared. Continue by typing."),
+                : "The voice session ended before all questions were answered. Nothing has been shared."),
           }));
         },
       });
@@ -358,7 +383,15 @@ export default function Checkin({ patient: p }) {
   const status =
     engine === "text" && phase === "live"
       ? "Text conversation"
-      : (STATUS[voice.status] ?? voice.status);
+      : phase === "review"
+        ? "Ready to submit"
+        : phase === "sending"
+          ? "Submitting"
+          : phase === "interrupted"
+            ? "Check-in paused"
+            : phase === "done"
+              ? "Submitted"
+              : (STATUS[voice.status] ?? voice.status);
   const focusRows = (p.counted || [])
     .filter((signal) => checkinPlan.focusSignals.includes(signal.id))
     .filter((signal) => signal.moved)
@@ -595,10 +628,18 @@ export default function Checkin({ patient: p }) {
               </div>
             )}
             {phase === "interrupted" && (
-              <p className="rx-p-error" role="alert">
-                {voice.error ||
-                  "The voice session ended before all answers were recorded. Your draft is still private; continue by text or restart the call."}
-              </p>
+              <div className="rx-p-error" role="alert">
+                <p>{voice.error || "The voice check-in paused."}</p>
+                {inputMode === "voice" && voiceConsent && (
+                  <button
+                    type="button"
+                    className="rx-p-btn"
+                    onClick={startCheckin}
+                  >
+                    Restart voice check-in
+                  </button>
+                )}
+              </div>
             )}
             {voice.error && phase !== "interrupted" && (
               <p className="rx-p-error" role="alert">
@@ -622,22 +663,6 @@ export default function Checkin({ patient: p }) {
               ))}
               <div ref={endRef} />
             </div>
-          )}
-
-          {engine !== "text" && phase === "interrupted" && current && (
-            <button
-              type="button"
-              className="rx-p-textbtn"
-              onClick={() => {
-                const i = questions.indexOf(nextMissing);
-                setStage(i < 0 ? { kind: "note" } : { kind: "question", i });
-                setEngine("text");
-                setVoice((v) => ({ ...v, error: "" }));
-                setPhase("live");
-              }}
-            >
-              Continue by typing
-            </button>
           )}
 
           {engine === "text" && phase === "live" && (
