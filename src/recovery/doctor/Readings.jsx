@@ -1,6 +1,18 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ArrowUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { list, numberWord } from "../format.js";
+import { dayColumns, domain, labelEvery, ticks } from "./chartScale.js";
 
+// One chart at a time, chosen from a strip of the signals the patient's watch profile
+// counts (and, set apart, the ones it only records). The chart draws the usual band,
+// the counting threshold and the persistent run, and every point has a hover readout
+// with the day and the value, so a clinician reads the rule off the picture. A short
+// summary sits above the chart and a plain description below it. The day grid from
+// the first version stays available as a compact alternative.
+
+const HOME_DAYS = 14;
+const CHART_H = 172;
+const M = { top: 20, right: 112, bottom: 38, left: 44 };
 const FILL = {
   "-3": "#3d7ab8",
   "-2": "#8fb3d9",
@@ -10,9 +22,6 @@ const FILL = {
   2: "#d9b15f",
   3: "#a87a1f",
 };
-const GAP = 4;
-const HOME_DAYS = 14;
-const CHART_H = 120;
 
 function useWidth() {
   const ref = useRef(null);
@@ -27,197 +36,484 @@ function useWidth() {
   return [ref, width];
 }
 
-// One geometry for squares and charts, so a point always sits under its square.
-function layout(width, before, home) {
-  const unit = (width - GAP * (before + home)) / (before + home + 1.2);
-  const cols = [];
-  let x = 0;
-  for (let i = 0; i < before + 1 + home; i++) {
-    const w = i === before ? unit * 1.2 : unit;
-    cols.push({ x, w, mid: x + w / 2 });
-    x += w + GAP;
-  }
-  return cols;
-}
+const dayName = (d) =>
+  d < 0
+    ? `${-d} ${-d === 1 ? "day" : "days"} before admission`
+    : `Day ${d} at home`;
+const unitWord = (s) => (s.unit === "%" ? "%" : s.unit);
+const dirWord = (s) =>
+  s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase();
 
-function Chart({ signal, cols, width, homeFrom }) {
-  const before = signal.before.map((d, i) => ({ ...d, x: cols[i].mid }));
-  const home = signal.home
-    .slice(homeFrom)
-    .map((d, i) => ({ ...d, x: cols[signal.before.length + 1 + i].mid }));
-  const values = [...before, ...home].map((d) => d.v).filter((v) => v !== null);
-  if (!values.length || signal.usual === null)
-    return <p className="rx-fine">No readings to draw yet.</p>;
-  const band = Math.max(signal.sd, Math.abs(signal.usual) * 0.005);
-  let lo = Math.min(...values, signal.usual - band);
-  let hi = Math.max(...values, signal.usual + band);
-  const pad = (hi - lo) * 0.14 || 1;
-  lo -= pad;
-  hi += pad;
-  const y = (v) => CHART_H - 12 - ((v - lo) / (hi - lo)) * (CHART_H - 24);
-  // Break the line at missing days instead of drawing through them.
-  const segments = (points) =>
-    points
-      .reduce(
-        (acc, d) =>
-          d.v === null
-            ? [...acc, []]
-            : [...acc.slice(0, -1), [...acc[acc.length - 1], d]],
-        [[]],
-      )
-      .filter((s) => s.length);
-  const stay = cols[signal.before.length];
+// Break the line at missing days instead of drawing through them.
+const segments = (points) =>
+  points
+    .reduce(
+      (acc, d) =>
+        d.v === null
+          ? [...acc, []]
+          : [...acc.slice(0, -1), [...acc[acc.length - 1], d]],
+      [[]],
+    )
+    .filter((s) => s.length);
+
+function SignalChart({ signal: s, homeFrom, width }) {
+  const [hover, setHover] = useState(null);
+  const inner = width - M.left - M.right;
+  const homeDays = s.home.slice(homeFrom);
+  const cols = dayColumns(inner, s.before.length, homeDays.length);
+  const before = s.before.map((d, i) => ({ ...d, x: M.left + cols[i].mid }));
+  const home = homeDays.map((d, i) => ({
+    ...d,
+    x: M.left + cols[s.before.length + 1 + i].mid,
+  }));
+  const points = [...before, ...home];
+  const values = points.map((d) => d.v).filter((v) => v !== null);
+  if (!values.length || s.usual === null)
+    return (
+      <p className="rx-fine">
+        {s.usual === null
+          ? "No readings before admission, so there is no usual to compare with yet."
+          : "No readings to draw yet."}
+      </p>
+    );
+  const band = Math.max(s.sd, Math.abs(s.usual) * 0.005);
+  const { lo, hi } = domain({
+    values,
+    usual: s.usual,
+    band,
+    threshold: s.threshold,
+    unit: s.unit,
+  });
+  const plotH = CHART_H - M.top - M.bottom;
+  const y = (v) => M.top + plotH - ((v - lo) / (hi - lo)) * plotH;
+  const stay = cols[s.before.length];
   const runCol =
-    signal.runStart !== null && signal.runStart >= homeFrom
-      ? cols[signal.before.length + 1 + signal.runStart - homeFrom]
+    s.runStart !== null && s.runStart >= homeFrom
+      ? cols[s.before.length + 1 + s.runStart - homeFrom]
       : null;
   const last = [...home].reverse().find((d) => d.v !== null);
-  const label = (d) =>
-    `${d.day < 0 ? `${-d.day} days before admission` : `Day ${d.day}`}: ${signal.fmt(d.v)} ${signal.unit}`;
+  const every = labelEvery(cols[0].w);
+  const beforeWidth = cols[s.before.length - 1].x + cols[s.before.length - 1].w;
+  const right = M.left + inner;
+  const yTicks = ticks(lo, hi, 3);
+  const usualY = y(s.usual);
+  const thrY = s.threshold === null ? null : y(s.threshold);
+  const crowded = thrY !== null && Math.abs(thrY - usualY) < 16;
+
+  // Nearest day column to the pointer, for the hover readout.
+  const pick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    let best = null;
+    for (const d of points)
+      if (best === null || Math.abs(d.x - px) < Math.abs(best.x - px)) best = d;
+    setHover(best && Math.abs(best.x - px) <= cols[0].w ? best : null);
+  };
+  const hovered = hover ?? null;
+  const delta = (d) =>
+    d.v === null
+      ? null
+      : s.thr.abs !== undefined
+        ? `${d.v - s.usual >= 0 ? "+" : "−"}${Math.abs(d.v - s.usual).toFixed(s.digits || 1)} ${s.unit === "%" ? "points" : s.unit}`
+        : `${d.v - s.usual >= 0 ? "+" : "−"}${Math.round((Math.abs(d.v - s.usual) / Math.abs(s.usual)) * 100)}%`;
+  const tipLeft = hovered ? Math.min(Math.max(hovered.x, 90), width - 90) : 0;
   return (
-    <svg
-      width={width}
-      height={CHART_H}
-      role="img"
-      aria-label={`${signal.name}, daily readings. Today ${signal.fmt(signal.today)} ${signal.unit}, usual ${signal.fmt(signal.usual)}.`}
-    >
-      <rect
-        x="0"
-        y={y(signal.usual + band)}
+    <div className="rx-plot-wrap">
+      <svg
         width={width}
-        height={y(signal.usual - band) - y(signal.usual + band)}
-        rx="3"
-        fill="#e8f0e4"
-      />
-      {runCol && (
-        <rect
-          x={runCol.x - GAP / 2}
-          y="0"
-          width={width - runCol.x + GAP / 2}
-          height={CHART_H}
-          rx="3"
-          fill="#f3d9a0"
-          opacity="0.5"
-        />
-      )}
-      <rect
-        x={stay.x}
-        y="0"
-        width={stay.w}
         height={CHART_H}
-        rx="3"
-        fill="#ffffff"
-      />
-      <rect
-        x={stay.x}
-        y="0"
-        width={stay.w}
-        height={CHART_H}
-        rx="3"
-        fill="#f1f2ef"
-      />
-      <line
-        x1="0"
-        x2={width}
-        y1={y(signal.usual)}
-        y2={y(signal.usual)}
-        stroke="#8fa398"
-        strokeDasharray="3 4"
-      />
-      {[
-        ...segments(before).map((s) => [s, "#7f9389", 1.75]),
-        ...segments(home).map((s) => [s, "#24493d", 2]),
-      ].map(([s, stroke, strokeWidth], i) => (
-        <polyline
-          key={i}
-          points={s
-            .map((d) => `${d.x.toFixed(1)},${y(d.v).toFixed(1)}`)
-            .join(" ")}
-          fill="none"
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      ))}
-      {[...before, ...home]
-        .filter((d) => d.v !== null)
-        .map((d) => (
-          <circle
-            key={d.day}
-            cx={d.x}
-            cy={y(d.v)}
-            r={d === last ? 5 : 7}
-            fill={d === last ? "#24493d" : "transparent"}
-            stroke={d === last ? "#ffffff" : "none"}
-            strokeWidth="2"
+        role="img"
+        aria-label={`${s.name}, one reading per day. Today ${s.fmt(s.today)} ${s.unit}; usual ${s.fmt(s.usual)}${s.threshold !== null ? `; counted past ${s.fmt(s.threshold)}` : ""}.`}
+        onMouseMove={pick}
+        onMouseLeave={() => setHover(null)}
+      >
+        <defs>
+          <pattern
+            id="rx-hatch"
+            width="5"
+            height="5"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(45)"
           >
-            <title>{label(d)}</title>
-          </circle>
+            <rect width="5" height="5" fill="#f1f3f0" />
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="5"
+              stroke="#cfd5ce"
+              strokeWidth="1.5"
+            />
+          </pattern>
+        </defs>
+        {/* block captions */}
+        <text x={M.left + cols[0].x} y={13} className="rx-axis-cap">
+          {beforeWidth >= 120 ? "Before admission" : "Before"}
+        </text>
+        <text
+          x={M.left + cols[s.before.length + 1].x}
+          y={13}
+          className="rx-axis-cap"
+        >
+          At home
+        </text>
+        {/* value axis */}
+        {yTicks.map((t) => (
+          <g key={t}>
+            <line x1={M.left} x2={right} y1={y(t)} y2={y(t)} stroke="#edf0ea" />
+            <text x={M.left - 8} y={y(t) + 4} textAnchor="end">
+              {s.fmt(t)}
+            </text>
+          </g>
         ))}
-    </svg>
+        <text
+          x={M.left - 8}
+          y={M.top - 8}
+          textAnchor="end"
+          className="rx-axis-unit"
+        >
+          {s.unit}
+        </text>
+        {/* hospital stay */}
+        <rect
+          x={M.left + stay.x}
+          y={M.top}
+          width={stay.w}
+          height={plotH}
+          rx="3"
+          fill="url(#rx-hatch)"
+        />
+        {/* persistent run */}
+        {runCol && (
+          <rect
+            x={M.left + runCol.x - 1.5}
+            y={M.top}
+            width={right - (M.left + runCol.x) + 1.5}
+            height={plotH}
+            rx="3"
+            fill="#f3d9a0"
+            opacity="0.45"
+          />
+        )}
+        {/* usual band and line */}
+        <rect
+          x={M.left}
+          y={y(s.usual + band)}
+          width={inner}
+          height={Math.max(2, y(s.usual - band) - y(s.usual + band))}
+          rx="2"
+          fill="#e8f0e4"
+        />
+        <line
+          x1={M.left}
+          x2={right + 4}
+          y1={usualY}
+          y2={usualY}
+          stroke="#8fa398"
+          strokeDasharray="3 4"
+        />
+        <text
+          x={right + 8}
+          y={usualY + (crowded ? (thrY < usualY ? 11 : -7) : 4)}
+          className="rx-rule-label pine"
+        >
+          usual {s.fmt(s.usual)} {unitWord(s)}
+        </text>
+        {/* threshold */}
+        {thrY !== null && (
+          <>
+            <line
+              x1={M.left}
+              x2={right + 4}
+              y1={thrY}
+              y2={thrY}
+              stroke="#a87a1f"
+              strokeDasharray="5 4"
+              strokeWidth="1.5"
+            />
+            <text
+              x={right + 8}
+              y={thrY + (crowded ? (thrY < usualY ? -7 : 11) : 4)}
+              className="rx-rule-label amber"
+            >
+              counts past {s.fmt(s.threshold)} {unitWord(s)}
+            </text>
+          </>
+        )}
+        {/* hover guide */}
+        {hovered && (
+          <line
+            x1={hovered.x}
+            x2={hovered.x}
+            y1={M.top}
+            y2={M.top + plotH}
+            stroke="#24493d"
+            strokeOpacity="0.35"
+            strokeWidth="1.5"
+          />
+        )}
+        {/* lines */}
+        {[
+          ...segments(before).map((seg) => [seg, "#7f9389", 1.75]),
+          ...segments(home).map((seg) => [seg, "#24493d", 2.25]),
+        ].map(([seg, stroke, strokeWidth], i) => (
+          <polyline
+            key={i}
+            points={seg
+              .map((d) => `${d.x.toFixed(1)},${y(d.v).toFixed(1)}`)
+              .join(" ")}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ))}
+        {/* points */}
+        {points.map((d, i) =>
+          d.v === null ? (
+            <line
+              key={`m${i}`}
+              x1={d.x}
+              x2={d.x}
+              y1={M.top + plotH - 6}
+              y2={M.top + plotH}
+              stroke="#b8c0b9"
+              strokeWidth="2"
+            />
+          ) : (
+            <circle
+              key={`p${i}`}
+              cx={d.x}
+              cy={y(d.v)}
+              r={d === hovered ? 6 : d === last ? 5 : 3.5}
+              fill={d.day < 0 ? "#7f9389" : "#24493d"}
+              stroke="#ffffff"
+              strokeWidth={d === hovered || d === last ? 2 : 1}
+            />
+          ),
+        )}
+        {last && !hovered && (
+          <text
+            x={last.x}
+            y={y(last.v) - 10 >= M.top + 6 ? y(last.v) - 10 : y(last.v) + 18}
+            textAnchor="middle"
+            className="rx-last-label"
+          >
+            {s.fmt(last.v)}
+          </text>
+        )}
+        {/* day axis */}
+        {before.map((d, i) =>
+          i === 0 || i === before.length - 1 ? (
+            <text key={d.day} x={d.x} y={CHART_H - 22} textAnchor="middle">
+              {d.day}
+            </text>
+          ) : null,
+        )}
+        {home.map((d, i) =>
+          i === home.length - 1 ||
+          (i % every === 0 && home.length - 1 - i >= every) ? (
+            <text
+              key={d.day}
+              x={d.x}
+              y={CHART_H - 22}
+              textAnchor="middle"
+              style={{ fontWeight: d === last ? 700 : 400 }}
+            >
+              {d.day}
+            </text>
+          ) : null,
+        )}
+        <text
+          x={M.left + inner / 2}
+          y={CHART_H - 4}
+          textAnchor="middle"
+          className="rx-axis-unit"
+        >
+          days before admission · days at home
+        </text>
+      </svg>
+      {hovered && (
+        <div
+          className="rx-tip"
+          role="status"
+          style={{
+            left: tipLeft,
+            top:
+              hovered.v === null ? M.top + 8 : Math.max(0, y(hovered.v) - 74),
+          }}
+        >
+          <span>{dayName(hovered.day)}</span>
+          {hovered.v === null ? (
+            <strong>No reading</strong>
+          ) : (
+            <>
+              <strong>
+                {s.fmt(hovered.v)} {unitWord(s)}
+              </strong>
+              <small>
+                {delta(hovered)} against usual {s.fmt(s.usual)}
+              </small>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
-export default function Readings({ patient: p }) {
+// One short line above the chart: what it will show.
+function summaryLine(s, profile) {
+  if (s.usual === null) return "No usual yet: no readings before admission.";
+  if (s.today === null && s.counted)
+    return `No reading today. Counted for ${profile.after}.`;
+  if (s.today === null) return "No reading today. Recorded, not counted.";
+  if (s.moved)
+    return `Past its threshold since day ${s.runStart}: ${s.fmt(s.today)} ${unitWord(s)} today against a usual ${s.fmt(s.usual)}.`;
+  if (s.towardDays > 0)
+    return `Drifting ${dirWord(s)} for ${numberWord(s.towardDays)} ${s.towardDays === 1 ? "day" : "days"}, not yet past the threshold.`;
+  if (!s.counted)
+    return `Recorded, not counted for ${profile.after}. ${s.fmt(s.today)} ${unitWord(s)} today, usual ${s.fmt(s.usual)}.`;
+  return `Inside the usual range: ${s.fmt(s.today)} ${unitWord(s)} today, usual ${s.fmt(s.usual)}.`;
+}
+
+// The plain description under the chart: exactly what is drawn, in order.
+function describe(s, p, homeFrom) {
+  const shownDays = p.dayHome + 1 - homeFrom;
+  const missing = s.home.slice(homeFrom).filter((d) => d.v === null).length;
+  const parts = [
+    `${s.name}, one reading per day: the seven days before admission on the left, the hospital stay hatched, then the last ${numberWord(shownDays)} ${shownDays === 1 ? "day" : "days"} at home.`,
+  ];
+  if (s.usual === null)
+    parts.push(
+      "There were no readings before admission, so there is no usual range to compare with.",
+    );
+  else {
+    parts.push(
+      `The green band is ${p.first}'s usual range before admission, around ${s.fmt(s.usual)} ${unitWord(s)}.`,
+    );
+    if (s.counted && s.threshold !== null)
+      parts.push(
+        `The amber dashed line is where a change starts to count: ${s.fmt(s.threshold)} ${unitWord(s)} or ${s.watchDir > 0 ? "more" : "less"}, held for 24 hours.`,
+      );
+    else parts.push(`It is recorded but not counted for ${p.profile.after}.`);
+    if (s.today !== null)
+      parts.push(
+        s.moved
+          ? `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual, and the amber shading shows it has been past the line since day ${s.runStart}.`
+          : s.towardDays > 0
+            ? `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual: moving ${dirWord(s)} but not past the line.`
+            : `Today is ${s.fmt(s.today)} ${unitWord(s)}, ${s.change} against usual, inside the band.`,
+      );
+    else parts.push("There is no reading for today.");
+  }
+  if (missing > 0)
+    parts.push(
+      `${numberWord(missing, true)} of the ${numberWord(shownDays)} days at home ${missing === 1 ? "has" : "have"} no reading; the line breaks there.`,
+    );
+  return parts.join(" ");
+}
+
+function SignalPanel({
+  signal: s,
+  patient: p,
+  homeFrom,
+  onPrev,
+  onNext,
+  position,
+}) {
   const [ref, width] = useWidth();
-  // Open the highest-contributing signal by default so its chart, with the green
-  // usual-band, is visible without a click. Prefer a signal past its threshold, then
-  // the one furthest from usual today; fall back to a counted signal so something is
-  // always open even when nothing has moved.
-  const [openId, setOpenId] = useState(() => {
-    const top = [...p.counted].sort(
-      (a, b) =>
-        b.moved - a.moved ||
-        Math.abs(b.todayLevel ?? 0) - Math.abs(a.todayLevel ?? 0) ||
-        b.towardDays - a.towardDays,
-    )[0];
-    return (top ?? p.signals[0])?.id ?? null;
-  });
-  const [more, setMore] = useState(false);
-  const homeFrom = Math.max(0, p.dayHome + 1 - HOME_DAYS);
+  const state = s.moved
+    ? "moved"
+    : Math.abs(s.todayLevel ?? 0) >= 1
+      ? "drifting"
+      : "usual";
+  return (
+    <article
+      className={`rx-signal ${state}${s.counted ? "" : " muted"}`}
+      aria-label={s.name}
+    >
+      <header>
+        <div className="rx-signal-title">
+          <h3>
+            {s.name}
+            <small>{position}</small>
+          </h3>
+          <p className="rx-signal-summary">{summaryLine(s, p.profile)}</p>
+        </div>
+        <div className="rx-signal-side">
+          <div className="rx-signal-now">
+            <strong>{s.today === null ? "—" : s.fmt(s.today)}</strong>
+            <span>{s.unit}</span>
+            {s.today !== null && s.usual !== null && (
+              <span className={`rx-change ${s.moved ? "moved" : ""}`}>
+                {s.moved && (
+                  <ArrowUp
+                    size={13}
+                    strokeWidth={2.8}
+                    style={{
+                      transform: s.watchDir < 0 ? "rotate(180deg)" : undefined,
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
+                {s.change}
+              </span>
+            )}
+          </div>
+          <div className="rx-signal-nav">
+            <button
+              type="button"
+              className="rx-iconbtn"
+              aria-label="Previous signal"
+              onClick={onPrev}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              className="rx-iconbtn"
+              aria-label="Next signal"
+              onClick={onNext}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      </header>
+      <p className="rx-signal-watch">
+        {s.counted
+          ? `Counted for ${p.profile.after}. Watching for ${dirWord(s)} than usual.`
+          : `Recorded only. Not counted for ${p.profile.after}.`}{" "}
+        Source: {s.device === "whoop" ? "WHOOP" : "watch"}.
+      </p>
+      <div ref={ref} className="rx-signal-plot">
+        {width > 0 && (
+          <SignalChart signal={s} homeFrom={homeFrom} width={width} />
+        )}
+      </div>
+      <p className="rx-signal-desc">{describe(s, p, homeFrom)}</p>
+    </article>
+  );
+}
+
+// The compact day grid from the first version: one square per day per signal.
+function DayGrid({ patient: p, homeFrom }) {
+  const [ref, width] = useWidth();
   const homeCount = p.dayHome + 1 - homeFrom;
-  const cols = width ? layout(width, 7, homeCount) : [];
+  const cols = width ? dayColumns(width, 7, homeCount, 4) : [];
   const labels = [
     ...[7, 6, 5, 4, 3, 2, 1].map((b) => `-${b}`),
     "stay",
     ...Array.from({ length: homeCount }, (_, i) => String(homeFrom + i)),
   ];
-  const rows = p.signals.filter((s) => s.counted || more);
-  const extra = p.signals.length - p.counted.length;
   const bracket =
     p.pattern && p.patternStartDay >= homeFrom && cols.length
       ? cols[8 + p.patternStartDay - homeFrom]
       : null;
   return (
-    <section
-      id="rx-readings"
-      className="rx-card rx-readings"
-      aria-label="Readings, day by day"
-    >
-      <div className="rx-readings-head">
-        <div>
-          <h2>Readings, day by day</h2>
-          <p>
-            One square per day, against this patient's own usual. Open a signal
-            to see its readings.
-          </p>
-        </div>
-        <ul className="rx-legend" aria-label="Square colors">
-          <li>
-            <i style={{ background: FILL[2] }} />
-            Toward the watched direction
-          </li>
-          <li>
-            <i style={{ background: FILL[0] }} />
-            Usual
-          </li>
-          <li>
-            <i style={{ background: FILL[-2] }} />
-            Away
-          </li>
-        </ul>
-      </div>
+    <>
       <div className="rx-matrix-row rx-matrix-labels" aria-hidden="true">
         <span>Days from coming home</span>
         <div ref={ref} className="rx-cells">
@@ -237,88 +533,205 @@ export default function Readings({ patient: p }) {
         </div>
         <span />
       </div>
-      {rows.map((s) => {
-        const open = openId === s.id;
+      {p.signals.map((s) => {
         const days = [...s.before, null, ...s.home.slice(homeFrom)];
         return (
-          <div key={s.id}>
-            <div className="rx-matrix-row">
-              <button
-                type="button"
-                aria-expanded={open}
-                className={open ? "open" : ""}
-                onClick={() => setOpenId(open ? null : s.id)}
-              >
-                <ChevronRight size={16} aria-hidden="true" />
-                {s.name}
-              </button>
-              <div
-                className="rx-cells"
-                role="img"
-                aria-label={`${s.name}: ${s.moved ? `past its threshold since day ${s.runStart}` : "no persistent change"}.`}
-              >
-                {cols.map((c, i) => {
-                  const d = days[i];
-                  const empty = !d || d.level === null;
-                  return (
-                    <i
-                      key={i}
-                      className={empty ? "hatch" : ""}
-                      style={{
-                        width: c.w,
-                        background: empty ? undefined : FILL[d.level],
-                      }}
-                      title={
-                        d
-                          ? d.v === null
-                            ? `Day ${d.day}: no reading`
-                            : `${d.day < 0 ? `${-d.day} days before admission` : `Day ${d.day}`}: ${s.fmt(d.v)} ${s.unit}, usual ${s.fmt(s.usual)}`
-                          : "In hospital"
-                      }
-                    />
-                  );
-                })}
-              </div>
-              <span className="rx-delta">
-                {s.counted || Math.abs(s.todayLevel ?? 0) >= 1
-                  ? s.change
-                  : "usual"}
-              </span>
+          <div key={s.id} className="rx-matrix-row">
+            <span style={{ fontSize: 15, fontWeight: s.counted ? 600 : 400 }}>
+              {s.name}
+            </span>
+            <div
+              className="rx-cells"
+              role="img"
+              aria-label={`${s.name}: ${s.moved ? `past its threshold since day ${s.runStart}` : "no persistent change"}.`}
+            >
+              {cols.map((c, i) => {
+                const d = days[i];
+                const empty = !d || d.level === null;
+                return (
+                  <i
+                    key={i}
+                    className={empty ? "hatch" : ""}
+                    style={{
+                      width: c.w,
+                      background: empty ? undefined : FILL[d.level],
+                    }}
+                    title={
+                      d
+                        ? d.v === null
+                          ? `${dayName(d.day)}: no reading`
+                          : `${dayName(d.day)}: ${s.fmt(d.v)} ${s.unit}, usual ${s.fmt(s.usual)}`
+                        : "In hospital"
+                    }
+                  />
+                );
+              })}
             </div>
-            {open && width > 0 && (
-              <div className="rx-chart">
-                <Chart
-                  signal={s}
-                  cols={cols}
-                  width={width}
-                  homeFrom={homeFrom}
-                />
-                <p>
-                  Today {s.fmt(s.today)} {s.unit}. Usual is {s.fmt(s.usual)}{" "}
-                  {s.unit}, shown as the green band.{" "}
-                  {s.rule || `Recorded, not counted for ${p.profile.after}.`}
-                </p>
-              </div>
-            )}
+            <span className="rx-delta">
+              {s.counted || Math.abs(s.todayLevel ?? 0) >= 1
+                ? s.change
+                : "usual"}
+            </span>
           </div>
         );
       })}
-      {extra > 0 && (
-        <div className="rx-more">
-          <p>
-            {more
-              ? `Showing ${extra} more signals that are recorded but not counted for ${p.profile.after}.`
-              : `${extra} more signals are recorded but not counted for ${p.profile.after}.`}
+      <ul
+        className="rx-legend"
+        aria-label="Square colours"
+        style={{ marginTop: 10 }}
+      >
+        <li>
+          <i style={{ background: FILL[2] }} />
+          Toward the watched direction
+        </li>
+        <li>
+          <i style={{ background: FILL[0] }} />
+          Usual
+        </li>
+        <li>
+          <i style={{ background: FILL[-2] }} />
+          Away
+        </li>
+      </ul>
+    </>
+  );
+}
+
+// Signals past their threshold first, then the ones drifting furthest, then the rest
+// in profile order, so the chart that matters most opens first.
+const rank = (a, b) =>
+  b.moved - a.moved ||
+  Math.abs(b.todayLevel ?? 0) - Math.abs(a.todayLevel ?? 0) ||
+  b.towardDays - a.towardDays;
+
+export default function Readings({ patient: p }) {
+  const [mode, setMode] = useState("charts");
+  const homeFrom = Math.max(0, p.dayHome + 1 - HOME_DAYS);
+  const counted = [...p.counted].sort(rank);
+  const recorded = p.signals.filter((s) => !s.counted);
+  const order = [...counted, ...recorded];
+  const [openId, setOpenId] = useState(() => order[0]?.id ?? null);
+  const index = Math.max(
+    0,
+    order.findIndex((s) => s.id === openId),
+  );
+  const open = order[index];
+  const step = (by) =>
+    setOpenId(order[(index + by + order.length) % order.length].id);
+  const profile = p.profile;
+  const shownDays = Math.min(HOME_DAYS, p.dayHome + 1);
+  const dot = (s) => (s.moved ? "moved" : s.towardDays > 0 ? "drifting" : "");
+  return (
+    <section
+      id="rx-readings"
+      className="rx-card rx-readings"
+      aria-label="Readings, day by day"
+    >
+      <div className="rx-readings-head">
+        <div>
+          <h2>Readings counted for {profile.after}</h2>
+          <p className="rx-readings-intro">
+            After {profile.after}, Relay watches{" "}
+            {list(p.counted.map((s) => s.short))}. A review is recommended when{" "}
+            {numberWord(profile.minMoved)} of the {numberWord(p.counted.length)}{" "}
+            stay past their threshold for 24 hours, together. Pick a signal to
+            see its last {shownDays} {shownDays === 1 ? "day" : "days"} at home
+            {p.dayHome + 1 > HOME_DAYS ? ` of ${p.dayHome + 1}` : ""} against
+            this patient's own usual.
           </p>
+        </div>
+        <div className="rx-seg" role="group" aria-label="How to show readings">
           <button
             type="button"
-            className="rx-btn"
-            aria-expanded={more}
-            onClick={() => setMore(!more)}
+            aria-pressed={mode === "charts"}
+            onClick={() => setMode("charts")}
           >
-            {more ? "Hide them" : `Show ${extra} more`}
+            Chart
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === "grid"}
+            onClick={() => setMode("grid")}
+          >
+            Day grid
           </button>
         </div>
+      </div>
+      {mode === "grid" ? (
+        <DayGrid patient={p} homeFrom={homeFrom} />
+      ) : (
+        <>
+          <div className="rx-picker" role="tablist" aria-label="Signals">
+            <div className="rx-picker-row">
+              <span className="rx-picker-group">Counted</span>
+              {counted.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={s.id === open?.id}
+                  className={dot(s)}
+                  onClick={() => setOpenId(s.id)}
+                >
+                  <i aria-hidden="true" />
+                  {s.name}
+                </button>
+              ))}
+            </div>
+            {recorded.length > 0 && (
+              <div className="rx-picker-row">
+                <span className="rx-picker-group muted">Recorded only</span>
+                {recorded.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={s.id === open?.id}
+                    className={`muted ${dot(s)}`}
+                    onClick={() => setOpenId(s.id)}
+                  >
+                    <i aria-hidden="true" />
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {open && (
+            <SignalPanel
+              key={open.id}
+              signal={open}
+              patient={p}
+              homeFrom={homeFrom}
+              onPrev={() => step(-1)}
+              onNext={() => step(1)}
+              position={`${index + 1} of ${order.length}`}
+            />
+          )}
+          <ul className="rx-chart-legend" aria-label="How to read the chart">
+            <li>
+              <i className="band" /> Usual range before admission
+            </li>
+            <li>
+              <i className="threshold" /> Where a change starts to count
+            </li>
+            <li>
+              <i /> Readings at home
+            </li>
+            <li>
+              <i className="before" /> Readings before admission
+            </li>
+            <li>
+              <i className="run" /> Past the threshold, still going
+            </li>
+            <li>
+              <i className="gap" /> Hospital stay
+            </li>
+            <li>
+              <i className="tick" /> Day with no reading
+            </li>
+          </ul>
+        </>
       )}
     </section>
   );
