@@ -21,6 +21,7 @@ import {
   mkdirSync,
   writeFileSync,
   renameSync,
+  rmSync,
   appendFileSync,
   existsSync,
 } from "node:fs";
@@ -301,12 +302,19 @@ const PUBLIC_ROUTES = new Set([
 // real deployment would issue these from the hospital system against an
 // account; the point here is that the check happens on the server, because a
 // check that only happens in the browser is not a check.
+// Patient id -> the name and code the roster gives them, for standing accounts and
+// for handing a signed-in patient their own record.
+const ROSTER = new Map();
 const DISCHARGE_CODES = (() => {
   const byCode = new Map();
   try {
     createSimulatedSource().connect({
       snapshot: (list) => {
-        for (const p of list) if (p.code) byCode.set(p.code, p.id);
+        for (const p of list)
+          if (p.code) {
+            byCode.set(p.code, p.id);
+            ROSTER.set(p.id, { name: p.name, code: p.code });
+          }
       },
       readings() {},
       device() {},
@@ -337,6 +345,9 @@ const SYNTHETIC_PATIENTS = new Set(DISCHARGE_CODES.values());
 
 // Which record a patient-role caller has actually proved they may read.
 const provenPatient = (req) => {
+  // An account that is for one record reaches that record whatever the header
+  // says. The header remains the proof only for sessions with no such binding.
+  if (req.user?.patientId) return req.user.patientId;
   const supplied = req.headers["x-relay-discharge"];
   if (typeof supplied !== "string" || !supplied) return null;
   return DISCHARGE_CODES.get(supplied.trim().toUpperCase()) || null;
@@ -362,17 +373,68 @@ const PATIENT_ROUTES = new Set([
 
 const roleFromInvite = (code) => matchRole(code);
 
+// A patient account that is for one record is handed that record at sign-in, so
+// the app opens it instead of asking for a discharge code the account already
+// settles. The server does not rely on the client keeping it: see provenPatient.
+const recordFor = (user) =>
+  user?.patientId && ROSTER.has(user.patientId)
+    ? {
+        patient: {
+          patientId: user.patientId,
+          dischargeCode: ROSTER.get(user.patientId).code,
+        },
+      }
+    : {};
+const displayName = (user) => user.name || user.email.split("@")[0];
+
+// Standing demo accounts: one clinician and two patients who keep the same id and
+// name across sign-outs, restarts and deploys, so a conversation has two ends that
+// persist. They exist only when a password is configured. Production has no default,
+// so a deployment gets them only if someone sets RELAY_DEMO_PASSWORD on purpose.
+const DEMO_PASSWORD =
+  process.env.RELAY_DEMO_PASSWORD ||
+  (process.env.NODE_ENV === "production" ? null : "relay-demo-2026");
+const STANDING_ACCOUNTS = [
+  {
+    email: "elena.alvarez@bayfront.example",
+    role: "clinician",
+    name: "Dr. Elena Alvarez",
+  },
+  ...["maya", "priya"]
+    .filter((id) => ROSTER.has(id))
+    .map((id) => ({
+      email: `${id}@patients.relay.example`,
+      role: "patient",
+      name: ROSTER.get(id).name,
+      patientId: id,
+    })),
+];
+if (DEMO_PASSWORD && DEMO_PASSWORD.length >= 10)
+  for (const account of STANDING_ACCOUNTS)
+    accounts.ensureAccount({ ...account, password: DEMO_PASSWORD });
+
 app.post("/api/auth/register", (req, res) => {
-  const { email, password, invite } = req.body || {};
+  const { email, password, invite, name, dischargeCode } = req.body || {};
   const role = roleFromInvite(invite);
   if (!role)
     return res
       .status(403)
       .json({ error: "That access code was not recognised." });
+  let patientId = null;
+  if (role === "patient" && dischargeCode) {
+    patientId =
+      DISCHARGE_CODES.get(String(dischargeCode).trim().toUpperCase()) || null;
+    if (!patientId)
+      return res
+        .status(400)
+        .json({ error: "That discharge code was not recognised." });
+  }
   const result = accounts.register({
     email,
     password,
     role,
+    name,
+    patientId,
   });
   if (result.error) return res.status(400).json({ error: result.error });
   const token = accounts.openSession(result.user.id);
@@ -380,7 +442,7 @@ app.post("/api/auth/register", (req, res) => {
     { role, userId: result.user.id, email: result.user.email },
     () => audit("account.created", null, result.user.email),
   );
-  res.json({ token, user: result.user });
+  res.json({ token, user: result.user, ...recordFor(result.user) });
 });
 
 app.post("/api/auth/login", (req, res) => {
@@ -395,7 +457,7 @@ app.post("/api/auth/login", (req, res) => {
     { role: user.role, userId: user.id, email: user.email },
     () => audit("account.signed_in", null, user.email),
   );
-  res.json({ token, user });
+  res.json({ token, user, ...recordFor(user) });
 });
 
 // One click into the deployed demo, and still a named principal: each browser
@@ -403,7 +465,15 @@ app.post("/api/auth/login", (req, res) => {
 // log rather than one anonymous "clinician".
 app.post("/api/auth/demo", (req, res) => {
   const role = req.body?.role === "patient" ? "patient" : "clinician";
-  const user = accounts.createDemoPrincipal(role);
+  const user = accounts.createDemoPrincipal(
+    role,
+    role === "patient" && DEMO_PATIENT
+      ? {
+          name: ROSTER.get(DEMO_PATIENT.patientId)?.name,
+          patientId: DEMO_PATIENT.patientId,
+        }
+      : { name: "Demo clinician" },
+  );
   const token = accounts.openSession(user.id);
   requestContext.run({ role, userId: user.id, email: user.email }, () =>
     audit("account.demo_issued", null, user.email),
@@ -1010,12 +1080,39 @@ app.post("/api/ml/score", async (req, res) => {
 // the ward. A client id (eid) makes a retried post idempotent.
 const recoveryFile = resolve(dataDir, "recovery-events.jsonl");
 const MAX_RECOVERY_EVENTS = 5000;
-let recoveryEvents = existsSync(recoveryFile)
-  ? readFileSync(recoveryFile, "utf8")
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line))
-  : [];
+// Messages and check-in answers are the most sensitive free text here, so the
+// record goes through the vault like state, accounts and sessions do: encrypted
+// when RELAY_DATA_KEY is set, and set aside rather than fatal if unreadable.
+// recovery-events.jsonl is the older plaintext form, read once and migrated.
+const recoveryStore = resolve(dataDir, "recovery-events.json");
+let recoveryEvents = readJsonOrSetAside(recoveryStore, null);
+if (!Array.isArray(recoveryEvents)) {
+  recoveryEvents = [];
+  if (existsSync(recoveryFile))
+    for (const line of readFileSync(recoveryFile, "utf8").split("\n")) {
+      if (!line) continue;
+      try {
+        recoveryEvents.push(JSON.parse(line));
+      } catch {
+        // One unreadable line should not cost the whole record.
+      }
+    }
+}
+const saveRecovery = () => writeJson(recoveryStore, recoveryEvents);
+if (existsSync(recoveryFile)) {
+  saveRecovery();
+  // With a key set, leaving the plaintext copy beside the encrypted one would
+  // undo the point. Without one both are plaintext, so it is kept under a new name.
+  if (KEY_PRESENT) rmSync(recoveryFile);
+  else renameSync(recoveryFile, `${recoveryFile}.migrated`);
+}
+// What only the care team may write. The patient app never sends these.
+const CLINICIAN_ONLY_EVENTS = new Set([
+  "discharge",
+  "request-checkin",
+  "appointment",
+  "acknowledge",
+]);
 const recoveryIds = new Set(recoveryEvents.map((e) => e.eid));
 const lastSeq = () =>
   recoveryEvents.length ? recoveryEvents[recoveryEvents.length - 1].seq : 0;
@@ -1073,22 +1170,30 @@ app.post("/api/recovery/events", (req, res) => {
     // A patient may only write to their own record, on the same proof. A
     // clinician may write to any, which is the job.
     if (req.role === "patient" && provenPatient(req) !== e.patientId) continue;
+    if (req.role === "patient" && CLINICIAN_ONLY_EVENTS.has(e.type)) continue;
+    if (
+      e.type === "message" &&
+      (typeof e.text !== "string" || !e.text.trim() || e.text.length > 2000)
+    )
+      continue;
     const stored = { ...e, seq: lastSeq() + 1, role: req.role };
+    if (req.user) {
+      // Who acted comes from the session, never from the request body.
+      stored.actorId = req.user.id;
+      stored.actorName = displayName(req.user);
+      // So a message cannot claim to be from someone its sender is not.
+      if (e.type === "message") {
+        stored.by = req.role;
+        stored.from = displayName(req.user);
+      }
+    }
     recoveryEvents.push(stored);
     recoveryIds.add(e.eid);
-    appendFileSync(recoveryFile, JSON.stringify(stored) + "\n", {
-      mode: 0o600,
-    });
     accepted.push(stored.seq);
   }
-  if (recoveryEvents.length > MAX_RECOVERY_EVENTS) {
+  if (recoveryEvents.length > MAX_RECOVERY_EVENTS)
     recoveryEvents = recoveryEvents.slice(-MAX_RECOVERY_EVENTS);
-    writeFileSync(
-      recoveryFile,
-      recoveryEvents.map((e) => JSON.stringify(e)).join("\n") + "\n",
-      { mode: 0o600 },
-    );
-  }
+  if (accepted.length) saveRecovery();
   audit(
     "recovery.events",
     list[0]?.patientId || null,

@@ -1,3 +1,4 @@
+import { rememberUser } from "./model/currentUser.js";
 import { useState } from "react";
 import {
   ArrowRight,
@@ -88,6 +89,7 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
         payload.patient.patientId,
         payload.patient.dischargeCode,
       );
+    rememberUser(payload.user);
     onSignedIn(payload.user.role, payload.token, payload.user);
   };
 

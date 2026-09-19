@@ -52,6 +52,12 @@ const sameSecret = (a, b) => {
   return left.length === right.length && timingSafeEqual(left, right);
 };
 
+const cleanName = (name) =>
+  String(name || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80) || null;
+
 export function createAccountStore(dataDir) {
   const usersFile = resolve(dataDir, "users.json");
   const sessionsFile = resolve(dataDir, "sessions.json");
@@ -73,6 +79,9 @@ export function createAccountStore(dataDir) {
       id: u.id,
       email: u.email,
       role: u.role,
+      // Who a message is from, and which single record a patient account is for.
+      name: u.name || null,
+      patientId: u.patientId || null,
       careTeam: u.careTeam || null,
       demo: !!u.demo,
       createdAt: u.createdAt,
@@ -100,7 +109,15 @@ export function createAccountStore(dataDir) {
     // Registration is invitation-only: the caller has already proved they hold
     // a role access code. That code chooses the role; it never again reaches a
     // record by itself.
-    register({ email, password, role, careTeam = null, demo = false }) {
+    register({
+      email,
+      password,
+      role,
+      careTeam = null,
+      demo = false,
+      name = null,
+      patientId = null,
+    }) {
       const clean = String(email || "")
         .trim()
         .toLowerCase();
@@ -117,6 +134,8 @@ export function createAccountStore(dataDir) {
         salt,
         hash: hash(password, salt),
         role,
+        name: cleanName(name),
+        patientId: role === "patient" ? patientId : null,
         careTeam,
         demo,
         createdAt: new Date().toISOString(),
@@ -139,15 +158,49 @@ export function createAccountStore(dataDir) {
       return publicUser(user);
     },
 
+    // A standing demo account, created or refreshed at boot. Unlike a per-browser
+    // demo principal it keeps one id and one name for good, which is what lets a
+    // conversation be between the same two people after either of them signs out
+    // and back in, and after the server restarts.
+    ensureAccount({ email, password, role, name = null, patientId = null }) {
+      const clean = String(email).trim().toLowerCase();
+      let user = users.find((u) => u.email.toLowerCase() === clean);
+      const salt = user?.salt || randomBytes(16).toString("hex");
+      const fields = {
+        role,
+        name: cleanName(name),
+        patientId: role === "patient" ? patientId : null,
+        demo: true,
+        standing: true,
+        salt,
+        hash: hash(password, salt),
+      };
+      if (user) Object.assign(user, fields);
+      else {
+        user = {
+          id: randomUUID(),
+          email: clean,
+          careTeam: null,
+          createdAt: new Date().toISOString(),
+          ...fields,
+        };
+        users.push(user);
+      }
+      saveUsers();
+      return publicUser(user);
+    },
+
     // A distinct principal per browser, so two people exploring the deployed
     // demo at the same time are two different actors in the audit log rather
     // than one shared "clinician".
-    createDemoPrincipal(role) {
+    createDemoPrincipal(role, { name = null, patientId = null } = {}) {
       const tag = randomBytes(3).toString("hex");
       const salt = randomBytes(16).toString("hex");
       const user = {
         id: randomUUID(),
         email: `demo-${role}-${tag}@relay.invalid`,
+        name: cleanName(name),
+        patientId: role === "patient" ? patientId : null,
         salt,
         hash: hash(randomBytes(32).toString("hex"), salt),
         role,

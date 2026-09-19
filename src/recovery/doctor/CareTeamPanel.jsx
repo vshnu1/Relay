@@ -1,14 +1,13 @@
+import Conversation from "../Conversation.jsx";
 import { useState } from "react";
-import { CalendarPlus, MessageSquare, NotebookPen, Send } from "lucide-react";
+import { CalendarPlus, MessageSquare, NotebookPen } from "lucide-react";
 import { actions } from "../useRecovery.js";
-import { clock } from "../format.js";
 
 // What the care team gives the patient: discharge notes and medicines, messages,
 // appointments. Everything the patient sees under those headings is entered here
 // during the demo, never pre-written.
 export default function CareTeamPanel({ patient: p, embedded = false }) {
   const [tab, setTab] = useState("message");
-  const [text, setText] = useState("");
   const [notes, setNotes] = useState(p.notes || "");
   const [meds, setMeds] = useState((p.medications || []).join("\n"));
   const [when, setWhen] = useState("");
@@ -19,7 +18,6 @@ export default function CareTeamPanel({ patient: p, embedded = false }) {
     setSaved(msg);
     setTimeout(() => setSaved(""), 2500);
   };
-  const thread = [...(p.messages || [])].slice(-4).reverse();
   return (
     <section
       className={`rx-careteam${embedded ? " embedded" : " rx-card"}`}
@@ -45,50 +43,7 @@ export default function CareTeamPanel({ patient: p, embedded = false }) {
           </button>
         ))}
       </div>
-      {tab === "message" && (
-        <form
-          className="rx-careteam-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!text.trim()) return;
-            actions.sendMessage(p.id, {
-              by: "clinician",
-              from: p.clinician,
-              text: text.trim(),
-            });
-            setText("");
-            flash("Message sent to the patient's app.");
-          }}
-        >
-          <label htmlFor="rx-msg">Message to {p.first}</label>
-          <textarea
-            id="rx-msg"
-            rows="3"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Plain words. The patient sees this on their home screen."
-          />
-          <button
-            type="submit"
-            className="rx-btn primary"
-            disabled={!text.trim()}
-          >
-            <Send size={15} aria-hidden="true" /> Send
-          </button>
-          {thread.length > 0 && (
-            <ul className="rx-thread" aria-label="Recent messages">
-              {thread.map((m) => (
-                <li key={m.t} className={m.by === "patient" ? "patient" : ""}>
-                  <span>
-                    {m.by === "patient" ? p.first : m.from} · {clock(m.t)}
-                  </span>
-                  <p>{m.text}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </form>
-      )}
+      {tab === "message" && <Conversation patient={p} side="clinician" />}
       {tab === "discharge" && (
         <form
           className="rx-careteam-form"

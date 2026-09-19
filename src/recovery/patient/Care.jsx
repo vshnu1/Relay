@@ -1,5 +1,6 @@
+import Conversation from "../Conversation.jsx";
 import { useState } from "react";
-import { CheckCircle2, Mail, MessageSquare, Send } from "lucide-react";
+import { CheckCircle2, Mail, MessageSquare } from "lucide-react";
 import { actions } from "../useRecovery.js";
 import { buildReport, mailto } from "../model/schedule.js";
 import { clock } from "../format.js";
@@ -94,9 +95,6 @@ export function SendReport({ patient: p, reason, onDone }) {
 }
 
 export default function Care({ patient: p }) {
-  const [messageDraft, setMessageDraft] = useState("");
-  const [messageSent, setMessageSent] = useState(false);
-  const messages = [...p.messages].reverse();
   return (
     <>
       <h1 className="rx-p-title">Your care team</h1>
@@ -104,88 +102,12 @@ export default function Care({ patient: p }) {
         {p.clinician} at {p.hospital}. They see your readings and answers during
         working hours.
       </p>
-      <section
-        className="rx-p-card list"
-        aria-label="Messages with your care team"
-      >
+      <section className="rx-p-card" aria-label="Messages with your care team">
         <h2>
           <MessageSquare size={20} aria-hidden="true" /> Messages
         </h2>
-        {messages.length ? (
-          messages.map((m) => (
-            <div
-              key={m.t}
-              className={`rx-p-entryrow ${m.by === "patient" ? "outbound" : m.readAt ? "" : "unread"}`}
-            >
-              <span>
-                {clock(m.t)} · {m.by === "patient" ? "You" : m.from}
-              </span>
-              <p className="rx-serif">{m.text}</p>
-              {m.by !== "patient" && !m.readAt && (
-                <button
-                  type="button"
-                  className="rx-p-textbtn"
-                  onClick={() => actions.markRead(p.id, m.t)}
-                >
-                  Mark as read
-                </button>
-              )}
-            </div>
-          ))
-        ) : (
-          <p>No messages yet. You can start a conversation below.</p>
-        )}
+        <Conversation patient={p} side="patient" />
       </section>
-      <form
-        className="rx-p-card rx-p-message-compose"
-        aria-label="Message your care team"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const text = messageDraft.trim();
-          if (!text) return;
-          actions.sendMessage(p.id, {
-            by: "patient",
-            from: p.name || p.first || "You",
-            text,
-          });
-          setMessageDraft("");
-          setMessageSent(true);
-        }}
-      >
-        <h2>
-          <MessageSquare size={20} aria-hidden="true" /> Message your care team
-        </h2>
-        <p>
-          Send a message to {p.clinician}. Your care team will reply during
-          working hours.
-        </p>
-        <label className="rx-p-message-label" htmlFor="care-team-message">
-          Your message
-        </label>
-        <textarea
-          id="care-team-message"
-          value={messageDraft}
-          maxLength={500}
-          rows={4}
-          placeholder="What would you like your care team to know?"
-          onChange={(event) => {
-            setMessageDraft(event.target.value);
-            setMessageSent(false);
-          }}
-        />
-        <div className="rx-p-message-actions">
-          <small className="rx-p-fine" aria-live="polite">
-            {messageSent ? "Message sent to your care team." : `${messageDraft.length}/500`}
-          </small>
-          <button
-            type="submit"
-            className="rx-p-btn primary"
-            disabled={!messageDraft.trim()}
-          >
-            <Send size={17} aria-hidden="true" /> Send message
-          </button>
-        </div>
-      </form>
       <p className="rx-p-fine">
         Feeling very unwell? Follow the emergency instructions in your discharge
         papers. Do not wait for a reply here.

@@ -1,3 +1,4 @@
+import { forgetUser, rememberUser } from "./model/currentUser.js";
 import { useEffect, useState } from "react";
 import {
   useCohort,
@@ -80,6 +81,7 @@ export default function Root() {
             const body = await me.json();
             if (["clinician", "patient"].includes(body.user?.role))
               role = body.user.role;
+            rememberUser(body.user);
           } else if (!accounts) {
             const verified = await fetch("/api/session", {
               method: "POST",
@@ -103,6 +105,7 @@ export default function Root() {
         else if (required) {
           sessionStorage.removeItem(SIGNED_ROLE_KEY);
           sessionStorage.removeItem(CODE_KEY);
+          forgetUser();
           signOut();
         }
         setGate({ checked: true, required, accounts, role });
@@ -123,6 +126,7 @@ export default function Root() {
     endServerSession();
     sessionStorage.removeItem(SIGNED_ROLE_KEY);
     sessionStorage.removeItem(CODE_KEY);
+    forgetUser();
     signOut();
     sessionStorage.setItem(TIMED_OUT_KEY, "1");
     location.hash = "";
@@ -212,6 +216,7 @@ function signOutClinician() {
   endServerSession();
   sessionStorage.removeItem(SIGNED_ROLE_KEY);
   sessionStorage.removeItem(CODE_KEY);
+  forgetUser();
   sessionStorage.removeItem(ROLE_KEY);
   signOut();
   location.hash = "";
