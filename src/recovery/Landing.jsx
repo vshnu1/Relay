@@ -48,7 +48,7 @@ export default function Landing() {
           <span className="rx-brand-mark">
             <Activity size={18} strokeWidth={2.4} />
           </span>
-          relay
+          Relay
         </a>
         <div className="rx-landing-links">
           <a href="#rx-how">How it works</a>
@@ -77,10 +77,7 @@ export default function Landing() {
             check-in; care teams get the context they need to follow up.
           </p>
           <div className="rx-landing-actions">
-            <a
-              className="rx-btn primary tall"
-              href="#/login"
-            >
+            <a className="rx-btn primary tall" href="#/login">
               Enter the care team workspace <ArrowRight size={17} />
             </a>
             <a
@@ -109,7 +106,7 @@ export default function Landing() {
           <div className="rx-stage-window">
             <div className="rx-stage-topbar">
               <div className="rx-stage-brand">
-                <span className="rx-stage-dot" /> relay
+                <span className="rx-stage-dot" /> Relay
               </div>
               <span className="rx-stage-live">
                 <i /> Live demo
@@ -207,7 +204,7 @@ export default function Landing() {
       </section>
 
       <footer className="rx-landing-footer">
-        <span>relay · recovery watch</span>
+        <span>Relay · recovery watch</span>
         <span>Hackathon prototype · Every patient is synthetic</span>
       </footer>
     </main>

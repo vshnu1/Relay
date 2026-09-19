@@ -440,7 +440,9 @@ function SignalPanel({
         </div>
         <div className="rx-signal-side">
           <div className="rx-signal-now">
-            <strong>{s.today === null ? "Not available" : s.fmt(s.today)}</strong>
+            <strong>
+              {s.today === null ? "Not available" : s.fmt(s.today)}
+            </strong>
             <span>{s.unit}</span>
             {s.today !== null && s.usual !== null && (
               <span className={`rx-change ${s.moved ? "moved" : ""}`}>
@@ -483,13 +485,8 @@ function SignalPanel({
           ? `Counted for ${p.profile.after}. Watching for ${dirWord(s)} than usual.`
           : `Recorded only. Not counted for ${p.profile.after}.`}{" "}
         Source:{" "}
-        {s.device === "whoop"
-          ? "WHOOP"
-          : s.device === "phone"
-            ? "phone"
-            : s.device === "manual"
-              ? "entered by hand"
-              : "watch"}
+        {p.devices[s.device]?.name ||
+          (s.device === "manual" ? "patient entry" : "wearable")}
         .
       </p>
       <div ref={ref} className="rx-signal-plot">
@@ -735,8 +732,8 @@ export default function Readings({ patient: p }) {
               )}
             </div>
           </div>
-          <details className="rx-legend-details">
-            <summary>How to read this chart</summary>
+          <section className="rx-legend-details" aria-label="Chart legend">
+            <h3>How to read this chart</h3>
             <ul className="rx-chart-legend" aria-label="How to read the chart">
               <li>
                 <i className="band" /> Usual range before admission
@@ -760,7 +757,7 @@ export default function Readings({ patient: p }) {
                 <i className="tick" /> Day with no reading
               </li>
             </ul>
-          </details>
+          </section>
         </>
       )}
     </section>

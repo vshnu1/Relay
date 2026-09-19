@@ -60,7 +60,7 @@ export default function Login({ onSignedIn }) {
               <span className="rx-brand-mark">
                 <Activity size={19} strokeWidth={2.4} />
               </span>
-              relay
+              Relay
             </span>
             <span className="rx-eyebrow">
               <ShieldCheck size={14} /> Clinician workspace
@@ -75,8 +75,8 @@ export default function Login({ onSignedIn }) {
               <span>
                 <strong>Synthetic demo workspace</strong>
                 <small>
-                  Explore with the demo account. Do not enter real credentials or
-                  patient information.
+                  Explore with the demo account. Do not enter real credentials
+                  or patient information.
                 </small>
               </span>
             </div>
@@ -91,47 +91,64 @@ export default function Login({ onSignedIn }) {
               <LockKeyhole size={22} aria-hidden="true" />
             </div>
             <p className="rx-auth-demo-note" id="rx-demo-access-note">
-              {onSignedIn ? "For doctors and nurses. Enter your clinician access code." : "For doctors and nurses. Continue with the prefilled demo account."}
+              {onSignedIn
+                ? "For doctors and nurses. Enter your clinician access code."
+                : "For doctors and nurses. Continue with the prefilled demo account."}
             </p>
             <form onSubmit={submit}>
               {onSignedIn ? (
                 <label className="rx-auth-label" htmlFor="rx-clinician-code">
                   Clinician access code
-                  <input id="rx-clinician-code" type="password" autoComplete="off" required value={code} onChange={(e) => setCode(e.target.value)} />
+                  <input
+                    id="rx-clinician-code"
+                    type="password"
+                    autoComplete="off"
+                    required
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                  />
                 </label>
-              ) : <>
-              <label className="rx-auth-label" htmlFor="rx-email">
-                Work email
-                <input
-                  id="rx-email"
-                  type="email"
-                  autoComplete="off"
-                  readOnly
-                  aria-describedby="rx-demo-access-note"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                />
-              </label>
-              <label className="rx-auth-label" htmlFor="rx-password">
-                Password
-                <input
-                  id="rx-password"
-                  type="password"
-                  autoComplete="off"
-                  readOnly
-                  aria-describedby="rx-demo-access-note"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                />
-              </label>
-              </>}
-              {error && <p className="rx-auth-error" role="alert">{error}</p>}
+              ) : (
+                <>
+                  <label className="rx-auth-label" htmlFor="rx-email">
+                    Work email
+                    <input
+                      id="rx-email"
+                      type="email"
+                      autoComplete="off"
+                      readOnly
+                      aria-describedby="rx-demo-access-note"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                    />
+                  </label>
+                  <label className="rx-auth-label" htmlFor="rx-password">
+                    Password
+                    <input
+                      id="rx-password"
+                      type="password"
+                      autoComplete="off"
+                      readOnly
+                      aria-describedby="rx-demo-access-note"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                    />
+                  </label>
+                </>
+              )}
+              {error && (
+                <p className="rx-auth-error" role="alert">
+                  {error}
+                </p>
+              )}
               <button className="rx-auth-submit" type="submit" disabled={busy}>
-                {busy ? "Checking…" : "Continue to clinician workspace"} <ArrowRight size={17} />
+                {busy ? "Checking…" : "Continue to clinician workspace"}{" "}
+                <ArrowRight size={17} />
               </button>
             </form>
             <p className="rx-auth-legal">
-              Shared-code demo access only. Individual hospital accounts are not connected yet. Every patient shown is synthetic.
+              Shared-code demo access only. Individual hospital accounts are not
+              connected yet. Every patient shown is synthetic.
             </p>
           </section>
         </div>

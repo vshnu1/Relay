@@ -3,7 +3,10 @@ import { Activity, KeyRound } from "lucide-react";
 import { normalizeCode } from "./session.js";
 
 const formatCode = (value) => {
-  const raw = value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
+  const raw = value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 7);
   return raw.length > 3 ? `${raw.slice(0, 3)}-${raw.slice(3)}` : raw;
 };
 
@@ -36,14 +39,14 @@ export default function SignIn({ roster, onSignIn }) {
           <span className="rx-brand-mark">
             <Activity size={18} strokeWidth={2.4} />
           </span>
-          relay
+          Relay
         </span>
       </header>
       <span className="rx-p-signin-kicker">Patient portal</span>
       <h1 className="rx-p-title">Sign in to Relay</h1>
       <p className="rx-p-lead">
-        Use the hospital and access code from your discharge letter to open
-        your recovery profile.
+        Use the hospital and access code from your discharge letter to open your
+        recovery profile.
       </p>
       <form className="rx-p-form" onSubmit={submit}>
         <div className="rx-p-field">

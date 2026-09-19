@@ -23,11 +23,32 @@ const GATE = {
   data_quality: "Enough recent data",
 };
 
+function readingsRundown(patient) {
+  const moved = (patient.moved || []).slice(0, 4);
+  if (patient.status === "nodata")
+    return {
+      headline:
+        "There is not enough recent wearable data to compare with this patient’s usual.",
+      signals: [],
+    };
+  if (!moved.length)
+    return {
+      headline:
+        "No watched reading is currently past its persistent threshold compared with this patient’s usual.",
+      signals: [],
+    };
+  return {
+    headline: `${moved.length} watched ${moved.length === 1 ? "signal is" : "signals are"} outside this patient’s usual range${moved.some((signal) => signal.towardDays) ? " and have persisted" : ""}.`,
+    signals: moved,
+  };
+}
+
 export default function ModelCard({ patient: p }) {
   const { run, busy, error } = useAnalysis(p);
   const a = p.analysis;
   const cohortRows = (a?.signals || []).filter((s) => s.cohort);
   const withheld = a?.guard?.withheld?.length || 0;
+  const fallback = readingsRundown(p);
 
   return (
     <section className="rx-card rx-model" aria-label="Model view">
@@ -35,8 +56,8 @@ export default function ModelCard({ patient: p }) {
         <div>
           <h2 className="rx-kicker">Model view</h2>
           <p className="rx-model-sub">
-            A second opinion beside the rule. It has no reason attached; the
-            rule above does.
+            See the model&apos;s assessment alongside the readings behind the
+            recovery-watch status.
           </p>
         </div>
         <button
@@ -46,22 +67,44 @@ export default function ModelCard({ patient: p }) {
           disabled={busy}
         >
           <RefreshCw size={14} aria-hidden="true" />
-          {busy ? "Scoring…" : a ? "Run again" : "Run the model"}
+          {busy ? "Scoring…" : a ? "Run ML again" : "Try ML scoring"}
         </button>
       </div>
 
-      {error && (
-        <p className="rx-model-error" role="alert">
-          {error}
-        </p>
+      {!a && (
+        <div className="rx-model-fallback" aria-live="polite">
+          <div className="rx-model-state">
+            <span className="rx-pill rx-pill-monitoring">
+              {error ? "Readings + watch rules" : "Reading-based rundown"}
+            </span>
+          </div>
+          <p className="rx-model-rundown">{fallback.headline}</p>
+          {fallback.signals.length > 0 && (
+            <ul className="rx-model-list">
+              {fallback.signals.map((signal) => (
+                <li key={signal.metric || signal.plain}>
+                  <span>{signal.plain}</span>
+                  <span className="rx-model-dir">
+                    {signal.today === null
+                      ? "No reading today"
+                      : `${signal.fmt(signal.today)} ${signal.unit}, ${signal.change} from usual`}
+                    {signal.towardDays
+                      ? ` · ${signal.towardDays} ${signal.towardDays === 1 ? "day" : "days"}`
+                      : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="rx-model-fine" role={error ? "status" : undefined}>
+            {error
+              ? "ML scoring did not return a result. This rundown uses wearable readings and Relay’s recovery-watch rules."
+              : "Based on wearable readings and Relay’s recovery-watch rules. ML scoring has not run for this patient."}
+          </p>
+        </div>
       )}
 
-      {!a ? (
-        <p className="rx-model-empty">
-          Not scored yet. Run it to see whether the model agrees with the rule
-          for {p.first}.
-        </p>
-      ) : (
+      {!a ? null : (
         <>
           <div className="rx-model-state">
             <span className={`rx-pill rx-pill-${a.application_state}`}>
@@ -102,8 +145,8 @@ export default function ModelCard({ patient: p }) {
                   <li key={s.metric}>
                     <span>{s.label}</span>
                     <span>
-                      usual {s.baseline?.median ?? "Not available"} {s.unit}; across{" "}
-                      {s.cohort.subjects} people, baselines run{" "}
+                      usual {s.baseline?.median ?? "Not available"} {s.unit};
+                      across {s.cohort.subjects} people, baselines run{" "}
                       {s.cohort.lowest_baseline}–{s.cohort.highest_baseline}
                       {s.cohort.patient_percentile !== null &&
                         ` · ${s.cohort.patient_percentile}th percentile`}

@@ -150,8 +150,9 @@ export default function PatientApp({ patient, route, onSignOut }) {
           <span className="rx-brand-mark">
             <Activity size={18} strokeWidth={2.4} />
           </span>
-          relay
+          Relay
         </a>
+        <span className="rx-side-heading">Patient workspace</span>
         {NAV.map((t) => (
           <a
             key={t.id}
@@ -159,7 +160,7 @@ export default function PatientApp({ patient, route, onSignOut }) {
             href={t.href}
             aria-current={current === t.id ? "page" : undefined}
           >
-            <span>
+            <span className="rx-navlink-label">
               <t.icon size={16} aria-hidden="true" /> {t.label}
             </span>
             {t.id === "checkin" && due.due && (
@@ -170,11 +171,6 @@ export default function PatientApp({ patient, route, onSignOut }) {
           </a>
         ))}
         <div className="rx-side-foot">
-          <p>
-            {patient.name}
-            <br />
-            Day {patient.dayHome} of {patient.windowDays}
-          </p>
           <button type="button" className="rx-textbtn" onClick={onSignOut}>
             Sign out
           </button>

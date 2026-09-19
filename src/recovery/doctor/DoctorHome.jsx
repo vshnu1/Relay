@@ -7,7 +7,6 @@ import {
   FileText,
   HeartPulse,
   ShieldCheck,
-  UsersRound,
 } from "lucide-react";
 import { dateLong } from "../format.js";
 
@@ -100,20 +99,6 @@ export default function DoctorHome({ cohort }) {
     .filter((patient) => patient.group === activeGroup)
     .slice(0, 4);
 
-  // The six conditions CMS measures. Cardiac recovery covers two of them at
-  // once, heart attack and bypass surgery, which is why four programs cover
-  // all six. Stroke is not among them and is deliberately absent.
-  const HRRP = new Set([
-    "heartFailure",
-    "pneumonia",
-    "copd",
-    "jointReplacement",
-    "cardiacRecovery",
-  ]);
-  const hrrpCount = cohort.filter((patient) =>
-    HRRP.has(patient.profileId),
-  ).length;
-
   return (
     <div className="rx-page rx-home">
       <header className="rx-home-hero">
@@ -152,37 +137,6 @@ export default function DoctorHome({ cohort }) {
           </a>
         </div>
       </header>
-
-      <section
-        className="rx-home-hrrp"
-        aria-label="Readmission programme alignment"
-      >
-        <div>
-          <span className="rx-eyebrow">30-day recovery overview</span>
-          <h2>Connect discharge to a clearer follow-up picture</h2>
-          <p>
-            {hrrpCount} follow-up profiles align with a CMS readmission
-            condition. Relay brings wearable trends and patient check-ins
-            together so your team can focus on changes that persist.
-          </p>
-        </div>
-        <dl className="rx-home-hrrp-ops">
-          <div className="priority">
-            <span className="rx-home-hrrp-icon">
-              <CircleAlert size={17} />
-            </span>
-            <dt>Need review today</dt>
-            <dd>{reviewCount}</dd>
-          </div>
-          <div className="cohort">
-            <span className="rx-home-hrrp-icon">
-              <UsersRound size={17} />
-            </span>
-            <dt>Synthetic patient records</dt>
-            <dd>{cohort.length}</dd>
-          </div>
-        </dl>
-      </section>
 
       <section
         className="rx-home-summary"

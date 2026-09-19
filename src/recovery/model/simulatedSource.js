@@ -799,13 +799,6 @@ function build(def, now, index) {
           def.profile === "pneumonia" || def.profile === "abdominalSurgery",
         lastSync: now - 58 * 60000,
       },
-      sensor: {
-        name: "[Hardware sensor]",
-        sharing: true,
-        connected: true,
-        lastSync: now,
-        live: true,
-      },
       phone: {
         name: "iPhone Health app",
         sharing: true,
@@ -864,7 +857,6 @@ export function createSimulatedSource() {
                 v: valueFor(def, signal, today, rand()),
               });
           }
-          handlers.device(def.id, "sensor", { lastSync: now });
           if (rand() > 0.86)
             handlers.device(def.id, "watch", { lastSync: now });
         }

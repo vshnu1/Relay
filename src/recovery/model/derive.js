@@ -327,31 +327,25 @@ export function derive(p, now) {
       text: `${workout ? "A workout was recorded close to the change" : "No workout was recorded in that period"}${said === "No" ? `, and ${first} reports nothing more active than usual` : said === "Yes" ? `, and ${first} reports being more active than usual` : ""}.`,
     });
   }
-  const others = signals.filter(
-    (s) => !s.counted && s.todayLevel !== null && Math.abs(s.todayLevel) >= 2,
-  );
-  findings.push({
-    label: "Also recorded",
-    text: others.length
-      ? `${others.map((s) => `${sentence(s.short, false)} is ${s.fmt(s.today)} ${s.unit} against a usual ${s.fmt(s.usual)}`).join(". ")}. Not counted for ${profile.after}.`
-      : "The other recorded signals are close to the usual range.",
-  });
+  const totalNights = dayHome + 1;
+  const coveredNights = totalNights - missingNights;
   const deviceNotes = Object.entries(p.devices)
-    .filter(([id]) => id !== "manual")
+    .filter(
+      ([id, d]) =>
+        !["manual", "sensor"].includes(id) &&
+        d.connected !== false &&
+        d.sharing !== false,
+    )
     .map(([, d]) =>
-      d.connected === false
-        ? `${d.name} is not connected.`
-        : !d.sharing
-          ? `${d.name} sharing is paused by the patient.`
-          : d.live
-            ? `${d.name} is live.`
-            : d.lastSync
-              ? `${d.name} synced ${ago(now - d.lastSync)}.`
-              : `${d.name} has not synced yet.`,
+      d.live
+        ? `${d.name} is live`
+        : d.lastSync
+          ? `${d.name} synced ${ago(now - d.lastSync)} ago`
+          : `${d.name} is connected`,
     );
   findings.push({
     label: "Data coverage",
-    text: `${missingNights === 0 ? "No missing nights since coming home." : `${numberWord(missingNights, true)} of ${numberWord(dayHome + 1)} nights ${missingNights === 1 ? "has" : "have"} no readings.`} ${deviceNotes.join(" ")}`,
+    text: `${coveredNights === totalNights ? `Readings cover all ${numberWord(totalNights)} nights since coming home.` : `Readings cover ${numberWord(coveredNights)} of ${numberWord(totalNights)} nights since coming home.`}${deviceNotes.length ? ` ${deviceNotes.join(". ")}.` : ""}`,
   });
 
   return {

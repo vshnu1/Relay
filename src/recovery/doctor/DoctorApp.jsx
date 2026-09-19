@@ -54,10 +54,6 @@ export default function DoctorApp({ route, cohort, sourceLabel }) {
             <SlidersHorizontal size={16} aria-hidden="true" /> Watch profiles
           </span>
         </a>
-        <div className="rx-side-foot">
-          <p>Demo workspace</p>
-          <small>Synthetic patient records</small>
-        </div>
       </nav>
       <main className="rx-main">
         {page === "patient" ? (
