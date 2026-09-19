@@ -1,10 +1,10 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { createStore } from "./data/store.js";
-import { createSimulatedSource } from "./data/simulatedSource.js";
-import { view } from "./data/derive.js";
+import { createStore } from "./model/store.js";
+import { createSimulatedSource } from "./model/simulatedSource.js";
+import { view } from "./model/derive.js";
 
 // The only line that knows where data comes from. Give createStore any object that
-// follows data/contract.js (a WebSocket feed, SSE, the API) and nothing else changes.
+// follows model/contract.js (a WebSocket feed, SSE, the API) and nothing else changes.
 export const store = createStore(createSimulatedSource());
 if (import.meta.hot) import.meta.hot.dispose(() => store.destroy());
 

@@ -1,6 +1,6 @@
 import { ArrowUp, ChevronDown, ChevronLeft } from "lucide-react";
 import { actions, usePatient } from "../useRecovery.js";
-import { QUESTIONS } from "../data/profiles.js";
+import { QUESTIONS } from "../model/profiles.js";
 import { ago, clock } from "../format.js";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";

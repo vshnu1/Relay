@@ -1,5 +1,5 @@
 import { ArrowUp } from "lucide-react";
-import { PROFILES, QUESTIONS, SIGNALS, ruleText } from "../data/profiles.js";
+import { PROFILES, QUESTIONS, SIGNALS, ruleText } from "../model/profiles.js";
 import { list, numberWord } from "../format.js";
 
 export default function Profiles() {

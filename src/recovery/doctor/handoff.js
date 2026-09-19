@@ -1,4 +1,4 @@
-import { QUESTIONS } from "../data/profiles.js";
+import { QUESTIONS } from "../model/profiles.js";
 
 // A FHIR-shaped collection built from the same derived view the screen shows.
 // Mock only: it has not been validated against a FHIR profile and no EHR is connected.
