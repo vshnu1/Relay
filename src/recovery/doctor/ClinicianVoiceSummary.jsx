@@ -1,18 +1,8 @@
+import { authHeaders } from "../model/authHeaders.js";
 import { useEffect, useRef, useState } from "react";
 import { LoaderCircle, Pause, Play, Volume2 } from "lucide-react";
 import { useAnalysis } from "../patient/useAnalysis.js";
 import { buildClinicianSummary } from "./clinicianSummary.js";
-
-function authHeaders() {
-  const headers = { "content-type": "application/json" };
-  try {
-    const code = sessionStorage.getItem("rx-code");
-    if (code) headers.authorization = `Bearer ${code}`;
-  } catch {
-    // The local synthetic demo can run without session storage.
-  }
-  return headers;
-}
 
 export default function ClinicianVoiceSummary({ patient }) {
   const { run, busy: scoring } = useAnalysis(patient);

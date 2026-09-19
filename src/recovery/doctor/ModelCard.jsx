@@ -1,3 +1,4 @@
+import { MODEL_STATE } from "./watchStatus.js";
 import { useEffect } from "react";
 import { RefreshCw } from "lucide-react";
 import { useAnalysis } from "../patient/useAnalysis.js";
@@ -9,13 +10,6 @@ import { useAnalysis } from "../patient/useAnalysis.js";
 // The rule decides. This card corroborates or disagrees, and says which gates
 // held when it stayed quiet, because "monitoring" and "not looking" are
 // indistinguishable unless the system shows its ledger.
-
-const STATE = {
-  monitoring: "Nothing unusual",
-  context_needed: "Unusual, context needed",
-  review_recommended: "Unusual, ready for review",
-  insufficient_data: "Cannot see enough",
-};
 
 // Whole numbers for units a clinician reads whole, one decimal for the rest.
 // Raw, this printed "usually 62.19 bpm" beside a table showing "62".
@@ -184,7 +178,7 @@ export default function ModelCard({ patient: p }) {
         <>
           <div className="rx-model-state">
             <span className={`rx-pill rx-pill-${a.application_state}`}>
-              {STATE[a.application_state] || a.application_state}
+              {MODEL_STATE[a.application_state] || a.application_state}
             </span>
             {a.anomaly_score !== null && a.anomaly_score !== undefined && (
               <span className="rx-model-score">
