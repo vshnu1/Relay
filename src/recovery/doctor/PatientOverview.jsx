@@ -1,7 +1,7 @@
 import { ArrowUp, ChevronDown, ChevronLeft } from "lucide-react";
 import { actions, usePatient } from "../useRecovery.js";
 import { QUESTIONS } from "../model/profiles.js";
-import { ago, clock } from "../format.js";
+import { ago, clock, dateLong, list } from "../format.js";
 import Readings from "./Readings.jsx";
 import { exportHandoff } from "./handoff.js";
 
@@ -25,6 +25,9 @@ export default function PatientOverview({ id }) {
   const asked = p.answered
     ? p.profile.questions.filter((q) => p.answered.answers[q])
     : [];
+  // Read the watched/recorded split straight off the profile, never hardcoded.
+  const countedNames = p.counted.map((s) => s.short);
+  const recordedNames = p.signals.filter((s) => !s.counted).map((s) => s.short);
   return (
     <div className="rx-page">
       <header className="rx-patienthead">
@@ -49,6 +52,48 @@ export default function PatientOverview({ id }) {
             {p.acknowledged ? "Reviewed" : STATUS[p.status]}
           </span>
         </div>
+        <dl className="rx-context">
+          <div>
+            <dt>Reason for admission</dt>
+            <dd>{p.profile.name}</dd>
+          </div>
+          <div>
+            <dt>Discharged with</dt>
+            <dd>Home monitoring after {p.profile.after}</dd>
+          </div>
+          <div>
+            <dt>From</dt>
+            <dd>{p.hospital}</dd>
+          </div>
+          <div>
+            <dt>Discharge date</dt>
+            <dd>
+              {dateLong(p.dischargedAt)} · {p.stayDays}-day stay
+            </dd>
+          </div>
+          <div>
+            <dt>Monitoring window</dt>
+            <dd>
+              Day {p.dayHome} of {p.windowDays} · {p.windowDays}-day window
+            </dd>
+          </div>
+          <div>
+            <dt>Counted for {p.profile.after}</dt>
+            <dd>{list(countedNames)}</dd>
+          </div>
+          <div>
+            <dt>Recorded, not counted</dt>
+            <dd>{recordedNames.length ? list(recordedNames) : "None"}</dd>
+          </div>
+          <div>
+            <dt>Consent</dt>
+            <dd>On file — agreed before each check-in, since discharge</dd>
+          </div>
+          <div>
+            <dt>Responsible clinician</dt>
+            <dd>{p.clinician}</dd>
+          </div>
+        </dl>
       </header>
 
       <div className="rx-overview">

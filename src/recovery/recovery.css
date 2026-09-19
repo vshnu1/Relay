@@ -91,12 +91,25 @@ body {
 /* Demo bar: scaffolding for presenting, deliberately not part of the product. */
 .rx-demobar {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 16px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 16px 9px;
   background: #16241f;
   color: #d7e0d9;
   font-size: 13px;
+}
+.rx-demobar-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.rx-demobar-note {
+  font-size: 12px;
+  color: #9db0a6;
+}
+.rx-demobar-note::before {
+  content: "▸ ";
+  color: #6fcf9f;
 }
 .rx-demobar-label {
   font-weight: 600;
@@ -1318,4 +1331,159 @@ p.rx-row-summary {
   .rx-demobar-right {
     min-width: 0;
   }
+}
+
+/* Landing page: the entry point at the root URL (see Landing.jsx, Root.jsx). */
+.rx-landing {
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+.rx-landing-inner {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.rx-landing-brand {
+  font-size: 22px;
+}
+.rx-landing-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 27px;
+  line-height: 1.32;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.rx-landing-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.rx-landing-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  padding: 18px 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  transition:
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.rx-landing-btn:hover {
+  border-color: var(--pine);
+  box-shadow: 0 2px 10px rgba(36, 73, 61, 0.08);
+}
+.rx-landing-btn strong {
+  font-size: 17px;
+  color: var(--pine);
+}
+.rx-landing-btn span {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+/* The honest strip is deliberately as prominent as the buttons, not a footer. */
+.rx-landing-honest {
+  border: 1px solid var(--amber-ink);
+  border-radius: 12px;
+  background: var(--amber-tint);
+  padding: 18px 20px;
+}
+.rx-landing-honest h2 {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--amber-ink);
+  margin-bottom: 10px;
+}
+.rx-landing-honest ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rx-landing-honest li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.rx-landing-honest li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+.rx-landing-honest strong {
+  color: var(--amber-ink);
+}
+@media (max-width: 480px) {
+  .rx-landing-title {
+    font-size: 23px;
+  }
+  .rx-landing-choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Patient context header — clinician side (PatientOverview.jsx). Denser than the
+   patient view: a labelled grid of the discharge and monitoring context. */
+.rx-context {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px 24px;
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+.rx-context > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rx-context dt {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.rx-context dd {
+  font-size: 14.5px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+/* Patient context header — patient side (PatientApp.jsx). Plain language. */
+.rx-p-context h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.rx-p-context dl {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rx-p-context dt {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--faint);
+  margin-bottom: 2px;
+}
+.rx-p-context dd {
+  font-size: 16px;
+  color: var(--ink-2);
+  line-height: 1.45;
 }

@@ -11,9 +11,21 @@ if (import.meta.hot) import.meta.hot.dispose(() => store.destroy());
 export const actions = store.actions;
 export const useRecovery = () =>
   useSyncExternalStore(store.subscribe, store.getState);
+export const useSourceLabel = () =>
+  useSyncExternalStore(store.subscribe, () => store.getState().sourceLabel);
 export function useCohort() {
   const state = useRecovery();
   return state.order.map((id) => view(state.patients[id], state.now));
+}
+// Identities only — id, name, and whether a check-in is waiting. The patient app uses
+// this for the demo role switcher without deriving (or holding) anyone else's record.
+export function useRoster() {
+  const state = useRecovery();
+  return state.order.map((id) => {
+    const p = state.patients[id];
+    const last = p.checkins[p.checkins.length - 1];
+    return { id, name: p.name, pending: !!(last && !last.answeredAt) };
+  });
 }
 export function usePatient(id) {
   const state = useRecovery();

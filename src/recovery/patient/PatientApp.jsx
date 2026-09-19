@@ -7,7 +7,7 @@ import {
   MessageSquare,
   Watch,
 } from "lucide-react";
-import { ago } from "../format.js";
+import { ago, dateLong, list } from "../format.js";
 import Checkin from "./Checkin.jsx";
 import Watching from "./Watching.jsx";
 import Sharing from "./Sharing.jsx";
@@ -25,6 +25,9 @@ const TABS = [
 
 function Home({ patient: p }) {
   const watch = p.devices.watch;
+  // Plain names, read off the profile — the same split the clinician sees, in patient words.
+  const watching = p.counted.map((s) => s.plain);
+  const alsoRecorded = p.signals.filter((s) => !s.counted).map((s) => s.plain);
   return (
     <>
       <header className="rx-p-top">
@@ -49,7 +52,38 @@ function Home({ patient: p }) {
             }}
           />
         </div>
+        <small>
+          Home from {p.hospital} on {dateLong(p.dischargedAt)}, after{" "}
+          {p.profile.after}.
+        </small>
       </div>
+      <section className="rx-p-card rx-p-context" aria-label="Your recovery">
+        <h2>Your recovery</h2>
+        <p>
+          Your care team is checking in with you for {p.windowDays} days after
+          you left {p.hospital}. Dr {p.clinician.replace(/^Dr\.?\s*/, "")} is
+          responsible for your care.
+        </p>
+        <dl>
+          <div>
+            <dt>What they watch</dt>
+            <dd>{list(watching)}</dd>
+          </div>
+          {alsoRecorded.length > 0 && (
+            <div>
+              <dt>Also recorded, but not counted</dt>
+              <dd>{list(alsoRecorded)}</dd>
+            </div>
+          )}
+          <div>
+            <dt>Sharing</dt>
+            <dd>
+              You agreed to share these readings with your care team when you
+              left the hospital.
+            </dd>
+          </div>
+        </dl>
+      </section>
       <section className="rx-p-card" aria-label="Today">
         {p.pending ? (
           <>
