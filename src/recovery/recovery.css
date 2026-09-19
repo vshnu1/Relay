@@ -3516,8 +3516,17 @@ p.rx-row-summary {
 }
 .rx-home-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Four statuses, so four columns: three left the last card on a line of its own. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 11px;
+}
+/* On a narrower laptop four across is tight, so the icon sits above the words and the
+   words get the card's full width. Below 1050px the row becomes two columns. */
+@media (min-width: 1051px) and (max-width: 1280px) {
+  .rx-home-summary-card {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 .rx-home-summary-card {
   display: flex;
@@ -5600,15 +5609,18 @@ p.rx-row-summary {
 }
 /* A program that needs a boundary stated carries it on its own card, where a
    clinician reading the review criteria will see it. */
-.rx-profile-caution {
-  margin: 14px 0 0;
-  padding: 10px 12px;
-  border-left: 3px solid #d9c38a;
+/* `.rx p` resets padding and outranks a bare class, which is why this box's padding
+   never applied. The extra `.rx` is what lets it. */
+.rx .rx-profile-caution {
+  margin: 16px 0 0;
+  padding: 14px 18px;
+  border: 1px solid #e6d7a8;
   background: #fbf7ec;
-  border-radius: 0 6px 6px 0;
-  font-size: 0.83rem;
-  line-height: 1.5;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  line-height: 1.55;
   color: #5d5540;
+  text-wrap: pretty;
 }
 
 /* Check-in conversation: use the available workspace and keep its context in
@@ -7135,4 +7147,9 @@ p.rx-row-summary {
 }
 .rx-pweb .rx-side-foot .rx-textbtn {
   align-self: center;
+}
+
+/* The Care team intro runs the width of its page; elsewhere the lead keeps its measure. */
+.rx-pweb .rx-p-lead.wide {
+  max-width: none;
 }

@@ -166,18 +166,19 @@ export default function Metrics({ patient: p }) {
             <i className="band" aria-hidden="true" /> Your usual range
           </span>
           <span>
-            <i className="thr" aria-hidden="true" /> Where a change counts
+            <i className="thr" aria-hidden="true" /> Where your care team takes
+            notice
           </span>
         </div>
       </header>
 
       <div className="rx-ph-metrics">
         <div className="rx-ph-siglist" role="tablist" aria-label="Readings">
-          <span className="rx-ph-kicker">Counted for {p.profile.after}</span>
+          <span className="rx-ph-kicker">Tracked for {p.profile.after}</span>
           {counted.map(item)}
           {others.length > 0 && (
             <>
-              <span className="rx-ph-kicker gap">Recorded, not counted</span>
+              <span className="rx-ph-kicker gap">Tracked, not counted</span>
               {others.map(item)}
             </>
           )}

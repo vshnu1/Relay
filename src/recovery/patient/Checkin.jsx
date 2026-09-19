@@ -532,15 +532,17 @@ export default function Checkin({ patient: p }) {
                     ? "Preparing check-in…"
                     : `Start ${checkinPlan.priority ? "priority" : "daily"} ${inputMode === "text" ? "text" : "voice"} check-in`}
                 </button>
-                <small className="rx-p-fine">
-                  {modelUsed
-                    ? "Questions are focused using the latest Relay score and your discharge plan."
-                    : scoreAttempted
-                      ? "The scorer could not be reached, so questions use your discharge plan and recent reading changes."
-                      : checkinPlan.mode === "insufficient"
-                        ? "There are not enough recent readings to compare yet. We’ll focus on how you feel and your discharge plan."
-                        : "Your latest readings will be checked when you start, so the questions can focus on what matters today."}
-                </small>
+                {(modelUsed ||
+                  scoreAttempted ||
+                  checkinPlan.mode === "insufficient") && (
+                  <small className="rx-p-fine">
+                    {modelUsed
+                      ? "Questions are focused using the latest Relay score and your discharge plan."
+                      : scoreAttempted
+                        ? "The scorer could not be reached, so questions use your discharge plan and recent reading changes."
+                        : "There are not enough recent readings to compare yet. We’ll focus on how you feel and your discharge plan."}
+                  </small>
+                )}
                 {inputMode === "voice" && !voice.available && (
                   <small className="rx-p-fine">
                     {voice.unavailableReason ||
@@ -837,7 +839,7 @@ export default function Checkin({ patient: p }) {
             </small>
           </section>
           <section className="rx-p-card rx-p-next-card">
-            <h2>At your pace</h2>
+            <h2>At your pace.</h2>
             <ol>
               <li>
                 <span>1</span>

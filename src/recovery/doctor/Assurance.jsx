@@ -1,3 +1,4 @@
+import "./assurance.css";
 import { authHeaders } from "../model/authHeaders.js";
 import { useEffect, useState } from "react";
 import {

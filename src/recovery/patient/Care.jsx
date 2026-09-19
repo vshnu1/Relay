@@ -98,7 +98,7 @@ export default function Care({ patient: p }) {
   return (
     <>
       <h1 className="rx-p-title">Your care team</h1>
-      <p className="rx-p-lead">
+      <p className="rx-p-lead wide">
         {p.clinician} at {p.hospital}. They see your readings and answers during
         working hours.
       </p>

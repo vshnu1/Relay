@@ -1091,3 +1091,24 @@
   padding: 0 12px;
   font-size: 13px;
 }
+
+/* New messages from the care team, at the top of Home. Sage, not amber: amber is for
+   readings that changed. */
+.rx-ph-banner.message {
+  background: var(--sage);
+  border-color: #cfdcc8;
+  color: var(--ink);
+}
+.rx-ph-banner.message > svg {
+  flex-shrink: 0;
+  color: var(--pine);
+}
+.rx-ph-banner.message strong {
+  display: block;
+  font-size: 16px;
+}
+.rx-ph-banner.message p {
+  margin: 2px 0 0;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}

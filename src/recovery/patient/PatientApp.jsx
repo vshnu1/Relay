@@ -1,3 +1,4 @@
+import HomeMessages from "./HomeMessages.jsx";
 import { useEffect } from "react";
 import {
   Activity,
@@ -106,6 +107,7 @@ function Home({ patient: p }) {
         </div>
       </header>
 
+      <HomeMessages patient={p} />
       <HomeAlert patient={p} />
 
       <div className="rx-ph-lanes">
