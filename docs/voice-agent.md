@@ -137,6 +137,9 @@ The server mints a short-lived signed session through
 `POST /api/voice/session`; the API key is only read server-side from
 `ELEVENLABS_API_KEY`. Keep `.env` ignored and never put the key in browser code,
 the repository, or a prompt. Set `ELEVENLABS_AGENT_ID` to the agent above.
+The browser client self-hosts its microphone and playback AudioWorklet modules
+as same-origin build assets so the production content policy can keep blocking
+generated `blob:` and `data:` scripts.
 
 The current prototype only permits synthetic patient records. Do not send real
 wearable records, identifiers, or patient conversations to this hackathon agent.
