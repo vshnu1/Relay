@@ -77,7 +77,8 @@ const DOORS = {
     title: "Welcome to Relay.",
     lede: "Sign in to see your readings, your check-in and messages from your care team.",
     cardKicker: "Patient account",
-    cardTitle: "Open your recovery profile",
+    signInTitle: "Welcome back",
+    registerTitle: "Open your recovery profile",
     email: "Email",
   },
   clinician: {
@@ -85,7 +86,8 @@ const DOORS = {
     title: "Welcome back, care team.",
     lede: "Sign in to review your patients' readings, check-ins and messages.",
     cardKicker: "Care team account",
-    cardTitle: "Access your workspace",
+    signInTitle: "Access your workspace",
+    registerTitle: "Create your account",
     email: "Work email",
   },
 };
@@ -187,7 +189,9 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
 
           <section className="rx-auth-card">
             <span className="rx-auth-kicker">{door.cardKicker}</span>
-            <h2 className="rx-auth-card-title">{door.cardTitle}</h2>
+            <h2 className="rx-auth-card-title">
+              {mode === "signin" ? door.signInTitle : door.registerTitle}
+            </h2>
             <div
               className="rx-auth-tabs"
               role="group"
@@ -216,12 +220,6 @@ export default function Account({ onSignedIn, audience = "clinician" }) {
                 Create an account
               </button>
             </div>
-
-            <p className="rx-auth-card-intro">
-              {mode === "signin"
-                ? "Sign in with your email and password."
-                : "Create an account with the invitation code from your care team."}
-            </p>
 
             <form onSubmit={submit}>
               <label className="rx-auth-label" htmlFor="rx-acct-email">
