@@ -65,11 +65,11 @@ function selectRelevantSymptoms(ranked, links, signals, limit) {
 
 function promptFor(patient, focusSignals, mode) {
   if (patient.profile?.ml === "stroke_rehabilitation")
-    return "Is there anything else about your recovery or rehabilitation routine that you would like your care team to know? You can say no.";
+    return "Anything else about your recovery or rehab routine your care team should know? You can say no.";
   if (mode === "routine")
-    return "What have you been doing today, and has anything changed with your activity, meals, or drinks? You can also tell me if there is nothing to add.";
+    return "What have you done today? Were meals, drinks, or activity different? You can say no.";
   if (mode === "insufficient")
-    return "Is there anything else about how you have been feeling since discharge that you want your care team to know? You can say no.";
+    return "Anything else about how you feel or your recovery that you want to share? You can say no.";
 
   const names = focusSignals
     .map((id) => SIGNALS[id]?.plain?.toLowerCase())
@@ -82,12 +82,12 @@ function promptFor(patient, focusSignals, mode) {
   );
   const sleep = names.some((name) => name.includes("sleep"));
   if (respiratory)
-    return "Around the time the readings changed, was anything different about your activity, meals, or drinks? You can say no.";
+    return "Around then, were your activity, meals, or drinks different? You can say no.";
   if (cardiac)
-    return "Around then, was anything different about your activity, meals, or drinks? You can say no.";
+    return "Around then, were your activity, meals, or drinks different? You can say no.";
   if (sleep)
-    return "Around then, was anything different about your sleep schedule, activity, meals, or drinks? You can say no.";
-  return `Around then, was anything different in your routine after ${patient.profile?.after || "discharge"}, such as activity, meals, or drinks? You can say no.`;
+    return "Around then, were your sleep, activity, meals, or drinks different? You can say no.";
+  return "Around then, was your routine different? You can say no.";
 }
 
 function planQuestionFor(profileId, allowed) {

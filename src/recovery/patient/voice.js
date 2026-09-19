@@ -9,7 +9,7 @@ import { authHeaders } from "../model/authHeaders.js";
 import { QUESTIONS } from "../model/profiles.js";
 import { describeAnalysis } from "../model/mlClient.js";
 import { checkinWhy } from "../model/schedule.js";
-import { matchOption } from "./answerText.js";
+import { matchQuestionOption } from "./answerText.js";
 
 export async function voiceStatus(fetchFn = fetch) {
   try {
@@ -96,7 +96,8 @@ export function recoveryStatus(
 }
 
 // Use the same cautious, whole-phrase answer mapping as the text check-in.
-const pickOption = (value, options) => matchOption(value, options);
+const pickOption = (questionId, value) =>
+  matchQuestionOption(questionId, value);
 
 // Adapt the next spoken turn to the current discharge-specific question and
 // the patient's answer. One brief follow-up for the whole check-in is enough to
@@ -112,36 +113,38 @@ export function adaptiveTurnGuidance(
       message: "Continue briefly with the next selected question.",
       asksFollowUp: false,
     };
-  const answer = matchOption(utterance, question.options);
+  const answer = matchQuestionOption(questionId, utterance);
   const unchanged = ["No", "Same", "Usual"].includes(answer);
   if (followUpUsed) {
     return {
-      message: `The patient has already used the check-in's one clarification. Their current answer most closely matches ${answer || "an unclear response"} for “${question.short}.” Do not ask another follow-up. If the category is clear, record it; otherwise use “Not sure” if available. Acknowledge briefly and continue to the next selected question.`,
+      message: `The patient has used the one clarification. Their answer is ${answer || "unclear"} for “${question.short}.” Do not ask another follow-up. If clear, record it; otherwise use “Not sure” if available. Acknowledge in a few words and continue.`,
       asksFollowUp: false,
     };
   }
   if (unchanged) {
     return {
-      message: `The patient answered “${question.short}” with ${answer}. Treat that as their answer, do not probe, acknowledge in a few words, and continue to the next selected question.`,
+      message: `The patient answered “${question.short}” with ${answer}. Do not probe. Acknowledge in a few words and ask the next selected question. Keep it brief.`,
       asksFollowUp: false,
     };
   }
-  const followUp =
-    questionId === "mealPlan"
-      ? "Can you tell me what you ate or drank, and which discharge instruction it differed from?"
-      : questionId === "medicine"
-        ? "Which medicine changed, and when did that happen?"
-        : questionId === "activity"
-          ? "What activity were you doing, and when?"
-          : "When did you first notice it, or how often has it happened?";
+  const followUp = {
+    mealPlan: "What did you eat or drink, and which instruction differed?",
+    medicine: "Which medicine changed, and when?",
+    activity: "What activity, and when?",
+  }[questionId] || "When did it start, or how often?";
   if (!answer) {
+    const clarification = {
+      mealPlan: "Was it outside your discharge instructions?",
+      medicine: "Which medicine changed, if any?",
+      activity: "Was that more activity than your plan?",
+    }[questionId] || `Could you say more about ${question.short.toLowerCase()}?`;
     return {
-      message: `The answer to “${question.short}” is unclear. Ask one brief, neutral clarification: “Could you say a little more about ${question.short.toLowerCase()}?” Then continue. Do not suggest an answer.`,
+      message: `The answer about “${question.short}” is unclear. Ask only: “${clarification}” Do not suggest an answer. Keep the acknowledgment under 8 words, then continue.`,
       asksFollowUp: true,
     };
   }
   return {
-    message: `The patient reports ${answer} for “${question.short}.” Ask one brief, neutral follow-up: “${followUp}” Then acknowledge and continue to the next selected question. Do not infer a cause.`,
+    message: `The patient reports ${answer} for “${question.short}.” Acknowledge in a few words, then ask only: “${followUp}” Keep it brief; do not infer a cause.`,
     asksFollowUp: true,
   };
 }
@@ -162,16 +165,17 @@ export function openingMessage(
     // available to the agent if the patient asks, but the greeting should not
     // become a spoken report before the first question.
     const leadFinding = findingSummary?.split(",")[0]?.trim();
-    const context = leadFinding
-      ? `I noticed ${leadFinding.replace(/^(.+?) (higher|lower) than your usual/, "your $1 has been $2 than usual")}. I cannot tell what caused it.`
-      : "I noticed a change from your usual readings.";
+    const match = leadFinding?.match(/^(.+?) (higher|lower) than your usual/);
+    const context = match
+      ? `I noticed your ${match[1]} is ${match[2]} than usual.`
+      : "I noticed a change in your readings.";
     return `Hi ${patient.first}, this is Relay. ${context} ${first.text}`;
   }
 
   if (mode === "insufficient")
-    return `Hi ${patient.first}, this is Relay. I do not have enough recent readings to compare yet. ${first.text}`;
+    return `Hi ${patient.first}, I do not have enough readings to compare yet. ${first.text}`;
 
-  return `Hi ${patient.first}, this is Relay checking in about your recovery. ${first.text}`;
+  return `Hi ${patient.first}, how has your recovery been? ${first.text}`;
 }
 
 export async function startPatientVoiceSession({
@@ -281,7 +285,7 @@ export async function startPatientVoiceSession({
             questions.map((id, index) => [id, params?.[`answer_${index + 1}`]]),
           );
         for (const id of questions) {
-          const picked = pickOption(raw[id], QUESTIONS[id].options);
+          const picked = pickOption(id, raw[id]);
           if (picked) answers[id] = picked;
         }
         const note =

@@ -1,3 +1,5 @@
+import { QUESTIONS } from "../model/profiles.js";
+
 // Turning what a patient typed or said into one of the options their care team
 // will read.
 //
@@ -114,4 +116,42 @@ export function matchOption(text, options) {
   // A scale question answered with a plain "yes" says something happened but
   // not how much. Better to ask than to pick a severity on the patient's behalf.
   return null;
+}
+
+// Voice answers often describe an action instead of using a button label
+// ("I stopped taking it"). Use only clear, question-specific statements to
+// classify those answers; ambiguous language stays unclassified for review.
+export function matchQuestionOption(questionId, text) {
+  const question = QUESTIONS[questionId];
+  if (!question) return null;
+  const options = question.options;
+  const t = (text || "").trim().toLowerCase();
+  if (!t) return null;
+
+  // These are affirmative reports despite their grammatical negation. A
+  // leading "no" still wins, preserving the patient's explicit answer.
+  if (!OPENS_NO.test(t) && questionId === "device" &&
+      /\b(didn't|did not|haven't|have not)\s+(use|wear|wearing)\b/.test(t))
+    return "Yes";
+  if (!OPENS_NO.test(t) && questionId === "medicine" &&
+      /\b(didn't|did not|haven't|have not)\s+(take|use)\b/.test(t))
+    return "Yes";
+
+  const matched = matchOption(t, options);
+  if (matched) return matched;
+
+  if (!t || NEGATION.test(t) || !options.includes("Yes")) return null;
+
+  const clearChanges = {
+    medicine: /\b(stopped|missed|skipped|changed|ran out of|forgot|reduced|increased)\b/,
+    device: /\b(without (my |the )?(cpap|machine)|missed (a |any )?night|forgot (my |the )?(cpap|machine)|did not use|didn't use)\b/,
+    mealPlan: /\b(outside|beyond|against) (my |the )?(discharge )?(instructions|plan|guidance)\b|\bnot following (my |the )?(discharge )?(instructions|plan|guidance)\b/,
+    fever: /\b(fever|chills)\b/,
+    wound: /\b(red|swollen|leaking|leaking fluid)\b/,
+    nausea: /\b(vomited|vomiting|nauseous|nausea)\b/,
+    chest: /\b(chest pain|chest pressure)\b/,
+    dizziness: /\b(dizzy|faint|fainted)\b/,
+    falls: /\b(fall|fell|near-fall|almost fell)\b/,
+  }[questionId];
+  return clearChanges?.test(t) ? "Yes" : null;
 }

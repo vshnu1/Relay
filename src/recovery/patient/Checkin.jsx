@@ -257,7 +257,7 @@ export default function Checkin({ patient: p }) {
     setVoice((v) => ({ ...v, status: "connected", error: "" }));
     say(
       "relay",
-      `Hi ${p.first}, this is Relay. ${plan.priority ? "I noticed a change from your usual readings, so I have a few focused questions." : "I have a few brief questions about how recovery is going."} You can answer in your own words. ${QUESTIONS[plan.questions[0]].text}`,
+      `Hi ${p.first}, this is Relay. ${plan.priority ? "Let’s check what has changed." : "How has your recovery been?"} ${QUESTIONS[plan.questions[0]].text}`,
     );
   };
 

@@ -201,7 +201,7 @@ test("focused voice check-in orders model-linked symptoms before a plan question
   );
   assert.match(opening, /higher than usual/);
   assert.match(opening, /Is your breathing harder/);
-  assert.ok(opening.split(/\s+/).length <= 40, "the spoken opener stays short");
+  assert.ok(opening.split(/\s+/).length <= 28, "the spoken opener stays short");
   assert.doesNotMatch(opening, /then one optional question/i);
   assert.doesNotMatch(opening, /no, a little, a lot/i);
   assert.doesNotMatch(opening, /are you comfortable continuing/i);
@@ -234,17 +234,42 @@ test("voice check-in adapts one brief follow-up to the patient's answer", () => 
 
   const changed = adaptiveTurnGuidance("breathing", "Yes, it is harder");
   assert.equal(changed.asksFollowUp, true);
-  assert.match(changed.message, /when did you first notice/i);
+  assert.match(changed.message, /when did it start/i);
   assert.match(changed.message, /do not infer a cause/i);
 
   const diet = adaptiveTurnGuidance("mealPlan", "Yes, I had pizza");
   assert.equal(diet.asksFollowUp, true);
-  assert.match(diet.message, /what you ate or drank/i);
-  assert.match(diet.message, /discharge instruction/i);
+  assert.match(diet.message, /what did you eat or drink/i);
+  assert.match(diet.message, /instruction differed/i);
+
+  const stoppedMedicine = adaptiveTurnGuidance("medicine", "I stopped taking it.");
+  assert.match(stoppedMedicine.message, /reports Yes/i);
+  assert.match(stoppedMedicine.message, /which medicine changed/i);
+
+  const unclearDiet = adaptiveTurnGuidance("mealPlan", "Pizza.");
+  assert.match(unclearDiet.message, /outside your discharge instructions/i);
 
   const spent = adaptiveTurnGuidance("medicine", "I stopped it", true);
   assert.equal(spent.asksFollowUp, false);
   assert.match(spent.message, /do not ask another follow-up/i);
+});
+
+test("spoken and context questions stay brief", async () => {
+  for (const [id, question] of Object.entries(QUESTIONS)) {
+    assert.ok(
+      question.text.split(/\s+/).length <= 15,
+      `${id} is ${question.text.split(/\s+/).length} words: ${question.text}`,
+    );
+  }
+  const { store, views } = await cohort();
+  for (const patient of Object.values(views())) {
+    const plan = buildCheckinPlan(patient);
+    assert.ok(
+      plan.contextPrompt.split(/\s+/).length <= 18,
+      `context prompt is too long: ${plan.contextPrompt}`,
+    );
+  }
+  store.destroy();
 });
 
 test("stroke check-in includes a discharge-specific eating and drinking question for model context", async () => {
@@ -269,7 +294,7 @@ test("stroke check-in includes a discharge-specific eating and drinking question
   });
   assert.ok(plan.questions.includes("mealPlan"));
   assert.match(QUESTIONS["mealPlan"].text, /discharge instructions/i);
-  assert.match(plan.contextPrompt, /rehabilitation routine/i);
+  assert.match(plan.contextPrompt, /rehab routine/i);
   assert.equal(QUESTIONS["mealPlan"].ml, "diet_change");
   store.destroy();
 });

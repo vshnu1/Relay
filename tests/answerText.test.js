@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { matchOption } = await import("../src/recovery/patient/answerText.js");
+const { matchOption, matchQuestionOption } = await import("../src/recovery/patient/answerText.js");
 
 const NYS = ["No", "Yes", "Not sure"];
 const SCALE = ["No", "A little", "A lot"];
@@ -45,6 +45,14 @@ test("affirmatives are read, including the indirect ones", () => {
   assert.equal(matchOption("Yes, I missed two doses.", NYS), "Yes");
   assert.equal(matchOption("I have missed a couple of doses.", NYS), "Yes");
   assert.equal(matchOption("Yeah", NYS), "Yes");
+});
+
+test("voice answers can describe a clear discharge-plan change in their own words", () => {
+  assert.equal(matchQuestionOption("medicine", "I stopped taking it."), "Yes");
+  assert.equal(matchQuestionOption("device", "I didn't use my CPAP twice."), "Yes");
+  assert.equal(matchQuestionOption("mealPlan", "I ate outside my discharge instructions."), "Yes");
+  assert.equal(matchQuestionOption("medicine", "I did not miss any doses."), "No");
+  assert.equal(matchQuestionOption("mealPlan", "Pizza."), null, "food alone does not prove it was outside the plan");
 });
 
 test("an exact option is taken as given", () => {

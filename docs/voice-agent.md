@@ -1,11 +1,12 @@
 # Relay patient voice check-in
 
-Relay's patient check-in uses ElevenLabs for the spoken conversation. A short
-daily check-in asks two questions: one symptom from the patient's discharge
+Relay's patient check-in uses ElevenLabs for the spoken conversation. A routine
+check-in asks up to two questions: one symptom from the patient's discharge
 plan and one about medicines or activity. When the model identifies a change,
 the app starts a priority check-in with up to three questions, ordered by the
-model's contributing readings, then one optional context question. The model selects relevant
-questions; it does not establish why a reading changed or make a diagnosis.
+model's contributing readings, then one short optional context question. The
+model selects relevant questions; it does not establish why a reading changed
+or make a diagnosis.
 
 Voice runs only after the patient checks the consent box. The app sends
 synthetic readings, the model summary, and microphone audio during the call to
@@ -60,13 +61,14 @@ The first message already gives the reason for this check-in. Do not explain it
 again unless the patient asks. If asked, use priority_summary and say only that
 the readings differed from the patient's usual and you cannot tell why. Never
 call the change an emergency or predict harm. Keep every reply to one short
-sentence, usually under 15 words. Do not narrate the plan, list readings, or
+sentence, usually under 12 words. Do not narrate the plan, list readings, or
 repeat information the patient has already heard.
 
 After the patient answers question 1, ask questions 2 onward from
-question_list in order, one at a time. Keep each question's exact meaning, but
-ask it as a natural conversation and let the patient answer in their own words.
-Do not read answer choices aloud. For a clear answer indicating no change,
+question_list in order, one at a time. Keep each question's meaning, but ask it
+in one short sentence (preferably 12 words or fewer) and let the patient answer
+in their own words. Do not combine questions or add an introduction before
+each one. Do not read answer choices aloud. For a clear answer indicating no change,
 acknowledge briefly and continue without probing. Across the whole check-in,
 ask at most one short follow-up, and only when an answer is unclear or reports a
 change that needs basic context. Keep it neutral and tied to the question: for
