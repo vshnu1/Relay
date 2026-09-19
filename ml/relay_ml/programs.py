@@ -126,7 +126,7 @@ PROGRAMS = {
     ),
     "sleep_apnoea_titration": Program(
         key="sleep_apnoea_titration",
-        title="Sleep apnoea, after titration",
+        title="Sleep apnea, post-titration",
         metrics=("spo2", "sleep", "rhr", "respiratory", "hrv", "heart_rate"),
         core=("spo2", "sleep", "rhr"),
         context_fields=COMMON_CONTEXT + ("daytime_sleepiness", "device_adherence"),

@@ -307,9 +307,6 @@ export default function HomeHospital({ patient: p }) {
             </dd>
           </div>
         </dl>
-        <a className="rx-p-textbtn" href="#/patient/watching">
-          How a change is judged
-        </a>
       </DetailPanel>
 
       <DetailPanel
@@ -333,9 +330,6 @@ export default function HomeHospital({ patient: p }) {
             when they do.
           </p>
         )}
-        <a className="rx-p-textbtn" href="#/patient/care">
-          Ask your care team about these notes
-        </a>
       </DetailPanel>
 
       <DetailPanel
@@ -373,9 +367,6 @@ export default function HomeHospital({ patient: p }) {
           a medicine without asking them. If you miss a dose, say so in your
           next check-in.
         </p>
-        <a className="rx-p-textbtn" href="#/patient/journal">
-          Record a missed or extra dose
-        </a>
       </DetailPanel>
 
       <DetailPanel
@@ -407,9 +398,6 @@ export default function HomeHospital({ patient: p }) {
           Bring your discharge letter and your medicines. Your readings and
           check-ins are already with your care team.
         </p>
-        <a className="rx-p-textbtn" href="#/patient/care">
-          All appointments and messages
-        </a>
       </DetailPanel>
 
       <DetailPanel

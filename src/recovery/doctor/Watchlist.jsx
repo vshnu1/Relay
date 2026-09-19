@@ -127,7 +127,7 @@ export default function Watchlist({ cohort }) {
                 </div>
               ) : (
                 rows.map((p) => (
-                  <div className="rx-row" key={p.id}>
+                  <div className={`rx-row status-${g.id}`} key={p.id}>
                     <div>
                       <strong>{p.name}</strong>
                       <small>{p.age} years old</small>

@@ -50,7 +50,7 @@ const UNITS = {
   "Sleep Medicine": {
     floor: "Outpatients, Level 1",
     hours: "Clinic 9 am to 5 pm, Monday to Friday",
-    about: "Sets up and adjusts CPAP and follows sleep apnoea after discharge.",
+    about: "Sets up and adjusts CPAP and follows sleep apnea after discharge.",
   },
   "General Medicine": {
     floor: "Level 4, South wing",

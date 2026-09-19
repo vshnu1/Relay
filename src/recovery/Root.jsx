@@ -111,6 +111,7 @@ export default function Root() {
           </p>
         )}
         <AccessScreen
+          audience={section === "patient" ? "patient" : "clinician"}
           onSignedIn={(role, code) => {
             sessionStorage.setItem(SIGNED_ROLE_KEY, role);
             sessionStorage.setItem(CODE_KEY, code);
