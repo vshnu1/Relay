@@ -40,8 +40,11 @@ Three notes on delivery:
   necessary; hold 3.35% for when they ask a follow-up, where it lands harder.
   If they push on it, say it is in-sample and give them 6.04%, the trailing
   figure — and then give them the one nobody has: a coordinated change of two
-  personal standard deviations is caught in 97.6% of subjects, half of them
-  the day after it starts.
+  personal standard deviations is seen the day after it starts, where the same
+  person's own noise takes five. Say it as speed, not as a catch rate. Over a
+  fortnight the rule fires for most healthy subjects eventually; what the
+  measurement shows is that a real change is seen sooner, and a thirty-day
+  readmission window is a race, not a coin toss.
 - **End on the boundary.** In a health pitch it reads as judgement, not as a
   limitation, and it is the line that most reliably earns the next two minutes.
 

@@ -151,23 +151,70 @@ that subject's own standard deviation, ramped over two days and then held.
 41 of the 71 subjects have enough history before the injection point to build
 a baseline for two signals, which is the set judged.
 
+Every subject is also run untouched over the same days, and that control has
+to be read first. **Over a window this long the rule fires at some point for
+70.7% of these subjects anyway, taking a median of five days to do it.** A
+detection rate on its own is therefore close to meaningless here; the honest
+comparison is against that column.
+
 | Injected size | Caught | Median lag | Caught within 2 days |
 |---|---|---|---|
+| nothing (control) | 70.7% | 5 days | — |
 | 1.0 sd | 78.0% | 3 days | 36.6% |
 | 1.5 sd | 90.2% | 2 days | 46.3% |
 | **2.0 sd** | **97.6%** | **1 day** | **70.7%** |
 | 2.5 sd | 100% | 1 day | 85.4% |
 | 3.0 sd | 100% | 1 day | 85.4% |
 
-A coordinated change of two personal standard deviations is caught in 97.6%
-of these subjects, half of them the day after it starts. A change of one is
-caught in 78% and takes a median of three days, which is the honest lower
-edge of what this rule can see through one person's ordinary variation.
+Read that way, the detection rate is the weaker half: a one-standard-deviation
+change lifts it from 70.7% to 78.0%, which is close to nothing. **The lag is
+the finding.** A coordinated change of two personal standard deviations is
+seen the day after it starts, against five days for the same subject's own
+noise, and 70.7% of them are caught within two days rather than 36.6%. The
+rule is not much more likely to speak; it speaks considerably sooner, which
+for a thirty-day readmission window is the thing that matters.
 
 This measures the detector against the pattern it was built for. It does not
 establish that the injected shape is what deterioration looks like, nor that
 catching it prevents a readmission. Only a monitored cohort with recorded
 outcomes can establish either.
+
+### Does the model earn its place beside the rule?
+
+`analysis/sensitivity_ml.py` runs both detectors over the same 41 subjects,
+the same injected change and the same days, scoring each once per day from
+the onset and stopping at its first alarm. Only the four signals both read are
+injected, so neither is handed a change the other cannot see.
+
+| Injected | Rule caught | Rule lag | Model caught | Model lag |
+|---|---|---|---|---|
+| nothing (control) | 53.7% | — | 9.8% | — |
+| 1.0 sd | 75.6% | 3 days | 22.0% | 2 days |
+| 1.5 sd | 87.8% | 2.5 days | 34.1% | 2.5 days |
+| **2.0 sd** | **97.6%** | **1 day** | **56.1%** | **3 days** |
+| 2.5 sd | 100% | 1 day | 73.2% | 3 days |
+| 3.0 sd | 100% | 1 day | 78.0% | 2 days |
+
+Read as raw detection the rule wins every row. Read against each detector's
+own control — which is the only fair way, since they speak at very different
+rates on people who are fine — they separate differently:
+
+| Injected | Rule lift | Model lift |
+|---|---|---|
+| 1.0 sd | +21.9 | +12.2 |
+| 1.5 sd | +34.1 | +24.3 |
+| 2.0 sd | +43.9 | **+46.3** |
+| 3.0 sd | +46.3 | **+68.2** |
+
+The rule is the sensitive one and the model is the quiet one. The model speaks
+about a fifth as often on untouched subjects, 9.8% against 53.7%, and from
+two personal standard deviations upward it gains more from the injection than
+the rule does. It is a second opinion, not a more sensitive detector, which is
+exactly the job the clinician view gives it: the rule decides what is
+surfaced, the model sits beside it and is worth reading when it agrees.
+
+For a small subtle change the model adds little. Nobody should claim it
+catches what the rule misses on this data, because it does not.
 
 ### Which baseline the rate is measured against
 

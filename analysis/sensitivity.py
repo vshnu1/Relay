@@ -21,9 +21,12 @@ That detail is not cosmetic: freezing the baseline at the onset instead makes
 the same rule fire on 10.56% of untouched days rather than 3.35%.
 
 Every injected subject is also run untouched, with the same baseline and the
-same rule over the same days. That control is the matched false-alarm rate:
-same code path, same subjects, same window, so the pair can be compared
-without the caveat that applies to the whole-series number in calibrate.py.
+same rule over the same days, and the control is reported the same way. That
+matters more than it sounds: over a fortnight the rule fires at some point for
+most of these subjects anyway, so "it caught 78%" means little until you know
+the untouched column says 70.7%. The detection rate is the weaker half of this
+measurement. The lag is the strong half — a change large enough to be seen is
+seen the next day, against a median of five days for background noise.
 
 What it does not establish: that the injected shape is what deterioration
 looks like, or that catching it predicts a readmission. It measures the
@@ -141,36 +144,45 @@ def fires_on(values, day, threshold_sd, min_signals):
 
 
 def judge(rows, onset, effect, threshold_sd, min_signals):
-    """First day at or after onset that the rule fires, and the control count.
+    """Days to the first fire after onset, injected and untouched.
 
-    The lag is in days from the onset, so 0 means the rule fired on the first
-    deteriorating day.
+    Both arms are measured the same way over the same days, because "the rule
+    fired at some point in the fortnight after onset" is not evidence on its
+    own: over a window this long the rule fires for most of these subjects
+    anyway. The control column is what that comes to, and the difference
+    between the two lags is where the signal actually is.
     """
     injected = observed(rows, onset, effect)
     control = observed(rows, onset, 0.0)
-    detected = None
+    hit = ctrl = None
     fired = 0
     for day in range(onset, len(rows)):
-        if detected is None and fires_on(injected, day, threshold_sd, min_signals):
-            detected = day - onset
-        fired += fires_on(control, day, threshold_sd, min_signals)
-    return detected, fired, len(rows) - onset
+        if hit is None and fires_on(injected, day, threshold_sd, min_signals):
+            hit = day - onset
+        if fires_on(control, day, threshold_sd, min_signals):
+            fired += 1
+            if ctrl is None:
+                ctrl = day - onset
+    return hit, ctrl, fired, len(rows) - onset
 
 
 def run(subjects, effect, threshold_sd=THRESHOLD_SD, min_signals=MIN_SIGNALS):
-    lags, judged, detected = [], 0, 0
+    lags, control_lags, judged, detected, control_detected = [], [], 0, 0, 0
     control_fired = control_days = 0
     for rows in subjects.values():
         onset = usable(rows)
         if onset is None:
             continue
         judged += 1
-        lag, fired, days = judge(rows, onset, effect, threshold_sd, min_signals)
+        lag, control_lag, fired, days = judge(rows, onset, effect, threshold_sd, min_signals)
         control_fired += fired
         control_days += days
         if lag is not None:
             detected += 1
             lags.append(lag)
+        if control_lag is not None:
+            control_detected += 1
+            control_lags.append(control_lag)
     return {
         "effect_sd": effect,
         "threshold_sd": threshold_sd,
@@ -181,6 +193,13 @@ def run(subjects, effect, threshold_sd=THRESHOLD_SD, min_signals=MIN_SIGNALS):
         "median_lag_days": round(statistics.median(lags), 1) if lags else None,
         "lag_within_2_days_pct": (
             round(100 * sum(1 for x in lags if x <= 2) / judged, 1) if judged else None
+        ),
+        "control_detected": control_detected,
+        "control_detection_pct": (
+            round(100 * control_detected / judged, 1) if judged else None
+        ),
+        "control_median_lag_days": (
+            round(statistics.median(control_lags), 1) if control_lags else None
         ),
         "control_fired_days": control_fired,
         "control_days": control_days,
@@ -208,13 +227,20 @@ def main():
           f"subject's own series, ramped over {RAMP_DAYS:.0f} days")
     print(f"rule: {MIN_SIGNALS}+ signals past {THRESHOLD_SD} sd of that subject's own "
           f"pre-onset baseline\n")
-    print(f"  {'effect':>8}{'caught':>9}{'median lag':>13}{'within 2d':>11}{'same days, no injection':>25}")
+    if results:
+        base = results[0]
+        print(f"  the same days untouched: the rule fires at some point for "
+              f"{base['control_detection_pct']}% of them,")
+        print(f"  taking a median of {_days(base['control_median_lag_days'])} to do it "
+              f"({base['control_rate_pct']}% of individual days).")
+        print("  so the rate below is only worth reading next to that, and the lag is"
+              "\n  where the difference actually shows.\n")
+    print(f"  {'effect':>8}{'caught':>9}{'median lag':>13}{'within 2d':>11}")
     for r in results:
         print(f"  {str(r['effect_sd']) + ' sd':>8}"
               f"{str(r['detection_pct']) + '%':>9}"
               f"{(_days(r['median_lag_days']) if r['median_lag_days'] is not None else '—'):>13}"
-              f"{str(r['lag_within_2_days_pct']) + '%':>11}"
-              f"{str(r['control_rate_pct']) + '% of days':>25}")
+              f"{str(r['lag_within_2_days_pct']) + '%':>11}")
 
     if args.json:
         payload = {

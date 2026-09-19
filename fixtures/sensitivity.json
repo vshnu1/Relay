@@ -19,6 +19,9 @@
       "detection_pct": 78.0,
       "median_lag_days": 3.0,
       "lag_within_2_days_pct": 36.6,
+      "control_detected": 29,
+      "control_detection_pct": 70.7,
+      "control_median_lag_days": 5,
       "control_fired_days": 73,
       "control_days": 966,
       "control_rate_pct": 7.56
@@ -32,6 +35,9 @@
       "detection_pct": 90.2,
       "median_lag_days": 2,
       "lag_within_2_days_pct": 46.3,
+      "control_detected": 29,
+      "control_detection_pct": 70.7,
+      "control_median_lag_days": 5,
       "control_fired_days": 73,
       "control_days": 966,
       "control_rate_pct": 7.56
@@ -45,6 +51,9 @@
       "detection_pct": 97.6,
       "median_lag_days": 1.0,
       "lag_within_2_days_pct": 70.7,
+      "control_detected": 29,
+      "control_detection_pct": 70.7,
+      "control_median_lag_days": 5,
       "control_fired_days": 73,
       "control_days": 966,
       "control_rate_pct": 7.56
@@ -58,6 +67,9 @@
       "detection_pct": 100.0,
       "median_lag_days": 1,
       "lag_within_2_days_pct": 85.4,
+      "control_detected": 29,
+      "control_detection_pct": 70.7,
+      "control_median_lag_days": 5,
       "control_fired_days": 73,
       "control_days": 966,
       "control_rate_pct": 7.56
@@ -71,6 +83,9 @@
       "detection_pct": 100.0,
       "median_lag_days": 1,
       "lag_within_2_days_pct": 85.4,
+      "control_detected": 29,
+      "control_detection_pct": 70.7,
+      "control_median_lag_days": 5,
       "control_fired_days": 73,
       "control_days": 966,
       "control_rate_pct": 7.56

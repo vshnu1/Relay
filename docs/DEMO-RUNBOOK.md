@@ -119,8 +119,9 @@ papers.*
 | 71 people, resting HR baselines span 31 bpm, individuals vary ~2.4 | `fixtures/calibration.json` |
 | Rule fires on 3.35% of subject-days on healthy people | `fixtures/calibration.json` |
 | The same rule on a trailing baseline fires on 6.04% | `fixtures/calibration.json` |
-| Catches a 2.0 sd coordinated change in 97.6% of subjects, median one day | `fixtures/sensitivity.json` |
+| Sees a 2.0 sd coordinated change the next day; the same subjects' own noise takes five | `fixtures/sensitivity.json` |
 | ML engine: 5.77% of judged subjects | `fixtures/ml_calibration.json` |
+| The model is the quiet one: speaks on 9.8% of untouched subjects, the rule on 53.7% | `fixtures/sensitivity_ml.json` |
 | 99 days of real wearable data, one coordinated event found | `docs/DATA.md` |
 | 53 ML tests, 32 JS tests, API integration suite | run them |
 
