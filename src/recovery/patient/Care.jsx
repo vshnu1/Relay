@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { CalendarDays, CheckCircle2, Mail, MessageSquare } from "lucide-react";
+import { CheckCircle2, Mail, MessageSquare, Send } from "lucide-react";
 import { actions } from "../useRecovery.js";
-import { buildReport, mailto, insight } from "../model/schedule.js";
+import { buildReport, mailto } from "../model/schedule.js";
 import { clock } from "../format.js";
 
 // Sending a report is the patient's decision, every time. Relay prepares it and
@@ -94,11 +94,8 @@ export function SendReport({ patient: p, reason, onDone }) {
 }
 
 export default function Care({ patient: p }) {
-  const [sending, setSending] = useState(false);
-  const i = insight(p);
-  const upcoming = [...p.appointments]
-    .filter((a) => a.t > Date.now())
-    .sort((a, b) => a.t - b.t);
+  const [messageDraft, setMessageDraft] = useState("");
+  const [messageSent, setMessageSent] = useState(false);
   const messages = [...p.messages].reverse();
   return (
     <>
@@ -107,51 +104,24 @@ export default function Care({ patient: p }) {
         {p.clinician} at {p.hospital}. They see your readings and answers during
         working hours.
       </p>
-      <section className="rx-p-card list" aria-label="Appointments">
-        <h2>
-          <CalendarDays size={20} aria-hidden="true" /> Appointments
-        </h2>
-        {upcoming.length ? (
-          upcoming.map((a) => (
-            <div key={a.t} className="rx-p-entryrow">
-              <span>
-                {new Date(a.t).toLocaleString([], {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
-              </span>
-              <p>
-                <strong>{a.with}</strong>
-                <br />
-                {a.where}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p>No appointments booked yet. Your care team will add them here.</p>
-        )}
-      </section>
       <section
         className="rx-p-card list"
-        aria-label="Messages from your care team"
+        aria-label="Messages with your care team"
       >
         <h2>
-          <MessageSquare size={20} aria-hidden="true" /> From your care team
+          <MessageSquare size={20} aria-hidden="true" /> Messages
         </h2>
         {messages.length ? (
           messages.map((m) => (
             <div
               key={m.t}
-              className={`rx-p-entryrow ${m.readAt ? "" : "unread"}`}
+              className={`rx-p-entryrow ${m.by === "patient" ? "outbound" : m.readAt ? "" : "unread"}`}
             >
               <span>
-                {clock(m.t)} · {m.from}
+                {clock(m.t)} · {m.by === "patient" ? "You" : m.from}
               </span>
               <p className="rx-serif">{m.text}</p>
-              {!m.readAt && (
+              {m.by !== "patient" && !m.readAt && (
                 <button
                   type="button"
                   className="rx-p-textbtn"
@@ -163,45 +133,63 @@ export default function Care({ patient: p }) {
             </div>
           ))
         ) : (
-          <p>No messages yet.</p>
+          <p>No messages yet. You can start a conversation below.</p>
         )}
       </section>
-      <section
-        className={`rx-p-card ${i.send ? "alert" : ""}`}
-        aria-label="Send a report"
+      <form
+        className="rx-p-card rx-p-message-compose"
+        aria-label="Message your care team"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const text = messageDraft.trim();
+          if (!text) return;
+          actions.sendMessage(p.id, {
+            by: "patient",
+            from: p.name || p.first || "You",
+            text,
+          });
+          setMessageDraft("");
+          setMessageSent(true);
+        }}
       >
         <h2>
-          <Mail size={20} aria-hidden="true" /> Send a report
+          <MessageSquare size={20} aria-hidden="true" /> Message your care team
         </h2>
         <p>
-          {i.send
-            ? "Your readings and your answers point the same way. We recommend sending a report now."
-            : "You can send your readings, answers and notes to your care team at any time."}
+          Send a message to {p.clinician}. Your care team will reply during
+          working hours.
         </p>
-        {p.reports.length > 0 && (
-          <small className="rx-p-fine">
-            Last sent {clock(p.reports[p.reports.length - 1].sentAt)}.
+        <label className="rx-p-message-label" htmlFor="care-team-message">
+          Your message
+        </label>
+        <textarea
+          id="care-team-message"
+          value={messageDraft}
+          maxLength={500}
+          rows={4}
+          placeholder="What would you like your care team to know?"
+          onChange={(event) => {
+            setMessageDraft(event.target.value);
+            setMessageSent(false);
+          }}
+        />
+        <div className="rx-p-message-actions">
+          <small className="rx-p-fine" aria-live="polite">
+            {messageSent ? "Message sent to your care team." : `${messageDraft.length}/500`}
           </small>
-        )}
-        <button
-          type="button"
-          className={`rx-p-btn ${i.send ? "primary" : ""}`}
-          onClick={() => setSending(true)}
-        >
-          Send a report
-        </button>
-      </section>
+          <button
+            type="submit"
+            className="rx-p-btn primary"
+            disabled={!messageDraft.trim()}
+          >
+            <Send size={17} aria-hidden="true" /> Send message
+          </button>
+        </div>
+      </form>
       <p className="rx-p-fine">
         Feeling very unwell? Follow the emergency instructions in your discharge
         papers. Do not wait for a reply here.
       </p>
-      {sending && (
-        <SendReport
-          patient={p}
-          reason={i.send ? i.body : "You chose to send a report."}
-          onDone={() => setSending(false)}
-        />
-      )}
     </>
   );
 }

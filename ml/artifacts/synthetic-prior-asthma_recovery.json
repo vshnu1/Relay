@@ -1,0 +1,33 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "program": "asthma_recovery",
+  "training_data": "synthetic",
+  "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+  "n_patients": 40,
+  "core_metrics": [
+    "respiratory",
+    "spo2",
+    "sleep",
+    "heart_rate"
+  ],
+  "patients_train_val_test": [
+    24,
+    8,
+    8
+  ],
+  "rows_train_val_test": [
+    2077,
+    692,
+    689
+  ],
+  "feature_dim_in": 11,
+  "feature_dim_model": 18,
+  "threshold_raw": 0.0455,
+  "score_scale_raw": 0.0583,
+  "val_exceed_rate": 0.033,
+  "test_exceed_rate": 0.039,
+  "quantile": 0.95,
+  "n_estimators": 200,
+  "seed": 0,
+  "train_seconds": 0.71
+}

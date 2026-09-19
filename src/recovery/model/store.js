@@ -177,7 +177,7 @@ export function createStore(source, { sync = null } = {}) {
           ]),
         ),
       })),
-    checkin: (e) => answerCheckin(e.patientId, e.answers, e.at),
+    checkin: (e) => answerCheckin(e.patientId, e.answers, e.at, e),
     note: (e) => attachNote(e.patientId, e.note),
     read: (e) =>
       patch(e.patientId, (p) => ({
@@ -232,7 +232,7 @@ export function createStore(source, { sync = null } = {}) {
     sync?.push(e);
   };
 
-  function answerCheckin(id, answers, at = Date.now()) {
+  function answerCheckin(id, answers, at = Date.now(), details = {}) {
     patch(id, (p) => {
       const open = p.checkins.findIndex((c) => !c.answeredAt);
       const done = {
@@ -241,6 +241,8 @@ export function createStore(source, { sync = null } = {}) {
         answeredAt: at,
         answers,
         note: null,
+        ...(details.triggerKey ? { triggerKey: details.triggerKey } : {}),
+        ...(details.kind ? { kind: details.kind } : {}),
       };
       return {
         ...p,
@@ -392,9 +394,9 @@ export function createStore(source, { sync = null } = {}) {
       });
       send({ type: "appointment", patientId: id, t, with: who, where });
     },
-    submitCheckin(id, answers) {
-      logged("checkin", { patientId: id, answers, at: Date.now() });
-      send({ type: "checkin", patientId: id, answers });
+    submitCheckin(id, answers, details = {}) {
+      logged("checkin", { patientId: id, answers, ...details, at: Date.now() });
+      send({ type: "checkin", patientId: id, answers, ...details });
     },
     sendNote(id, note) {
       logged("note", { patientId: id, note, at: Date.now() });

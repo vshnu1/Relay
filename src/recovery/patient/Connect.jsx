@@ -272,17 +272,6 @@ export default function Connect({ patient: p }) {
         })}
       </div>
       <HealthImport patient={p} />
-      <section className="rx-p-card" aria-label="Your own entries">
-        <h2>Your own entries</h2>
-        <p>
-          {list(
-            p.signals
-              .filter((s) => s.device === "manual")
-              .map((s) => s.plain.toLowerCase()),
-          ) || "Nothing"}{" "}
-          can be entered by hand from the Readings screen.
-        </p>
-      </section>
       <p className="rx-p-fine">
         Only your care team at {p.hospital} can see this. Sharing stops by
         itself on day {p.windowDays}.

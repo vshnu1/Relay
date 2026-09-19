@@ -1,0 +1,33 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "program": "post_chemotherapy",
+  "training_data": "synthetic",
+  "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+  "n_patients": 40,
+  "core_metrics": [
+    "temperature",
+    "rhr",
+    "hrv",
+    "respiratory"
+  ],
+  "patients_train_val_test": [
+    24,
+    8,
+    8
+  ],
+  "rows_train_val_test": [
+    1784,
+    596,
+    586
+  ],
+  "feature_dim_in": 13,
+  "feature_dim_model": 22,
+  "threshold_raw": 0.0222,
+  "score_scale_raw": 0.041,
+  "val_exceed_rate": 0.047,
+  "test_exceed_rate": 0.061,
+  "quantile": 0.95,
+  "n_estimators": 200,
+  "seed": 0,
+  "train_seconds": 0.86
+}

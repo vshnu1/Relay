@@ -1,0 +1,33 @@
+{
+  "model_version": "baseline-iforest-v1",
+  "program": "cardiac_recovery",
+  "training_data": "synthetic",
+  "label": "SYNTHETIC ONLY - trained on vesper_ml.synthetic.population; contains no real measurements",
+  "n_patients": 40,
+  "core_metrics": [
+    "rhr",
+    "hrv",
+    "sleep",
+    "steps"
+  ],
+  "patients_train_val_test": [
+    24,
+    8,
+    8
+  ],
+  "rows_train_val_test": [
+    1945,
+    654,
+    650
+  ],
+  "feature_dim_in": 12,
+  "feature_dim_model": 17,
+  "threshold_raw": 0.0489,
+  "score_scale_raw": 0.0547,
+  "val_exceed_rate": 0.037,
+  "test_exceed_rate": 0.034,
+  "quantile": 0.95,
+  "n_estimators": 200,
+  "seed": 0,
+  "train_seconds": 0.58
+}

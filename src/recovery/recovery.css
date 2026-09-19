@@ -4943,6 +4943,55 @@ p.rx-row-summary {
   font-weight: 400;
   opacity: 0.85;
 }
+.rx-p-voice-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f8faf7;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.rx-p-voice-consent input { margin-top: 3px; accent-color: var(--pine); }
+.rx-p-voice-review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #d9e4d8;
+  border-radius: 12px;
+  background: #f8faf7;
+}
+.rx-p-voice-review h2 { font-size: 17px; }
+.rx-p-voice-review > p { color: var(--muted); font-size: 13px; }
+.rx-p-voice-review dl { display: grid; gap: 8px; }
+.rx-p-voice-review dl > div {
+  display: grid;
+  grid-template-columns: minmax(100px, .65fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.rx-p-voice-review dt { color: var(--muted); font-size: 13px; }
+.rx-p-voice-review select,
+.rx-p-voice-note textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--control);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+.rx-p-voice-note { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+.rx-p-voice-note textarea { resize: vertical; }
+.rx-p-voice-note small { justify-self: end; color: var(--faint); }
 
 /* Model view — the clinician's second opinion beside the rule. */
 .rx-model .rx-model-head {
@@ -5492,6 +5541,404 @@ p.rx-row-summary {
   border-radius: 8px;
   background: var(--surface);
   font-size: 14px;
+}
+/* A program that needs a boundary stated carries it on its own card, where a
+   clinician reading the review criteria will see it. */
+.rx-profile-caution {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #d9c38a;
+  background: #fbf7ec;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: #5d5540;
+}
+
+/* Check-in conversation: use the available workspace and keep its context in
+   view, instead of squeezing the call into a narrow card at the top. */
+.rx-pweb .rx-p-checkin-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 310px);
+  align-items: start;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+}
+.rx-pweb .rx-p-checkin-main,
+.rx-pweb .rx-p-checkin-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.rx-pweb .rx-p-callcard,
+.rx-pweb .rx-p-transcript,
+.rx-pweb .rx-p-answers,
+.rx-pweb .rx-p-quick {
+  width: 100%;
+  max-width: none;
+}
+.rx-pweb .rx-p-callcard {
+  padding: 20px;
+}
+.rx-pweb .rx-p-callcard .rx-p-stack {
+  max-width: none;
+  gap: 14px;
+}
+.rx-pweb .rx-p-callrow {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.rx-pweb .rx-p-voice-welcome {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(120deg, #f5f8f3, #fbfcfa);
+}
+.rx-pweb .rx-p-voice-orb {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e6efe5;
+  color: var(--pine);
+}
+.rx-pweb .rx-p-voice-welcome strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+.rx-pweb .rx-p-voice-welcome p {
+  margin: 0 0 7px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.rx-pweb .rx-p-voice-welcome small,
+.rx-pweb .rx-p-focus-card > small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.rx-pweb .rx-p-callcard .rx-p-btn {
+  width: min(100%, 360px);
+  min-height: 48px;
+  justify-content: center;
+  font-weight: 650;
+}
+.rx-pweb .rx-p-transcript {
+  min-height: 180px;
+  max-height: 440px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.rx-pweb .rx-p-bubble {
+  max-width: min(88%, 680px);
+  padding: 12px 15px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.rx-pweb .rx-p-live-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f7f9f6;
+}
+.rx-pweb .rx-p-live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--pine);
+  font-weight: 650;
+}
+.rx-pweb .rx-p-live-indicator > span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #62a783;
+  box-shadow: 0 0 0 4px #e5f0e8;
+}
+.rx-pweb .rx-p-live-question {
+  flex: 1 1 100%;
+  color: var(--ink);
+  font-size: 15px;
+}
+.rx-pweb .rx-p-focus-card,
+.rx-pweb .rx-p-next-card {
+  padding: 18px;
+}
+.rx-pweb .rx-p-aside-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--pine);
+}
+.rx-pweb .rx-p-aside-heading h2,
+.rx-pweb .rx-p-next-card h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+}
+.rx-pweb .rx-p-aside-copy {
+  margin: 12px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.rx-pweb .rx-p-focus-list,
+.rx-pweb .rx-p-next-card ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rx-pweb .rx-p-focus-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+.rx-pweb .rx-p-focus-list li > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.rx-pweb .rx-p-focus-list i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #bd923c;
+}
+.rx-pweb .rx-p-focus-list li strong {
+  padding-left: 16px;
+  color: #78632e;
+  font-size: 12px;
+  font-weight: 550;
+}
+.rx-pweb .rx-p-next-card ol {
+  margin-top: 10px;
+}
+.rx-pweb .rx-p-next-card li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.rx-pweb .rx-p-next-card li > span {
+  display: grid;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e9f0e7;
+  color: var(--pine);
+  font-size: 12px;
+  font-weight: 700;
+}
+.rx-pweb .rx-p-next-card li strong,
+.rx-pweb .rx-p-next-card li small {
+  display: block;
+}
+.rx-pweb .rx-p-next-card li strong {
+  font-size: 12.5px;
+}
+.rx-pweb .rx-p-next-card li small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+@media (max-width: 900px) {
+  .rx-pweb .rx-p-checkin-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rx-pweb .rx-p-checkin-aside {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .rx-pweb .rx-p-checkin-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rx-pweb .rx-p-callcard,
+  .rx-pweb .rx-p-focus-card,
+  .rx-pweb .rx-p-next-card {
+    padding: 14px;
+  }
+  .rx-pweb .rx-p-voice-welcome {
+    padding: 14px;
+  }
+  .rx-pweb .rx-p-callcard .rx-p-btn {
+    width: 100%;
+  }
+}
+
+.rx-pweb .rx-p-message-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rx-pweb .rx-p-message-compose h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 16px;
+}
+.rx-pweb .rx-p-message-compose > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.rx-pweb .rx-p-message-label {
+  margin-bottom: -7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.rx-pweb .rx-p-message-compose textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px 14px;
+  resize: vertical;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.rx-pweb .rx-p-message-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.rx-pweb .rx-p-message-actions .rx-p-btn {
+  min-height: 42px;
+}
+.rx-pweb .rx-p-message-actions .rx-p-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rx-clinician-voice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 18px;
+  margin: 16px 0 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfcfa;
+}
+.rx-clinician-voice-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.rx-clinician-voice-icon {
+  display: grid;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e7efe5;
+  color: var(--pine);
+}
+.rx-clinician-voice-main strong {
+  display: block;
+  font-size: 14px;
+}
+.rx-clinician-voice-main p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.rx-clinician-voice-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  white-space: nowrap;
+}
+.rx-clinician-voice-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.rx-spin {
+  animation: rx-clinician-spin 1s linear infinite;
+}
+@keyframes rx-clinician-spin {
+  to { transform: rotate(360deg); }
+}
+.rx-clinician-voice-status,
+.rx-clinician-voice-disclaimer,
+.rx-clinician-voice-transcript {
+  grid-column: 1 / -1;
+}
+.rx-clinician-voice-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.rx-clinician-voice-transcript {
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.rx-clinician-voice-transcript summary {
+  width: fit-content;
+  color: var(--pine);
+  cursor: pointer;
+  font-weight: 600;
+}
+.rx-clinician-voice-transcript p {
+  margin: 9px 0 0;
+  color: var(--ink);
+}
+.rx-clinician-voice-disclaimer {
+  color: var(--faint);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+@media (max-width: 620px) {
+  .rx-clinician-voice {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px;
+  }
+  .rx-clinician-voice-button {
+    width: 100%;
+  }
 }
 
 /* ---------- Patient activity (clinician view) and sync status ---------- */

@@ -76,7 +76,7 @@ For deployment, `render.yaml` provisions only the web service. Create the Workfl
 
 ## ElevenLabs
 
-Set `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on the API server. Keep the key out of frontend code. Enable authenticated conversations on the agent. The API returns a short-lived signed URL for a synthetic patient only, after consent. See `docs/voice-agent.md` for the agent instructions and client tool schema. Use the structured text fallback if voice is unavailable. No incoming webhooks are accepted; voice drafts must be confirmed in the form. A production webhook integration would require signature/replay verification.
+Set `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on the API server. Keep the key out of frontend code. The patient check-in uses an authenticated conversational agent after consent. The clinician overview can generate a one-way spoken status summary from synthetic readings and the latest Vesper result; it reuses the agent's voice or an optional `ELEVENLABS_VOICE_ID`. Clinician summaries are blocked in production unless `ELEVENLABS_DEMO_SUMMARY_ENABLED=true`. Only enable that while the app contains synthetic demo data. Do not send real patient information to ElevenLabs without the required vendor agreements and privacy review. See `docs/voice-agent.md` for the patient agent instructions and client tool schema. No incoming webhooks are accepted; patient voice drafts must be confirmed in the form. A production webhook integration would require signature/replay verification.
 
 Reference: https://elevenlabs.io/docs/eleven-agents/customization/authentication.
 
@@ -112,8 +112,22 @@ Every claim in the pitch has a test or a measurement behind it.
 | The rules and views | `npm test` — JS unit suite, plus `node tests/api.integration.js` against a live server |
 | The Python model | `PYTHONPATH=ml pytest ml/tests` — 53 tests across contracts, features, scoring, scenarios |
 | The clinical boundary | `analysis/language_guard.py` and its Node port `server/languageGuard.js`, checked for pattern-for-pattern parity; every model sentence passes it before leaving the server |
-| The false-alarm rate | measured on 71 real LifeSnaps subjects, 4,453 subject-days: 3.35% at the shipped threshold (`fixtures/calibration.json`) |
-| The model against the rule | 5.77% of judged subjects on the same cohort (`fixtures/ml_calibration.json`); the two use different denominators and are never compared as if they were one |
+| The false-alarm rate | 3.35% of subject-days at the shipped 1.75 sd, over the 66 of 71 LifeSnaps subjects with usable baselines (4,420 of 4,453 subject-days). Reproduce with `python3 analysis/calibrate.py fixtures/lifesnaps_daily.csv --sweep`; the grid is `fixtures/calibration.json` |
+| How fast it speaks when it should | a coordinated deviation of known size injected onto 41 real subjects' own series. Over the same window the rule fires for 70.7% of them untouched, median five days; at 2.0 personal sd it fires for 97.6%, median **one** day. The gain is in the lag, not the rate (`analysis/sensitivity.py`, `fixtures/sensitivity.json`) |
+| Which baseline that is measured against | 3.35% uses a whole-series baseline, which includes the day being judged; the trailing baseline `detect.py` actually uses fires on 6.04%. Both are in `fixtures/calibration.json` and `docs/DATA.md` says which to quote for what |
+| Whether the model earns its place | both detectors over the same injected change: the rule is the sensitive one (97.6% at 2.0 sd, one day), the model the quiet one (56.1%, but speaking on 9.8% of untouched subjects against the rule's 53.7%). A second opinion, not a better detector (`analysis/sensitivity_ml.py`) |
+| The model against the rule | 3.77%–5.77% of judged subjects across the five programs this cohort can supply, 5.77% for `post_abdominal_surgery` (`fixtures/ml_calibration.json`); the two use different denominators and are never compared as if they were one |
+| The model's cold start | every one of the 14 programs has a synthetic-only prior in `ml/artifacts`, trained by `ml/vesper_ml/train.py` on populations drawn from that program's own core metrics, so a patient with days of history is scored rather than refused |
 | Real data | 99 days of one team member's wearable physiology, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`) |
 
 Thresholds are demo settings and are labelled so in the interface. None of this is clinical validation, and the documents say that where it matters.
+
+One limit is worth stating plainly, because it is the first thing a clinician
+asks. Nobody in the reference cohort deteriorated after a discharge, so there
+is no positive class to count. The detection figures above are measured by
+adding a deviation of known size and known start to real people's own
+recorded variation, which shows whether the rule can see a coordinated change
+through one person's ordinary noise, and how fast. It does not show that the
+injected shape is what deterioration looks like, or that catching it prevents
+a readmission. Both need a monitored post-discharge cohort with recorded
+outcomes, which is the next piece of work rather than a setting we can tune.

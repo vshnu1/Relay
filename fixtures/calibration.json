@@ -40,6 +40,7 @@
     {
       "threshold_sd": 1.0,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 957,
@@ -48,6 +49,7 @@
     {
       "threshold_sd": 1.0,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 447,
@@ -56,6 +58,7 @@
     {
       "threshold_sd": 1.5,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 306,
@@ -64,14 +67,70 @@
     {
       "threshold_sd": 1.5,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 104,
       "rate_pct": 2.35
     },
     {
+      "threshold_sd": 1.7,
+      "min_signals": 2,
+      "baseline": "whole-series",
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 178,
+      "rate_pct": 4.03
+    },
+    {
+      "threshold_sd": 1.7,
+      "min_signals": 3,
+      "baseline": "whole-series",
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 58,
+      "rate_pct": 1.31
+    },
+    {
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "baseline": "whole-series",
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 148,
+      "rate_pct": 3.35
+    },
+    {
+      "threshold_sd": 1.75,
+      "min_signals": 3,
+      "baseline": "whole-series",
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 48,
+      "rate_pct": 1.09
+    },
+    {
+      "threshold_sd": 1.8,
+      "min_signals": 2,
+      "baseline": "whole-series",
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 136,
+      "rate_pct": 3.08
+    },
+    {
+      "threshold_sd": 1.8,
+      "min_signals": 3,
+      "baseline": "whole-series",
+      "subjects": 66,
+      "subject_days": 4420,
+      "fired": 42,
+      "rate_pct": 0.95
+    },
+    {
       "threshold_sd": 2.0,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 87,
@@ -80,6 +139,7 @@
     {
       "threshold_sd": 2.0,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 21,
@@ -88,6 +148,7 @@
     {
       "threshold_sd": 2.5,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 24,
@@ -96,6 +157,7 @@
     {
       "threshold_sd": 2.5,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 7,
@@ -104,6 +166,7 @@
     {
       "threshold_sd": 3.0,
       "min_signals": 2,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 6,
@@ -112,10 +175,20 @@
     {
       "threshold_sd": 3.0,
       "min_signals": 3,
+      "baseline": "whole-series",
       "subjects": 66,
       "subject_days": 4420,
       "fired": 1,
       "rate_pct": 0.02
+    },
+    {
+      "threshold_sd": 1.75,
+      "min_signals": 2,
+      "baseline": "trailing",
+      "subjects": 66,
+      "subject_days": 3477,
+      "fired": 210,
+      "rate_pct": 6.04
     }
   ]
 }

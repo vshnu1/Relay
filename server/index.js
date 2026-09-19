@@ -491,6 +491,72 @@ app.post("/api/voice/session", async (req, res) => {
   }
 });
 
+// One-way speech for a clinician briefing. The browser builds a bounded summary
+// from synthetic demo readings; no patient name, identifier, or free-text note
+// is sent to ElevenLabs. The agent's configured voice is reused by default.
+let cachedSummaryVoiceId = "";
+app.post("/api/voice/clinician-summary", async (req, res) => {
+  if (req.role !== "clinician")
+    return res.status(403).json({ error: "Clinician access is required." });
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ELEVENLABS_DEMO_SUMMARY_ENABLED !== "true"
+  )
+    return res.status(503).json({ error: "Clinician voice summaries are disabled for this deployment." });
+  if (req.body?.demoSynthetic !== true)
+    return res.status(403).json({ error: "Voice summaries are for synthetic demo data only." });
+  const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+  if (text.length < 20 || text.length > 3000)
+    return res.status(400).json({ error: "Summary text must be between 20 and 3,000 characters." });
+  if (!process.env.ELEVENLABS_API_KEY || (!process.env.ELEVENLABS_VOICE_ID && !process.env.ELEVENLABS_AGENT_ID))
+    return res.status(503).json({ error: "ElevenLabs speech is not configured." });
+
+  try {
+    let voiceId = process.env.ELEVENLABS_VOICE_ID || cachedSummaryVoiceId;
+    if (!voiceId) {
+      const agentResponse = await fetch(
+        `https://api.elevenlabs.io/v1/convai/agents/${encodeURIComponent(process.env.ELEVENLABS_AGENT_ID)}`,
+        {
+          headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY },
+          signal: AbortSignal.timeout(12000),
+        },
+      );
+      if (!agentResponse.ok) throw new Error("Could not read the configured voice.");
+      const agent = await agentResponse.json();
+      voiceId = agent?.conversation_config?.tts?.voice_id;
+      if (!voiceId) throw new Error("The configured agent has no voice ID.");
+      cachedSummaryVoiceId = voiceId;
+    }
+
+    const speech = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`,
+      {
+        method: "POST",
+        headers: {
+          "xi-api-key": process.env.ELEVENLABS_API_KEY,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ text, model_id: "eleven_multilingual_v2" }),
+        signal: AbortSignal.timeout(30000),
+      },
+    );
+    if (!speech.ok) {
+      if (speech.status === 401)
+        throw new Error("The ElevenLabs API key needs the text_to_speech permission.");
+      throw new Error(`ElevenLabs speech request failed (${speech.status}).`);
+    }
+    const audio = Buffer.from(await speech.arrayBuffer());
+    if (!audio.length || audio.length > 8_000_000)
+      throw new Error("ElevenLabs returned an invalid audio response.");
+    audit("clinician.voice_summary.generated", null, `${text.length} characters`);
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Cache-Control", "no-store");
+    res.status(200).send(audio);
+  } catch (error) {
+    res.status(503).json({ error: error.message || "Unable to prepare voice summary." });
+  }
+});
+
 // Score any patient's readings with the Python model. Used by the patient view,
 // which keeps its own store in the browser: it sends the event contract plus the
 // structured check-in context and gets the evidence object back. Either role may
@@ -508,8 +574,10 @@ app.post("/api/ml/score", async (req, res) => {
       .json({ error: "Supply 1-10,000 measurement records." });
   if (process.env.VESPER_ML_ENABLED !== "true")
     return res.status(503).json({
+      // This reaches a clinician's screen, so it says what is true of the
+      // deployment rather than naming the switch that turns it on.
       error:
-        "The model is not enabled on this server. Set VESPER_ML_ENABLED=true.",
+        "The model runs as a Python program, which this deployment does not have attached. Everything above comes from the rule and is unaffected.",
       code: "ML_DISABLED",
     });
   try {

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Activity, ChevronRight } from "lucide-react";
 import { describeAnalysis } from "../model/mlClient.js";
 import { useAnalysis } from "./useAnalysis.js";
@@ -6,6 +7,11 @@ import Sparkline from "./Sparkline.jsx";
 // The readings lane: one tile per counted signal, then the model's line.
 export default function HomeReadings({ patient: p }) {
   const { run, busy, error } = useAnalysis(p);
+  useEffect(() => {
+    // Score the patient's own recent readings when their home opens, so a
+    // model-triggered focused check-in is visible before they start one.
+    if (!p.analysis) void run();
+  }, [p.id]);
   const changed = p.counted.filter((s) => s.moved || s.towardDays > 0).length;
   const source = Object.values(p.devices).find(
     (d) => d.connected !== false && d.name,
@@ -66,9 +72,11 @@ export default function HomeReadings({ patient: p }) {
           <div>
             <span className="rx-ph-kicker">Relay's model</span>
             <strong>
-              {p.analysis
-                ? describeAnalysis(p.analysis, p.profile)
-                : "Not scored yet. Scoring compares your recent readings with your own usual."}
+              {busy && !p.analysis
+                ? "Comparing your recent readings with your usual…"
+                : p.analysis
+                  ? describeAnalysis(p.analysis, p.profile)
+                  : "Not scored yet. Scoring compares your recent readings with your own usual."}
             </strong>
           </div>
           <button
