@@ -4,6 +4,7 @@ import {
   usePatient,
   useRoster,
   useSourceLabel,
+  useSyncStatus,
   useRoute,
   go,
 } from "./useRecovery.js";
@@ -130,8 +131,15 @@ export default function Root() {
 // role decides the view, and offering a toggle would contradict the gate. The
 // note has to change with it, claiming no login stands between the views
 // would be false once one does.
+const SYNC_LABEL = {
+  live: "Synced with the care team",
+  connecting: "Connecting…",
+  offline: "Offline: this browser only",
+  off: "This browser only",
+};
 function DemoBar({ isPatient, roster, actingId, onSelect }) {
   const sourceLabel = useSourceLabel();
+  const sync = useSyncStatus();
   // Read the session directly rather than threading two props through both
   // route components; the bar is the only thing that needs them.
   const gated = !!sessionStorage.getItem(SIGNED_ROLE_KEY);
@@ -180,6 +188,10 @@ function DemoBar({ isPatient, roster, actingId, onSelect }) {
           <span className="rx-live">
             <i aria-hidden="true" />
             {sourceLabel}
+          </span>
+          <span className={`rx-live rx-sync ${sync}`} title="Shared record">
+            <i aria-hidden="true" />
+            {SYNC_LABEL[sync] || sync}
           </span>
           {gated && (
             <button type="button" className="rx-signout" onClick={onSignOut}>

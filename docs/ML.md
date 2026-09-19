@@ -244,7 +244,10 @@ matches the program.
   and the explanations carry the auditability. Measured against the rule on
   the same injected change (`analysis/sensitivity_ml.py`), the model is the
   quiet one, not the sensitive one: it speaks for about a fifth as many
-  untouched subjects and catches fewer injected changes at every size. It
+  untouched subjects and never catches more injected changes than the rule — though on real gait
+  data (`analysis/sensitivity_gait.py`) it comes close, 77–90% against 100%
+  at two personal standard deviations, while speaking on a tenth as many
+  untouched episodes. It
   does not catch what the rule misses on this data. Its place is as a second
   opinion beside the rule, which is how the clinician view uses it.
 - Per-patient fit needs roughly two weeks of history at daily cadence; before

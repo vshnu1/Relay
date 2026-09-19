@@ -22,6 +22,13 @@ SIGNALS = {
     "StepCount": "steps",
     "ActiveEnergyBurned": "active_energy",
     "SleepAnalysis": "sleep_stage",
+    # Gait, from the phone. Named exactly as the model's metrics so the daily
+    # rows convert to model events without a second mapping table.
+    "WalkingSpeed": "walking_speed",
+    "WalkingStepLength": "step_length",
+    "WalkingAsymmetryPercentage": "walking_asymmetry",
+    "WalkingDoubleSupportPercentage": "double_support",
+    "AppleWalkingSteadiness": "walking_steadiness",
 }
 
 RECORD = re.compile(
@@ -32,6 +39,12 @@ RECORD = re.compile(
     r'[^>]*?endDate="(?P<end>[^"]*)"'
     r'[^>]*?value="(?P<value>[^"]*)"'
 )
+
+# HealthKit writes unit after sourceName and device, so an optional group placed
+# before sourceName in RECORD never captured it; every event carried an empty
+# unit and nothing noticed until gait, whose values need converting. Found on
+# its own, wherever it sits in the tag.
+UNIT = re.compile(r'\bunit="(?P<unit>[^"]*)"')
 
 FIELDS = ["timestamp", "end_timestamp", "signal", "value", "unit", "source"]
 
@@ -49,6 +62,7 @@ def parse(xml_path):
             if signal is None:
                 continue
             value = match.group("value")
+            unit = UNIT.search(line)
             if signal == "sleep_stage":
                 value = value.replace("HKCategoryValueSleepAnalysis", "")
             yield {
@@ -56,7 +70,7 @@ def parse(xml_path):
                 "end_timestamp": match.group("end"),
                 "signal": signal,
                 "value": value,
-                "unit": match.group("unit") or "",
+                "unit": unit.group("unit") if unit else "",
                 "source": match.group("source"),
             }
 

@@ -697,10 +697,10 @@ export const PROFILES = {
     ],
   },
   sepsisWatch: {
-    name: "Sepsis watch after surgery",
+    name: "Post-discharge recovery after surgery",
     ml: "sepsis_watch",
     adherence: "antibiotic_adherence",
-    after: "surgery, with a sepsis watch",
+    after: "surgery",
     minMoved: 3,
     counted: [
       counted("restingHr"),

@@ -35,10 +35,28 @@ NIGHT_START, NIGHT_END = 2, 6
 
 FIELDS = [
     "date", "window", "resting_heart_rate", "hr_night", "hrv_sdnn",
-    "respiratory_rate", "spo2", "steps", "active_energy", "sleep_deep",
+    "respiratory_rate", "spo2", "steps", "active_energy",
+    "walking_speed", "step_length", "walking_asymmetry", "double_support",
+    "walking_steadiness", "sleep_deep",
     "sleep_rem", "sleep_core", "sleep_awake", "sleep_hours", "hr_samples",
     "sources",
 ]
+
+
+# Gait arrives in whatever unit the phone was set to. Everything downstream
+# wants one: metres per second, centimetres, and percent for the three ratios,
+# which HealthKit stores as 0-1 fractions the same way it stores saturation.
+GAIT = {"walking_speed", "step_length", "walking_asymmetry", "double_support", "walking_steadiness"}
+SPEED_TO_MS = {"m/s": 1.0, "km/hr": 1 / 3.6, "mi/hr": 0.44704}
+LENGTH_TO_CM = {"cm": 1.0, "in": 2.54, "m": 100.0}
+
+
+def gait_value(signal, value, unit):
+    if signal == "walking_speed":
+        return value * SPEED_TO_MS.get(unit, 1.0)
+    if signal == "step_length":
+        return value * LENGTH_TO_CM.get(unit, 1.0)
+    return value * 100 if value <= 1 else value
 
 
 def duration_minutes(start, end):
@@ -98,6 +116,8 @@ def aggregate(events_path, window_hours=24):
             elif signal == "spo2":
                 # HealthKit stores saturation as a 0-1 fraction; report percent.
                 buckets[key]["spo2"].append(value * 100 if value <= 1 else value)
+            elif signal in GAIT:
+                buckets[key][signal].append(gait_value(signal, value, row.get("unit", "")))
             else:
                 buckets[key][signal].append(value)
 
@@ -126,6 +146,11 @@ def aggregate(events_path, window_hours=24):
             "spo2": mean("spo2"),
             "steps": int(sum(bucket["steps"])) if bucket["steps"] else "",
             "active_energy": round(sum(bucket["active_energy"]), 1) if bucket["active_energy"] else "",
+            "walking_speed": mean("walking_speed"),
+            "step_length": mean("step_length"),
+            "walking_asymmetry": mean("walking_asymmetry"),
+            "double_support": mean("double_support"),
+            "walking_steadiness": mean("walking_steadiness"),
             "sleep_deep": stages.get("AsleepDeep", ""),
             "sleep_rem": stages.get("AsleepREM", ""),
             "sleep_core": stages.get("AsleepCore", ""),

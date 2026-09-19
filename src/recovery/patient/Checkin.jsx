@@ -14,7 +14,9 @@ import {
   checkinDue,
   checkinTriggerKey,
   checkinWhy,
+  insight,
 } from "../model/schedule.js";
+import { SendReport } from "./Care.jsx";
 import { useAnalysis } from "./useAnalysis.js";
 import { startPatientVoiceSession, voiceAvailable } from "./voice.js";
 import { buildCheckinPlan } from "./checkinPlan.js";
@@ -108,6 +110,11 @@ export default function Checkin({ patient: p }) {
   const [scoreAttempted, setScoreAttempted] = useState(false);
   const [listening, setListening] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  // Once the answers are in, the readings and the answers are judged together.
+  // If they point the same way the report is offered here, one tap away; the
+  // patient still confirms. The care team already sees the answers themselves.
+  const verdict = phase === "done" ? insight(p) : null;
   const sessionRef = useRef(null);
   const recRef = useRef(null);
   const endRef = useRef(null);
@@ -420,296 +427,386 @@ export default function Checkin({ patient: p }) {
 
       <div className="rx-p-checkin-layout">
         <main className="rx-p-checkin-main">
-      <section className="rx-p-card rx-p-callcard" aria-label="Check-in call">
-        <div className="rx-p-callrow">
-          <span className={`rx-p-pill ${phase}`}>
-            {phase === "done" ? "Sent" : listening ? "Listening" : status}
-          </span>
-          <span className="rx-p-fine">
-            {questions.length} questions
-            {checkinPlan.priority
-              ? ", about two minutes"
-              : ", about one minute"}
-            . Speak naturally or tap an answer.
-          </span>
-        </div>
-        {phase === "idle" && (
-          <div className="rx-p-stack">
-            <div className="rx-p-voice-welcome">
-              <span className="rx-p-voice-orb" aria-hidden="true"><MessageCircle size={22} /></span>
-              <div>
-                <strong>{checkinPlan.priority ? "Let’s check in on the change" : "How has today been?"}</strong>
-                <p>{questions[0] ? QUESTIONS[questions[0]].text : "How are you feeling today?"}</p>
-                <small>Your answers stay private until you review and choose to share them.</small>
-              </div>
+          <section
+            className="rx-p-card rx-p-callcard"
+            aria-label="Check-in call"
+          >
+            <div className="rx-p-callrow">
+              <span className={`rx-p-pill ${phase}`}>
+                {phase === "done" ? "Sent" : listening ? "Listening" : status}
+              </span>
+              <span className="rx-p-fine">
+                {questions.length} questions
+                {checkinPlan.priority
+                  ? ", about two minutes"
+                  : ", about one minute"}
+                . Speak naturally or tap an answer.
+              </span>
             </div>
-            {voice.available && (
+            {phase === "idle" && (
+              <div className="rx-p-stack">
+                <div className="rx-p-voice-welcome">
+                  <span className="rx-p-voice-orb" aria-hidden="true">
+                    <MessageCircle size={22} />
+                  </span>
+                  <div>
+                    <strong>
+                      {checkinPlan.priority
+                        ? "Let’s check in on the change"
+                        : "How has today been?"}
+                    </strong>
+                    <p>
+                      {questions[0]
+                        ? QUESTIONS[questions[0]].text
+                        : "How are you feeling today?"}
+                    </p>
+                    <small>
+                      Your answers stay private until you review and choose to
+                      share them.
+                    </small>
+                  </div>
+                </div>
+                {voice.available && (
+                  <label className="rx-p-voice-consent">
+                    <input
+                      type="checkbox"
+                      checked={voiceConsent}
+                      onChange={(e) => setVoiceConsent(e.target.checked)}
+                    />
+                    <span>
+                      I agree to send relevant readings and the model summary,
+                      plus microphone audio during the call, to ElevenLabs for
+                      this demo. My answers stay here for review and go to my
+                      care team only if I submit them.
+                    </span>
+                  </label>
+                )}
+                <button
+                  type="button"
+                  className="rx-p-btn primary"
+                  disabled={preparing || (voice.available && !voiceConsent)}
+                  onClick={startCheckin}
+                >
+                  <PhoneCall size={18} aria-hidden="true" />{" "}
+                  {preparing
+                    ? "Preparing check-in…"
+                    : checkinPlan.priority
+                      ? "Start priority check-in"
+                      : "Start daily check-in"}
+                </button>
+                <small className="rx-p-fine">
+                  {modelUsed
+                    ? "Questions are focused using the latest Relay score and your discharge plan."
+                    : scoreAttempted
+                      ? "The scorer could not be reached, so questions use your discharge plan and recent reading changes."
+                      : checkinPlan.mode === "insufficient"
+                        ? "There are not enough recent readings to compare yet. We’ll focus on how you feel and your discharge plan."
+                        : "Your latest readings will be checked when you start, so the questions can focus on what matters today."}
+                </small>
+                {!voice.available && (
+                  <small className="rx-p-fine">
+                    Using this browser's own voice. The ElevenLabs agent takes
+                    over when the server has its key.
+                  </small>
+                )}
+              </div>
+            )}
+            {phase === "live" && (
+              <div className="rx-p-live-controls">
+                <span className="rx-p-live-indicator">
+                  <span /> {listening ? "Listening to you" : status}
+                </span>
+                {current && (
+                  <span className="rx-p-live-question">{current.text}</span>
+                )}
+                <button type="button" className="rx-p-btn" onClick={stop}>
+                  <PhoneOff size={18} aria-hidden="true" /> End check-in
+                </button>
+              </div>
+            )}
+            {phase === "interrupted" && (
+              <p className="rx-p-error" role="status">
+                The call ended early. Tap an answer to finish this check-in;
+                your answers will still need your review before sharing.
+              </p>
+            )}
+            {voice.error && (
+              <p className="rx-p-error" role="alert">
+                {voice.error}
+              </p>
+            )}
+          </section>
+
+          {log.length > 0 && (
+            <div
+              className="rx-p-chat rx-p-transcript"
+              role="log"
+              aria-live="polite"
+            >
+              {log.map((m, i) => (
+                <div key={i} className={`rx-p-bubble ${m.who}`}>
+                  {m.text}
+                </div>
+              ))}
+              <div ref={endRef} />
+            </div>
+          )}
+
+          {current && (
+            <div className="rx-p-quick" role="group" aria-label="Tap an answer">
+              {listening && (
+                <span className="rx-p-pill live">
+                  <Mic size={13} aria-hidden="true" /> {current.short}
+                </span>
+              )}
+              {current.options.map((o) => (
+                <button key={o} type="button" onClick={() => tap(o)}>
+                  {o}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {phase === "live" &&
+            stage.kind === "note" &&
+            engine === "browser" && (
+              <form
+                className="rx-p-quick rx-p-noteform"
+                role="group"
+                aria-label="Anything else"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const text = noteDraft.trim();
+                  recRef.current?.stop?.();
+                  if (canSpeak()) speechSynthesis.cancel();
+                  if (text) say("you", text);
+                  finishBrowser(text || null);
+                }}
+              >
+                <input
+                  type="text"
+                  value={noteDraft}
+                  onChange={(e) => setNoteDraft(e.target.value)}
+                  placeholder="Or type anything else here"
+                  aria-label="Anything else for your care team"
+                />
+                <button type="submit">
+                  {noteDraft.trim()
+                    ? "Send and finish"
+                    : "Nothing else, finish"}
+                </button>
+              </form>
+            )}
+
+          {phase === "review" && reviewDraft && (
+            <section
+              className="rx-p-card rx-p-voice-review"
+              aria-label="Review check-in answers"
+            >
+              <h2>Review what Relay heard</h2>
+              <p>Correct anything that is wrong before sharing it.</p>
+              <dl>
+                {questions.map((q) => (
+                  <div key={q}>
+                    <dt>{QUESTIONS[q].short}</dt>
+                    <dd>
+                      <select
+                        aria-label={`Answer for ${QUESTIONS[q].short}`}
+                        value={reviewDraft.answers[q] || ""}
+                        onChange={(e) =>
+                          setReviewDraft((current) => ({
+                            ...current,
+                            answers: {
+                              ...current.answers,
+                              [q]: e.target.value,
+                            },
+                          }))
+                        }
+                      >
+                        <option value="">Choose an answer</option>
+                        {QUESTIONS[q].options.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <label className="rx-p-voice-note">
+                Additional context
+                <textarea
+                  rows={3}
+                  maxLength={500}
+                  value={reviewDraft.note}
+                  onChange={(e) =>
+                    setReviewDraft((current) => ({
+                      ...current,
+                      note: e.target.value,
+                    }))
+                  }
+                />
+                <small>{reviewDraft.note.length}/500</small>
+              </label>
               <label className="rx-p-voice-consent">
                 <input
                   type="checkbox"
-                  checked={voiceConsent}
-                  onChange={(e) => setVoiceConsent(e.target.checked)}
+                  checked={shareConsent}
+                  onChange={(e) => setShareConsent(e.target.checked)}
                 />
-                <span>
-                  I agree to send relevant readings and the model summary, plus
-                  microphone audio during the call, to ElevenLabs for this demo.
-                  My answers stay here for review and go to my care team only if
-                  I submit them.
-                </span>
+                <span>I agree to share these answers with my care team.</span>
               </label>
-            )}
-            <button
-              type="button"
-              className="rx-p-btn primary"
-              disabled={preparing || (voice.available && !voiceConsent)}
-              onClick={startCheckin}
-            >
-              <PhoneCall size={18} aria-hidden="true" />{" "}
-              {preparing
-                ? "Preparing check-in…"
-                : checkinPlan.priority
-                  ? "Start priority check-in"
-                  : "Start daily check-in"}
-            </button>
-            <small className="rx-p-fine">
-              {modelUsed
-                ? "Questions are focused using the latest Relay score and your discharge plan."
-                : scoreAttempted
-                  ? "The scorer could not be reached, so questions use your discharge plan and recent reading changes."
-                  : checkinPlan.mode === "insufficient"
-                    ? "There are not enough recent readings to compare yet. We’ll focus on how you feel and your discharge plan."
-                    : "Your latest readings will be checked when you start, so the questions can focus on what matters today."}
-            </small>
-            {!voice.available && (
-              <small className="rx-p-fine">
-                Using this browser's own voice. The ElevenLabs agent takes over
-                when the server has its key.
-              </small>
-            )}
-          </div>
-        )}
-        {phase === "live" && (
-          <div className="rx-p-live-controls">
-            <span className="rx-p-live-indicator"><span /> {listening ? "Listening to you" : status}</span>
-            {current && <span className="rx-p-live-question">{current.text}</span>}
-            <button type="button" className="rx-p-btn" onClick={stop}>
-              <PhoneOff size={18} aria-hidden="true" /> End check-in
-            </button>
-          </div>
-        )}
-        {phase === "interrupted" && (
-          <p className="rx-p-error" role="status">
-            The call ended early. Tap an answer to finish this check-in; your
-            answers will still need your review before sharing.
-          </p>
-        )}
-        {voice.error && (
-          <p className="rx-p-error" role="alert">
-            {voice.error}
-          </p>
-        )}
-      </section>
-
-      {log.length > 0 && (
-        <div
-          className="rx-p-chat rx-p-transcript"
-          role="log"
-          aria-live="polite"
-        >
-          {log.map((m, i) => (
-            <div key={i} className={`rx-p-bubble ${m.who}`}>
-              {m.text}
-            </div>
-          ))}
-          <div ref={endRef} />
-        </div>
-      )}
-
-      {current && (
-        <div className="rx-p-quick" role="group" aria-label="Tap an answer">
-          {listening && (
-            <span className="rx-p-pill live">
-              <Mic size={13} aria-hidden="true" /> {current.short}
-            </span>
+              <button
+                type="button"
+                className="rx-p-btn primary"
+                disabled={
+                  !shareConsent ||
+                  !questions.every((q) => reviewDraft.answers[q])
+                }
+                onClick={submitVoiceDraft}
+              >
+                Share check-in with my care team
+              </button>
+              <button
+                type="button"
+                className="rx-p-textbtn"
+                onClick={() => {
+                  setReviewDraft(null);
+                  setPhase("idle");
+                  setVoice((v) => ({ ...v, status: "" }));
+                  answersRef.current = {};
+                  setAnswers({});
+                }}
+              >
+                Discard this draft
+              </button>
+            </section>
           )}
-          {current.options.map((o) => (
-            <button key={o} type="button" onClick={() => tap(o)}>
-              {o}
-            </button>
-          ))}
-        </div>
-      )}
 
-      {phase === "live" && stage.kind === "note" && engine === "browser" && (
-        <form
-          className="rx-p-quick rx-p-noteform"
-          role="group"
-          aria-label="Anything else"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const text = noteDraft.trim();
-            recRef.current?.stop?.();
-            if (canSpeak()) speechSynthesis.cancel();
-            if (text) say("you", text);
-            finishBrowser(text || null);
-          }}
-        >
-          <input
-            type="text"
-            value={noteDraft}
-            onChange={(e) => setNoteDraft(e.target.value)}
-            placeholder="Or type anything else here"
-            aria-label="Anything else for your care team"
-          />
-          <button type="submit">
-            {noteDraft.trim() ? "Send and finish" : "Nothing else, finish"}
-          </button>
-        </form>
-      )}
+          {Object.keys(answers).length > 0 && (
+            <div className="rx-p-answers" aria-label="Recorded answers">
+              {questions
+                .filter((q) => answers[q])
+                .map((q) => (
+                  <span key={q} className="rx-p-chip">
+                    {QUESTIONS[q].short}: <strong>{answers[q]}</strong>
+                  </span>
+                ))}
+            </div>
+          )}
 
-      {phase === "review" && reviewDraft && (
-        <section
-          className="rx-p-card rx-p-voice-review"
-          aria-label="Review check-in answers"
-        >
-          <h2>Review what Relay heard</h2>
-          <p>Correct anything that is wrong before sharing it.</p>
-          <dl>
-            {questions.map((q) => (
-              <div key={q}>
-                <dt>{QUESTIONS[q].short}</dt>
-                <dd>
-                  <select
-                    aria-label={`Answer for ${QUESTIONS[q].short}`}
-                    value={reviewDraft.answers[q] || ""}
-                    onChange={(e) =>
-                      setReviewDraft((current) => ({
-                        ...current,
-                        answers: {
-                          ...current.answers,
-                          [q]: e.target.value,
-                        },
-                      }))
-                    }
+          {phase === "done" && (
+            <section
+              className={`rx-p-card ${verdict?.send ? "alert" : ""}`}
+              aria-label="Sent"
+            >
+              <p className="rx-p-sent">
+                <span>
+                  <CheckCircle2 size={18} aria-hidden="true" /> Sent to your
+                  care team, together with your readings
+                </span>
+              </p>
+              {verdict?.send && (
+                <>
+                  <strong>{verdict.title}</strong>
+                  <p>{verdict.body}</p>
+                </>
+              )}
+              <div className="rx-p-stack">
+                {verdict?.send ? (
+                  <button
+                    type="button"
+                    className="rx-p-btn primary"
+                    onClick={() => setSending(true)}
                   >
-                    <option value="">Choose an answer</option>
-                    {QUESTIONS[q].options.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </dd>
+                    Send the report to my care team
+                  </button>
+                ) : null}
+                <a
+                  className={verdict?.send ? "rx-p-btn" : "rx-p-btn primary"}
+                  href="#/patient/insight"
+                >
+                  What this means for me
+                </a>
+                <a className="rx-p-textbtn" href="#/patient">
+                  Back to home
+                </a>
               </div>
-            ))}
-          </dl>
-          <label className="rx-p-voice-note">
-            Additional context
-            <textarea
-              rows={3}
-              maxLength={500}
-              value={reviewDraft.note}
-              onChange={(e) =>
-                setReviewDraft((current) => ({
-                  ...current,
-                  note: e.target.value,
-                }))
-              }
+            </section>
+          )}
+          {sending && (
+            <SendReport
+              patient={p}
+              reason={verdict?.body || "You chose to send a report."}
+              onDone={() => setSending(false)}
             />
-            <small>{reviewDraft.note.length}/500</small>
-          </label>
-          <label className="rx-p-voice-consent">
-            <input
-              type="checkbox"
-              checked={shareConsent}
-              onChange={(e) => setShareConsent(e.target.checked)}
-            />
-            <span>I agree to share these answers with my care team.</span>
-          </label>
-          <button
-            type="button"
-            className="rx-p-btn primary"
-            disabled={
-              !shareConsent || !questions.every((q) => reviewDraft.answers[q])
-            }
-            onClick={submitVoiceDraft}
-          >
-            Share check-in with my care team
-          </button>
-          <button
-            type="button"
-            className="rx-p-textbtn"
-            onClick={() => {
-              setReviewDraft(null);
-              setPhase("idle");
-              setVoice((v) => ({ ...v, status: "" }));
-              answersRef.current = {};
-              setAnswers({});
-            }}
-          >
-            Discard this draft
-          </button>
-        </section>
-      )}
-
-      {Object.keys(answers).length > 0 && (
-        <div className="rx-p-answers" aria-label="Recorded answers">
-          {questions
-            .filter((q) => answers[q])
-            .map((q) => (
-              <span key={q} className="rx-p-chip">
-                {QUESTIONS[q].short}: <strong>{answers[q]}</strong>
-              </span>
-            ))}
-        </div>
-      )}
-
-      {phase === "done" && (
-        <section className="rx-p-card" aria-label="Sent">
-          <p className="rx-p-sent">
-            <span>
-              <CheckCircle2 size={18} aria-hidden="true" /> Sent to your care
-              team, together with your readings
-            </span>
-          </p>
-          <div className="rx-p-stack">
-            <a className="rx-p-btn primary" href="#/patient/insight">
-              What this means for me
-            </a>
-            <a className="rx-p-textbtn" href="#/patient">
-              Back to home
-            </a>
-          </div>
-        </section>
-      )}
-
+          )}
         </main>
         <aside className="rx-p-checkin-aside" aria-label="Check-in context">
           <section className="rx-p-card rx-p-focus-card">
-            <div className="rx-p-aside-heading"><HeartPulse size={18} /><h2>What Relay noticed</h2></div>
+            <div className="rx-p-aside-heading">
+              <HeartPulse size={18} />
+              <h2>What Relay noticed</h2>
+            </div>
             {visibleSignals.length ? (
               <>
-                <p className="rx-p-aside-copy">These readings are different from your own usual range. They help focus this conversation; they do not explain the cause.</p>
+                <p className="rx-p-aside-copy">
+                  These readings are different from your own usual range. They
+                  help focus this conversation; they do not explain the cause.
+                </p>
                 <ul className="rx-p-focus-list">
                   {visibleSignals.map((signal, index) => (
                     <li key={`${signal.label}-${index}`}>
-                      <span><i aria-hidden="true" />{signal.label}</span>
-                      <strong>{signal.direction.toLowerCase()} · {signal.duration}</strong>
+                      <span>
+                        <i aria-hidden="true" />
+                        {signal.label}
+                      </span>
+                      <strong>
+                        {signal.direction.toLowerCase()} · {signal.duration}
+                      </strong>
                     </li>
                   ))}
                 </ul>
               </>
             ) : (
-              <p className="rx-p-aside-copy">No specific reading change is driving this check-in. Relay will ask about your recovery plan and how you feel.</p>
+              <p className="rx-p-aside-copy">
+                No specific reading change is driving this check-in. Relay will
+                ask about your recovery plan and how you feel.
+              </p>
             )}
-            <small>{modelUsed ? "Relay score checked for this session." : scoreAttempted ? "Using recent readings and your discharge plan." : "A fresh score is requested when you begin."}</small>
+            <small>
+              {modelUsed
+                ? "Relay score checked for this session."
+                : scoreAttempted
+                  ? "Using recent readings and your discharge plan."
+                  : "A fresh score is requested when you begin."}
+            </small>
           </section>
           <section className="rx-p-card rx-p-next-card">
             <h2>At your pace</h2>
             <ol>
-              <li><span>1</span><div><strong>Talk it through</strong><small>Speak or tap an answer.</small></div></li>
-              <li><span>2</span><div><strong>Review the notes</strong><small>Correct anything Relay gets wrong.</small></div></li>
-              <li><span>3</span><div><strong>Choose what to share</strong><small>Nothing is sent before you approve it.</small></div></li>
+              <li>
+                <span>1</span>
+                <div>
+                  <strong>Talk it through</strong>
+                  <small>Speak or tap an answer.</small>
+                </div>
+              </li>
+              <li>
+                <span>2</span>
+                <div>
+                  <strong>Review the notes</strong>
+                  <small>Correct anything Relay gets wrong.</small>
+                </div>
+              </li>
+              <li>
+                <span>3</span>
+                <div>
+                  <strong>Choose what to share</strong>
+                  <small>Nothing is sent before you approve it.</small>
+                </div>
+              </li>
             </ol>
           </section>
         </aside>

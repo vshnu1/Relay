@@ -26,7 +26,7 @@ Set the first message to `{{opening_message}}`. The app supplies a brief
 introduction and question 1, including the allowed answer choices. Consent has
 already been collected on screen, so the agent must not ask again.
 
-Use `{{opening_message}}`, `{{patient_name}}`, `{{program}}`, `{{day_at_home}}`, `{{model_state}}`,
+Use `{{opening_message}}`, `{{patient_name}}`, `{{program}}`, `{{day_at_home}}`, `{{checkin_reason}}`, `{{model_state}}`,
 `{{model_summary}}`, `{{readings_summary}}`, `{{question_list}}`,
 `{{checkin_mode}}`, `{{priority_checkin}}`, `{{priority_summary}}`, and
 `{{context_prompt}}`. The app supplies current session values, so the agent

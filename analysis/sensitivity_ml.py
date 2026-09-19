@@ -40,6 +40,7 @@ from baseline import MIN_OBSERVATIONS
 from calibrate_ml import CONTRACT, MIN_DAYS, subject_events
 from detect import MIN_SIGNALS, THRESHOLD_SD
 from sensitivity import DIRECTION, ONSET_FRACTION, RAMP_DAYS, fires_on, series
+from relay_ml.contracts import ContractError
 
 # The columns both detectors read. Injecting anything else would hand one of
 # them a change the other is structurally unable to see.
@@ -111,6 +112,7 @@ def rule_lag(rows, onset, threshold_sd, min_signals):
 # so the model reports monitoring and looks blind. A deployment scores every
 # day, so this does too, and stops at the first alarm.
 WATCH_DAYS = 7
+REJECTED = []
 
 
 def model_result(rows, subject, program, onset):
@@ -137,7 +139,10 @@ def model_result(rows, subject, program, onset):
                     "analyzedThrough": f"{rows[day]['date']}T23:59:59Z",
                 }
             )
-        except Exception:
+        except ContractError:
+            # Reported, not swallowed. Measured at zero for this cohort at
+            # every effect size, and this keeps it visible if that changes.
+            REJECTED.append((program, subject, day - onset))
             continue
         last_state = result["application_state"]
         if last_state in ALARM_STATES:
@@ -223,8 +228,10 @@ def main():
     print(f"\n  {control['subjects_judged']} subjects judged. The 'nothing' row is the same "
           f"subjects with no injection:\n  anything either detector reports there is a false alarm.")
 
+    print(f"\n  scoring days rejected by the contract: {len(REJECTED)}")
     if args.json:
         payload = {
+            "contract_rejections": len(REJECTED),
             "program": args.program,
             "injected_signals": SHARED,
             "onset_fraction": ONSET_FRACTION,

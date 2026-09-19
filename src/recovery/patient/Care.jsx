@@ -9,22 +9,36 @@ import { clock } from "../format.js";
 export function SendReport({ patient: p, reason, onDone }) {
   const [phase, setPhase] = useState("confirm");
   const report = buildReport(p);
+  const sendNow = () => {
+    actions.recordReport(p.id, {
+      to: report.to,
+      subject: report.subject,
+      method: "in-app",
+      body: report.body,
+      reason,
+    });
+    setPhase("sent");
+  };
   if (phase === "sent")
     return (
       <div className="rx-p-card">
         <p className="rx-p-sent">
           <span>
-            <CheckCircle2 size={22} aria-hidden="true" /> Your email app opened
-            with the report
+            <CheckCircle2 size={22} aria-hidden="true" /> Sent to your care team
           </span>
         </p>
         <p>
-          Send it from there. Relay has noted that you chose to send it{" "}
-          {clock(Date.now())}.
+          {p.clinician} can read it in Relay now, with your readings and your
+          answers. Sent {clock(Date.now())}.
         </p>
-        <button type="button" className="rx-p-btn" onClick={onDone}>
-          Done
-        </button>
+        <div className="rx-p-stack">
+          <button type="button" className="rx-p-btn primary" onClick={onDone}>
+            Done
+          </button>
+          <a className="rx-p-textbtn" href={mailto(report)}>
+            Also open it as an email
+          </a>
+        </div>
       </div>
     );
   if (phase === "preview")
@@ -33,20 +47,9 @@ export function SendReport({ patient: p, reason, onDone }) {
         <h2>The report</h2>
         <pre className="rx-p-report">{report.body}</pre>
         <div className="rx-p-stack">
-          <a
-            className="rx-p-btn primary"
-            href={mailto(report)}
-            onClick={() => {
-              actions.recordReport(p.id, {
-                to: report.to,
-                subject: report.subject,
-                method: "email draft",
-              });
-              setPhase("sent");
-            }}
-          >
-            <Mail size={20} aria-hidden="true" /> Open email to send
-          </a>
+          <button type="button" className="rx-p-btn primary" onClick={sendNow}>
+            <Mail size={20} aria-hidden="true" /> Send to my care team
+          </button>
           <button
             type="button"
             className="rx-p-textbtn"
@@ -69,9 +72,9 @@ export function SendReport({ patient: p, reason, onDone }) {
         <h2>Send this report to your care team?</h2>
         <p>{reason}</p>
         <p>
-          It goes to <strong>{report.to || "your care team"}</strong> as an
-          email from you, with today's readings, your answers, and anything you
-          recorded. Nothing is sent until you press send in your email app.
+          It goes to <strong>{p.clinician}</strong> at {p.hospital}, inside
+          Relay, with today's readings, your answers, and anything you recorded.
+          Nothing is sent until you confirm on the next screen.
         </p>
         <div className="rx-p-stack">
           <button

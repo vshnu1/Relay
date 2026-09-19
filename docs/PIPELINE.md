@@ -28,7 +28,7 @@ Produces `fixtures/daily_deid.csv` (de-identified daily aggregates) and
 ```
 pipeline/
   parse_export.py    Apple Health XML -> normalized event stream
-  aggregate.py       events -> one row per patient-day
+  aggregate.py       events -> one row per patient-day; gait to m/s, cm and %
   deidentify.py      pseudonymous id + interval-preserving date shift
 analysis/
   baseline.py        per-patient, per-signal trailing baselines
@@ -36,7 +36,7 @@ analysis/
   language_guard.py  enforces the doc's system boundary on generated text
   to_relay_events.py aggregates -> shared/engine.js event contract
 data/
-  daily_deid.csv     committed, de-identified
+  daily_deid.csv     committed, de-identified: 1,464 days, cardiorespiratory and gait
   evidence.json      committed, detector output
   relay_events.json  committed, engine-contract replay input
   raw/               gitignored, put the export here
@@ -78,7 +78,9 @@ answers and the system says which one it has.
 ## Data
 
 99 days of continuous physiology from an Amazfit Helio Strap contributed by a
-team member, plus 4 years of phone activity. Consented first-party data, not
+team member, plus 4 years of phone activity including 1,451 days of walking
+speed, step length, asymmetry, double-support time and steadiness, carried
+through the pipeline as daily columns. Consented first-party data, not
 patient data. Raw exports are never committed; only de-identified aggregates
 ship here. See [DATA.md](DATA.md).
 

@@ -38,7 +38,7 @@ export default function Sharing({ patient: p }) {
         ))}
       </div>
       <p className="rx-p-lead">
-        Only your care team at [HOSPITAL NAME] can see this. Sharing stops by
+        Only your care team at {p.hospital} can see this. Sharing stops by
         itself on {dateLong(p.dischargedAt + p.windowDays * DAY)}, day{" "}
         {p.windowDays}.
       </p>
@@ -51,8 +51,8 @@ export default function Sharing({ patient: p }) {
         >
           {anySharing ? "Pause all sharing" : "All sharing is paused"}
         </button>
-        <a className="rx-p-textbtn" href="#/patient/sharing">
-          More choices, including deleting my data
+        <a className="rx-p-textbtn" href="#/patient/connect">
+          Back to your data
         </a>
       </div>
     </>

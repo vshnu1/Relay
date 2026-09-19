@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap");
+@import "./patient-home.css";
 
 /* Everything lives under .rx. The classic workspace has its own global styles and the
    two are never loaded together (see main.jsx). */
@@ -1410,9 +1411,6 @@ p.rx-row-summary {
   color: var(--muted);
   font-size: 16px;
   line-height: 1.42;
-}
-.rx-p-btn[data-voice-entry] {
-  border-style: dashed;
 }
 
 /* Landing page */
@@ -5286,8 +5284,8 @@ p.rx-row-summary {
    .rx-pweb rules so equal-specificity selectors win by order. */
 .rx-pweb .rx-p-screen {
   max-width: 1080px;
-  padding: 22px 32px 40px;
-  gap: 14px;
+  padding: 24px 32px 40px;
+  gap: 16px;
   font-size: 14px;
 }
 .rx-pweb .rx-p-top {
@@ -5307,20 +5305,20 @@ p.rx-row-summary {
   text-align: left;
 }
 .rx-pweb .rx-p-top .rx-p-lead {
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .rx-pweb .rx-p-top h1,
 .rx-pweb .rx-p-hello h1,
 .rx-pweb .rx-p-title {
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1.2;
 }
 .rx-pweb .rx-p-title.small {
-  font-size: 18px;
+  font-size: 20px;
 }
 .rx-pweb .rx-p-kicker {
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -5342,28 +5340,28 @@ p.rx-row-summary {
   height: 6px;
 }
 .rx-pweb .rx-p-day.compact small {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--faint);
 }
 .rx-pweb .rx-p-quiet {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 8px 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--sage);
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--ink-2);
 }
 .rx-pweb .rx-p-alerts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 .rx-pweb .rx-p-notif {
   gap: 4px;
-  padding: 10px 14px;
+  padding: 8px 16px;
   border-radius: 8px;
 }
 .rx-pweb .rx-p-notif strong {
@@ -5373,33 +5371,33 @@ p.rx-row-summary {
   font-size: 13px;
 }
 .rx-pweb .rx-p-notif a {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: 13px;
 }
 .rx-pweb .rx-p-home {
-  gap: 14px;
+  gap: 16px;
 }
 .rx-pweb .rx-p-col {
   gap: 12px;
 }
 .rx-pweb .rx-p-card {
-  padding: 14px 16px;
+  padding: 16px 16px;
   gap: 8px;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 .rx-pweb .rx-p-card.list {
-  padding: 2px 16px;
+  padding: 4px 16px;
 }
 .rx-pweb .rx-p-card h2 {
   font-size: 14px;
   padding: 8px 0 4px;
 }
 .rx-pweb .rx-p-card > p {
-  font-size: 13.5px;
+  font-size: 14px;
 }
 .rx-pweb .rx-p-h3 {
-  margin: 6px 0 0;
-  font-size: 11.5px;
+  margin: 8px 0 0;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -5411,34 +5409,34 @@ p.rx-row-summary {
   color: var(--faint);
 }
 .rx-pweb .rx-p-notes {
-  font-size: 14.5px;
+  font-size: 14px;
   line-height: 1.5;
 }
 .rx-pweb .rx-p-bullets {
-  gap: 3px;
-  font-size: 13.5px;
+  gap: 4px;
+  font-size: 14px;
 }
 .rx-pweb .rx-p-appt {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 .rx-pweb .rx-p-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 8px 0;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 .rx-pweb .rx-p-row strong {
-  font-size: 13.5px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 .rx-pweb .rx-p-row.model {
   grid-template-columns: auto minmax(0, 1fr) auto;
-  padding: 10px 0;
+  padding: 8px 0;
 }
 .rx-pweb .rx-p-row.model > span:first-child {
   font-size: 12px;
@@ -5450,25 +5448,25 @@ p.rx-row-summary {
   color: var(--ink-2);
 }
 .rx-pweb .rx-p-chip {
-  font-size: 11.5px;
-  padding: 2px 8px;
+  font-size: 12px;
+  padding: 4px 8px;
 }
 .rx-pweb .rx-p-btn,
 .rx-p-auth .rx-p-btn {
   min-height: 38px;
-  padding: 0 14px;
+  padding: 0 16px;
   font-size: 14px;
   border-radius: 8px;
 }
 .rx-pweb .rx-p-btn.small {
   min-height: 30px;
-  padding: 0 10px;
-  font-size: 12.5px;
+  padding: 0 8px;
+  font-size: 13px;
 }
 .rx-pweb .rx-p-options button,
 .rx-pweb .rx-p-quick button {
   min-height: 36px;
-  padding: 0 14px;
+  padding: 0 16px;
   font-size: 14px;
   border-radius: 8px;
 }
@@ -5484,11 +5482,11 @@ p.rx-row-summary {
 .rx-pweb .rx-p-fine,
 .rx-pweb .rx-p-field label,
 .rx-pweb .rx-p-consent span {
-  font-size: 12.5px;
+  font-size: 13px;
 }
 .rx-pweb .rx-p-status {
   min-height: 44px;
-  gap: 10px;
+  gap: 8px;
 }
 .rx-pweb .rx-p-status > a {
   margin-left: auto;
@@ -5504,13 +5502,13 @@ p.rx-row-summary {
 }
 .rx-pweb .rx-p-rowlink {
   min-height: 36px;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 .rx-pweb .rx-p-signal p,
 .rx-pweb .rx-p-plain,
 .rx-pweb .rx-p-insight p,
 .rx-pweb .rx-p-entryrow p {
-  font-size: 13.5px;
+  font-size: 14px;
 }
 .rx-pweb .rx-p-question {
   font-size: 20px;
@@ -5520,8 +5518,8 @@ p.rx-row-summary {
 }
 .rx-pweb .rx-p-sheet-body {
   max-width: 420px;
-  padding: 20px;
-  border-radius: 14px;
+  padding: 24px;
+  border-radius: 8px;
   font-size: 14px;
 }
 .rx-pweb .rx-p-stack.bottom {
@@ -5529,7 +5527,7 @@ p.rx-row-summary {
 }
 .rx-pweb .rx-p-kv > div {
   grid-template-columns: 150px minmax(0, 1fr);
-  font-size: 13.5px;
+  font-size: 14px;
 }
 .rx-pweb .rx-p-back {
   font-size: 13px;
@@ -5542,7 +5540,7 @@ p.rx-row-summary {
   font-size: 12px;
 }
 .rx-pweb .rx-p-report {
-  font-size: 12.5px;
+  font-size: 13px;
 }
 
 /* Check-in call */
@@ -5552,14 +5550,14 @@ p.rx-row-summary {
 .rx-pweb .rx-p-callrow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .rx-pweb .rx-p-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
+  gap: 4px;
+  padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--paper);
@@ -5574,30 +5572,30 @@ p.rx-row-summary {
   color: var(--pine);
 }
 .rx-pweb .rx-p-callcard .rx-p-stack {
-  gap: 6px;
+  gap: 8px;
   max-width: 320px;
 }
 .rx-pweb .rx-p-transcript {
   max-width: 680px;
   max-height: 300px;
   min-height: 0;
-  gap: 6px;
+  gap: 8px;
 }
 .rx-pweb .rx-p-bubble {
   max-width: 85%;
   padding: 8px 12px;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 14px;
 }
 .rx-pweb .rx-p-answers {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   max-width: 680px;
 }
 .rx-pweb .rx-p-answers .rx-p-chip {
   font-size: 12px;
-  padding: 3px 9px;
+  padding: 4px 8px;
 }
 .rx-pweb .rx-p-quick {
   align-items: center;
@@ -6070,5 +6068,237 @@ p.rx-row-summary {
     height: 16px;
     padding: 0 4px;
     font-size: 9px;
+  }
+}
+
+/* ---------- Patient activity (clinician view) and sync status ---------- */
+.rx-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+.rx-activity-stats {
+  font-size: 13px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.rx-activity-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rx-activity-list li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13px;
+}
+.rx-activity-list li:first-child {
+  border-top: 0;
+}
+.rx-activity-list li > svg {
+  margin-top: 4px;
+  color: var(--faint);
+}
+.rx-activity-list li.report > svg {
+  color: var(--amber-ink);
+}
+.rx-activity-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.rx-activity-row strong {
+  font-size: 13px;
+}
+.rx-activity-row time {
+  font-size: 12px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.rx-activity-list p {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+}
+.rx-activity-list blockquote {
+  margin: 4px 0 0;
+  font-family: var(--serif);
+  color: var(--ink-2);
+}
+.rx-activity-report {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font: 12px/1.5 ui-monospace, Menlo, monospace;
+  white-space: pre-wrap;
+}
+.rx-sync i {
+  background: var(--faint);
+}
+.rx-sync.live i {
+  background: #2f7a62;
+}
+.rx-sync.offline i {
+  background: var(--amber);
+}
+
+/* Patient sign-in: a small card, not a page. */
+.rx-p-auth {
+  padding: 32px 16px;
+}
+.rx-p-auth .rx-p-screen {
+  max-width: 400px;
+  padding: 24px 24px 24px;
+  gap: 8px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+.rx-p-auth .rx-p-top {
+  margin-bottom: 4px;
+}
+.rx-p-auth .rx-p-signin-kicker {
+  margin: 8px 0 4px;
+  font-size: 12px;
+}
+.rx-p-auth .rx-p-title {
+  font-size: 20px;
+}
+.rx-p-auth .rx-p-lead {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.rx-p-auth .rx-p-form {
+  gap: 8px;
+}
+.rx-p-auth .rx-p-field {
+  gap: 4px;
+}
+.rx-p-auth .rx-p-field label {
+  font-size: 13px;
+}
+.rx-p-auth .rx-p-field small {
+  font-size: 12px;
+}
+.rx-p-auth .rx-p-select,
+.rx-p-auth .rx-p-code input {
+  min-height: 38px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+.rx-p-auth .rx-p-code svg {
+  width: 16px;
+  height: 16px;
+}
+.rx-p-auth .rx-p-consent {
+  gap: 8px;
+  font-size: 13px;
+}
+.rx-p-auth .rx-p-consent span {
+  font-size: 13px;
+}
+.rx-p-auth .rx-p-btn {
+  min-height: 38px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+.rx-p-auth .rx-p-signin-foot {
+  margin-top: 8px;
+  padding-top: 8px;
+  font-size: 12px;
+}
+
+/* Device status is one line, not a card, so the two home columns hold one card each. */
+.rx-pweb .rx-p-devices {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 13px;
+}
+.rx-pweb .rx-p-devices strong {
+  font-size: 13px;
+}
+.rx-pweb .rx-p-devices span {
+  color: var(--faint);
+}
+.rx-pweb .rx-p-devices a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-weight: 600;
+  white-space: nowrap;
+}
+@media (max-width: 1180px) {
+  .rx-pweb .rx-p-col:last-child {
+    display: flex;
+  }
+}
+.rx-activity-check {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--sage);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.rx-activity-check.differs {
+  background: var(--amber-tint);
+}
+.rx-pweb .rx-p-notif a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 600px) {
+  .rx-pweb .rx-side {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 4px;
+    overflow: visible;
+    padding: 8px;
+  }
+  .rx-pweb .rx-side .rx-brand {
+    grid-column: 1 / -1;
+    min-height: 36px;
+    margin: 0;
+    padding: 0 4px 4px;
+  }
+  .rx-pweb .rx-navlink {
+    min-width: 0;
+    min-height: 54px;
+    padding: 5px 2px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.1;
+  }
+  .rx-pweb .rx-navlink > span:first-child {
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .rx-pweb .rx-navlink svg {
+    width: 17px;
+    height: 17px;
   }
 }

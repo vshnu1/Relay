@@ -1,4 +1,4 @@
-# Relay — Bay Hacks 2026
+# Relay , Bay Hacks 2026
 
 Provider-facing remote monitoring prototype. Synthetic measurements → individual baselines → persistent coordinated deviations → consented patient check-in → source-linked evidence summary and mock FHIR handoff.
 
@@ -76,7 +76,7 @@ For deployment, `render.yaml` provisions only the web service. Create the Workfl
 
 ## ElevenLabs
 
-Set `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on the API server. Keep the key out of frontend code. The patient check-in uses an authenticated conversational agent after consent. The clinician overview can generate a one-way spoken status summary from synthetic readings and the latest Relay result; it reuses the agent's voice or an optional `ELEVENLABS_VOICE_ID`. The Render blueprint enables clinician summaries for this synthetic-data demo with `ELEVENLABS_DEMO_SUMMARY_ENABLED=true`; turn it off before loading real patient records. Do not send real patient information to ElevenLabs without the required vendor agreements and privacy review. See `docs/voice-agent.md` for the patient agent instructions and client tool schema. No incoming webhooks are accepted; patient voice drafts must be confirmed in the form. A production webhook integration would require signature/replay verification.
+Set `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` on the API server. Keep the key out of frontend code. The patient check-in uses an authenticated conversational agent after consent. The clinician overview can generate a one-way spoken status summary from synthetic readings and the latest Relay result; it reuses the agent's voice or an optional `ELEVENLABS_VOICE_ID`. Clinician summaries are blocked in production unless `ELEVENLABS_DEMO_SUMMARY_ENABLED=true`. Only enable that while the app contains synthetic demo data. Do not send real patient information to ElevenLabs without the required vendor agreements and privacy review. See `docs/voice-agent.md` for the patient agent instructions and client tool schema. No incoming webhooks are accepted; patient voice drafts must be confirmed in the form. A production webhook integration would require signature/replay verification.
 
 Reference: https://elevenlabs.io/docs/eleven-agents/customization/authentication.
 
@@ -109,8 +109,8 @@ Every claim in the pitch has a test or a measurement behind it.
 
 | What | How it is checked |
 |---|---|
-| The rules and views | `npm test` — JS unit suite, plus `node tests/api.integration.js` against a live server |
-| The Python model | `PYTHONPATH=ml pytest ml/tests` — 53 tests across contracts, features, scoring, scenarios |
+| The rules and views | `npm test` , JS unit suite, plus `node tests/api.integration.js` against a live server |
+| The Python model | `PYTHONPATH=ml pytest ml/tests` , 53 tests across contracts, features, scoring, scenarios |
 | The clinical boundary | `analysis/language_guard.py` and its Node port `server/languageGuard.js`, checked for pattern-for-pattern parity; every model sentence passes it before leaving the server |
 | The false-alarm rate | 3.35% of subject-days at the shipped 1.75 sd, over the 66 of 71 LifeSnaps subjects with usable baselines (4,420 of 4,453 subject-days). Reproduce with `python3 analysis/calibrate.py fixtures/lifesnaps_daily.csv --sweep`; the grid is `fixtures/calibration.json` |
 | How fast it speaks when it should | a coordinated deviation of known size injected onto 41 real subjects' own series. Over the same window the rule fires for 70.7% of them untouched, median five days; at 2.0 personal sd it fires for 97.6%, median **one** day. The gain is in the lag, not the rate (`analysis/sensitivity.py`, `fixtures/sensitivity.json`) |
@@ -118,7 +118,8 @@ Every claim in the pitch has a test or a measurement behind it.
 | Whether the model earns its place | both detectors over the same injected change: the rule is the sensitive one (97.6% at 2.0 sd, one day), the model the quiet one (56.1%, but speaking on 9.8% of untouched subjects against the rule's 53.7%). A second opinion, not a better detector (`analysis/sensitivity_ml.py`) |
 | The model against the rule | 3.77%–5.77% of judged subjects across the five programs this cohort can supply, 5.77% for `post_abdominal_surgery` (`fixtures/ml_calibration.json`); the two use different denominators and are never compared as if they were one |
 | The model's cold start | every one of the 14 programs has a synthetic-only prior in `ml/artifacts`, trained by `ml/relay_ml/train.py` on populations drawn from that program's own core metrics, so a patient with days of history is scored rather than refused |
-| Real data | 99 days of one team member's wearable physiology, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`) |
+| Detection on gait | one real person's 1,451 days of phone gait, thirty injected episodes: the rule sees a 2 sd coordinated decline the next day; the model catches 77–90% of them and speaks on a tenth as many untouched episodes (`analysis/sensitivity_gait.py`, `fixtures/sensitivity_gait.json`) |
+| Real data | 99 days of one team member's wearable physiology and 1,451 days of their phone's gait, de-identified with HMAC pseudonyms and interval-preserving date shifts; raw exports are never committed (`docs/DATA.md`) |
 
 Thresholds are demo settings and are labelled so in the interface. None of this is clinical validation, and the documents say that where it matters.
 

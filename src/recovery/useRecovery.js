@@ -1,11 +1,15 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { createStore } from "./model/store.js";
 import { createSimulatedSource } from "./model/simulatedSource.js";
+import { createSync } from "./model/sync.js";
 import { view } from "./model/derive.js";
 
 // The only line that knows where data comes from. Give createStore any object that
 // follows model/contract.js (a WebSocket feed, SSE, the API) and nothing else changes.
-export const store = createStore(createSimulatedSource());
+// The sync client is the shared log: what one view enters, the other reads.
+export const store = createStore(createSimulatedSource(), {
+  sync: createSync(),
+});
 if (import.meta.hot) import.meta.hot.dispose(() => store.destroy());
 
 export const actions = store.actions;
@@ -13,6 +17,8 @@ export const useRecovery = () =>
   useSyncExternalStore(store.subscribe, store.getState);
 export const useSourceLabel = () =>
   useSyncExternalStore(store.subscribe, () => store.getState().sourceLabel);
+export const useSyncStatus = () =>
+  useSyncExternalStore(store.subscribe, () => store.getState().sync);
 export function useCohort() {
   const state = useRecovery();
   return state.order.map((id) => view(state.patients[id], state.now));

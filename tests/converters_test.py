@@ -28,4 +28,38 @@ class ConvertersTest(unittest.TestCase):
         self.assertEqual(events[0]['value'], 44)
         self.assertIn('RMSSD', events[0]['source'])
 
+spec_parse = importlib.util.spec_from_file_location('parse_export', 'pipeline/parse_export.py')
+parse_export = importlib.util.module_from_spec(spec_parse)
+spec_parse.loader.exec_module(parse_export)
+spec_agg = importlib.util.spec_from_file_location('aggregate', 'pipeline/aggregate.py')
+aggregate = importlib.util.module_from_spec(spec_agg)
+spec_agg.loader.exec_module(aggregate)
+
+
+class PipelineUnitsTest(unittest.TestCase):
+    def test_unit_is_captured_wherever_it_sits_in_the_record(self):
+        # HealthKit writes unit after sourceName and device. The parser once
+        # looked for it only before sourceName, so every event lost its unit,
+        # and nothing noticed until gait, whose values need converting.
+        import os, tempfile
+        xml = ('<HealthData>\n<Record type="HKQuantityTypeIdentifierWalkingSpeed" sourceName="Phone" '
+               'sourceVersion="1" device="x" unit="mi/hr" creationDate="2026-09-18 08:00:00 -0400" '
+               'startDate="2026-09-18 08:00:00 -0400" endDate="2026-09-18 08:00:05 -0400" value="2.2"/>\n</HealthData>\n')
+        with tempfile.NamedTemporaryFile('w', suffix='.xml', delete=False) as handle:
+            handle.write(xml)
+            path = handle.name
+        try:
+            events = list(parse_export.parse(path))
+        finally:
+            os.unlink(path)
+        self.assertEqual(events[0]['signal'], 'walking_speed')
+        self.assertEqual(events[0]['unit'], 'mi/hr')
+
+    def test_gait_values_land_in_one_unit(self):
+        self.assertAlmostEqual(aggregate.gait_value('walking_speed', 2.2, 'mi/hr'), 0.983, places=3)
+        self.assertAlmostEqual(aggregate.gait_value('step_length', 23.5, 'in'), 59.69, places=2)
+        self.assertAlmostEqual(aggregate.gait_value('double_support', 0.289, '%'), 28.9, places=6)
+        self.assertAlmostEqual(aggregate.gait_value('double_support', 28.9, '%'), 28.9, places=6)
+
+
 if __name__ == '__main__': unittest.main()

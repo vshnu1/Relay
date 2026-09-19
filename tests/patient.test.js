@@ -117,6 +117,58 @@ test("readings that stay away from usual make a check-in due off-schedule, and t
   assert.match(checkinWhy({ ...quiet, dayHome: 9 }), /every other day/);
 });
 
+test("an answered priority check-in stays answered when the model re-scores", async () => {
+  const { view } = await cohort();
+  const aisha = view("aisha");
+  const analysis = (iso) => ({
+    is_anomalous: true,
+    application_state: "context_needed",
+    program: "cardiac",
+    change_point: iso,
+    contributors: [{ metric: "rhr", direction: "above_baseline" }],
+  });
+  const before = {
+    ...aisha,
+    checkins: [],
+    pending: false,
+    pattern: false,
+    dayHome: 12,
+    analysis: analysis("2026-09-17T16:18:30.067Z"),
+  };
+  assert.equal(checkinDue(before).reason, "readings");
+  const key = checkinTriggerKey(before);
+  const now = Date.now();
+  const answered = {
+    ...before,
+    checkins: [
+      {
+        requestedAt: now,
+        answeredAt: now,
+        answers: {},
+        note: null,
+        kind: "priority",
+        triggerKey: key,
+      },
+    ],
+    analysis: analysis("2026-09-17T16:19:42.068Z"), // re-scored a minute later
+  };
+  assert.equal(
+    checkinDue(answered, now).due,
+    false,
+    "the same change is not asked twice",
+  );
+  const nextDay = {
+    ...answered,
+    checkins: [{ ...answered.checkins[0], answeredAt: now - 20 * 3600000 }],
+    analysis: analysis("2026-09-18T10:00:00.000Z"),
+  };
+  assert.equal(
+    checkinDue(nextDay, now).reason,
+    "readings",
+    "a change on a later day opens a new prompt",
+  );
+});
+
 test("due, insight and notifications follow the readings and the answers", async () => {
   const { store, view } = await cohort();
   const maya = view("maya");

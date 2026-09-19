@@ -4,6 +4,7 @@ import { actions } from "../useRecovery.js";
 import { SignalChart } from "../doctor/Readings.jsx";
 import { SIGNALS } from "../model/profiles.js";
 import { numberWord } from "../format.js";
+import Sparkline from "./Sparkline.jsx";
 
 const HOME_DAYS = 14;
 
@@ -80,9 +81,29 @@ function ManualEntry({ patient: p, signal: s }) {
   );
 }
 
+function status(s) {
+  if (s.today === null) return { text: "No reading yet today", changed: false };
+  if (s.usual === null)
+    return { text: "No usual to compare with yet", changed: false };
+  const word = s.watchDir > 0 ? s.up.toLowerCase() : s.down.toLowerCase();
+  if (s.moved)
+    return {
+      text: `Changed · ${word} since day ${s.runStart}`,
+      changed: true,
+    };
+  if (s.towardDays > 0)
+    return {
+      text: `Changed · ${word} for ${s.towardDays === 1 ? "one day" : `${numberWord(s.towardDays)} ${s.span}`}`,
+      changed: true,
+    };
+  return { text: "About your usual", changed: false };
+}
+
 export default function Metrics({ patient: p }) {
   const [ref, width] = useWidth();
-  const order = [...p.counted, ...p.signals.filter((s) => !s.counted)];
+  const counted = p.counted;
+  const others = p.signals.filter((s) => !s.counted);
+  const order = [...counted, ...others];
   const [openId, setOpenId] = useState(order[0]?.id);
   const index = Math.max(
     0,
@@ -92,91 +113,173 @@ export default function Metrics({ patient: p }) {
   const step = (by) =>
     setOpenId(order[(index + by + order.length) % order.length].id);
   const homeFrom = Math.max(0, p.dayHome + 1 - HOME_DAYS);
+  const st = status(s);
+
+  const item = (x) => {
+    const xs = status(x);
+    return (
+      <button
+        key={x.id}
+        type="button"
+        role="tab"
+        aria-selected={x.id === s.id}
+        className={`rx-ph-sig ${x.device === "manual" ? "manual" : ""}`}
+        onClick={() => setOpenId(x.id)}
+      >
+        <div>
+          <span className="rx-ph-sig-name">{x.plain}</span>
+          <span className={`rx-ph-sig-status ${xs.changed ? "changed" : ""}`}>
+            {xs.text}
+          </span>
+        </div>
+        <div className="rx-ph-sig-value">
+          <strong>{x.today === null ? "Not available" : x.fmt(x.today)}</strong>
+          <span>{x.unit}</span>
+        </div>
+        <div className="rx-ph-sig-spark">
+          <Sparkline signal={x} width={56} height={26} />
+        </div>
+      </button>
+    );
+  };
+
   return (
     <>
-      <h1 className="rx-p-title">Your readings</h1>
-      <p className="rx-p-lead">
-        Each one is compared with what was usual for you before your hospital
-        stay. Green is your usual; the amber line is where a change starts to
-        count.
-      </p>
-      <div className="rx-p-pills" role="tablist" aria-label="Readings">
-        {order.map((x) => (
-          <button
-            key={x.id}
-            type="button"
-            role="tab"
-            aria-selected={x.id === s.id}
-            className={x.moved ? "moved" : x.towardDays > 0 ? "drifting" : ""}
-            onClick={() => setOpenId(x.id)}
-          >
-            {x.plain}
-          </button>
-        ))}
-      </div>
-      <section className="rx-p-card rx-p-metric" aria-label={s.plain}>
-        <header>
-          <button
-            type="button"
-            className="rx-p-iconbtn"
-            aria-label="Previous"
-            onClick={() => step(-1)}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div>
-            <h2>{s.plain}</h2>
-            <span>
-              {s.counted
-                ? `Counted for ${p.profile.after}`
-                : "Recorded, not counted"}{" "}
-              · {index + 1} of {order.length}
-            </span>
+      <header className="rx-ph-top">
+        <div>
+          <span className="rx-ph-kicker">
+            Your readings · last {HOME_DAYS} days
+          </span>
+          <h1 className="rx-serif">Compared with what is usual for you</h1>
+        </div>
+        <div className="rx-ph-legend">
+          <span>
+            <i className="band" aria-hidden="true" /> Your usual range
+          </span>
+          <span>
+            <i className="thr" aria-hidden="true" /> Where a change counts
+          </span>
+        </div>
+      </header>
+
+      <div className="rx-ph-metrics">
+        <div className="rx-ph-siglist" role="tablist" aria-label="Readings">
+          <span className="rx-ph-kicker">Counted for {p.profile.after}</span>
+          {counted.map(item)}
+          {others.length > 0 && (
+            <>
+              <span className="rx-ph-kicker gap">Recorded, not counted</span>
+              {others.map(item)}
+            </>
+          )}
+          <div className="rx-ph-links">
+            <a href="#/patient/journal">
+              Record something your readings do not show
+              <ChevronRight size={16} aria-hidden="true" />
+            </a>
+            <a href="#/patient/watching">
+              What your care team watches, and why
+              <ChevronRight size={16} aria-hidden="true" />
+            </a>
           </div>
-          <button
-            type="button"
-            className="rx-p-iconbtn"
-            aria-label="Next"
-            onClick={() => step(1)}
-          >
-            <ChevronRight size={20} />
-          </button>
-        </header>
-        <div className="rx-p-now">
-          <strong>{s.today === null ? "Not available" : s.fmt(s.today)}</strong>
-          <span>{s.unit}</span>
-          {s.usual !== null && <small>usual {s.fmt(s.usual)}</small>}
-          {s.today !== null && s.usual !== null && (
-            <em
-              className={`rx-p-chip ${s.moved || s.towardDays ? "changed" : ""}`}
-            >
-              {s.change}
-            </em>
-          )}
         </div>
-        <p className={`rx-p-plain ${s.moved ? "moved" : ""}`}>{plain(s)}</p>
-        <div ref={ref} className="rx-p-plot">
-          {width > 0 && (
-            <SignalChart signal={s} homeFrom={homeFrom} width={width} compact />
-          )}
-        </div>
-        <small className="rx-p-fine">{s.what}</small>
-        {s.device === "manual" && <ManualEntry patient={p} signal={s} />}
-      </section>
-      <div className="rx-p-card list">
-        <a className="rx-p-rowlink" href="#/patient/journal">
-          Record something your readings do not show
-          <ChevronRight size={16} aria-hidden="true" />
-        </a>
-        <a className="rx-p-rowlink" href="#/patient/watching">
-          What your care team watches, and how a change is judged
-          <ChevronRight size={16} aria-hidden="true" />
-        </a>
+
+        <section className="rx-ph-detail" aria-label={s.plain}>
+          <header>
+            <div>
+              <h2>{s.plain}</h2>
+              <span>{s.what}</span>
+            </div>
+            <span className={`rx-p-chip-sm ${st.changed ? "changed" : ""}`}>
+              {s.today === null
+                ? "No reading"
+                : s.moved
+                  ? `Changed since day ${s.runStart}`
+                  : st.changed
+                    ? "Changed"
+                    : "Usual"}
+            </span>
+          </header>
+
+          <div className="rx-ph-figures">
+            <div>
+              <span className="rx-ph-kicker">
+                {s.device === "manual" ? "Today" : "Last night"}
+              </span>
+              <div className="rx-ph-figure big">
+                <strong>{s.today === null ? "Not available" : s.fmt(s.today)}</strong>
+                <span>{s.unit}</span>
+              </div>
+            </div>
+            <div>
+              <span className="rx-ph-kicker">Your usual</span>
+              <div className="rx-ph-figure">
+                <strong className="pine">
+                  {s.usual === null ? "Not available" : s.fmt(s.usual)}
+                </strong>
+                <span>
+                  {s.usual === null ? "not known yet" : "before your stay"}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span className="rx-ph-kicker">Change</span>
+              <div className="rx-ph-figure">
+                <strong className={st.changed ? "amber" : "pine"}>
+                  {s.today === null || s.usual === null ? "Not available" : s.change}
+                </strong>
+                <span>
+                  {s.towardDays > 0
+                    ? `for ${s.towardDays === 1 ? "one day" : `${numberWord(s.towardDays)} ${s.span}`}`
+                    : "today"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p className={`rx-ph-plain ${st.changed ? "changed" : ""}`}>
+            {plain(s)}
+          </p>
+
+          <div ref={ref} className="rx-p-plot">
+            {width > 0 && (
+              <SignalChart
+                signal={s}
+                homeFrom={homeFrom}
+                width={width}
+                compact
+              />
+            )}
+          </div>
+
+          {s.device === "manual" && <ManualEntry patient={p} signal={s} />}
+
+          <footer className="rx-ph-detail-foot">
+            <small>
+              Hover or tap a day to see its reading. A change is not a
+              diagnosis; it is a reason for your care team to look.
+            </small>
+            <div>
+              <button
+                type="button"
+                className="rx-p-iconbtn"
+                aria-label="Previous reading"
+                onClick={() => step(-1)}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                type="button"
+                className="rx-p-iconbtn"
+                aria-label="Next reading"
+                onClick={() => step(1)}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </footer>
+        </section>
       </div>
-      <p className="rx-p-fine">
-        Hover or tap a day to see its reading. A change is not a diagnosis; it
-        is a reason for your care team to look.
-      </p>
     </>
   );
 }
